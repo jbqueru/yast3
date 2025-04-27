@@ -71,9 +71,36 @@ _main_bss_start:
 
 .MainSuper:
 
+	move.w #$2700, sr
+
+	move.l #Reset, $42a.w
+	move.l #$31415926, $426.w
+
+	move.l #VBL, $70.w
+
+	move.b	#0, $fffffa07.w
+	move.b	#0, $fffffa09.w
+
+	move.w	#$2300, sr
+
 .Forever:
 	bra.s .Forever
 
+VBL:
+	move.w bgcolor.l, $ffff8240.w
+	addq.w #1, bgcolor.l
+	rte
+
+Reset:
+	clr.l $426.l
+	move.w d0, $ffff8240.w
+	addq.w	#1, d0
+	bra.s Reset
+
 	.bss
+	.even
+bgcolor:
+	ds.w	1
+
 _main_bss_end:
 	.end
