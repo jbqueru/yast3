@@ -4,18 +4,25 @@ A dice-combo game for Atari ST
 This is a game for the Atari ST family, developed by Djaybee and
 Pandafox from the MegaBuSTers, in collaboration with AD from MPS.
 
-The program is believed to run on a wide variety of ST hardware,
-from a plain 520 ST all the way to the TT or Falcon. However,
-it ignores any hardware beyond that of a plain ST, such that
-it neither uses those capabilities nor disables them, which
-could cause compatibility issues. It needs to be launched from
-ST Low or ST medium resolution, and launching from other
-resolutions will have undesired effects.
+The primary target is the STe, with a degraded experience down
+to the plain ST. While the 12-bit palette naturally degrades into
+a 9-bit one and DMA sound can be turned into silence, Blitter and
+hardware scrolling need some fallbacks.
 
 It's been developed with rmac 2.2.25 and tested under Hatari
 v2.6.0-devel with EmuTOS 1.3.
 
 # Timeline and design thoughts
+
+Apr 25 2025, Pandafox suggests building a game, a dice game in
+a well-known family, but with an added strategic twist.
+He and Djaybee agree on proceeding, with two specific goals:
+-Using graphical effects to augment the game experience.
+-Later targeting multiple platforms, with Android a stretch goal.
+
+Discussions ensued over several days whether to target ST or STe.
+Poll on social media suggested STe as primary target, with a
+degraded experience for earlier machines.
 
 # What's in the package
 
