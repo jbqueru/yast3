@@ -60,7 +60,6 @@ _main_bss_start:
 	clr.b (a0)+
 	cmpa.l #_main_bss_end, a0
 	bne.s .Loop
-	rts
 
 	pea.l .MainSuper.l
 	move.w #38, -(sp)
