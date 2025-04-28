@@ -78,8 +78,19 @@ _main_bss_start:
 
 	move.l #VBL, $70.w
 
-	move.b	#0, $fffffa07.w
-	move.b	#0, $fffffa09.w
+	move.l #TimerC, $114.w
+
+	move.b #$40,$fffffa17.w
+	move.b #0, $fffffa07.w
+
+	move.b #$20, $fffffa09.w
+	move.b #0, $fffffa0d.w
+	move.b #0, $fffffa11.w
+	move.b #$20, $fffffa15.w
+
+	move.b #0, $fffffa1d.w
+	move.b #128, $fffffa23.w
+	move.b #$50, $fffffa1d.w
 
 	move.w	#$2300, sr
 
@@ -89,6 +100,10 @@ _main_bss_start:
 VBL:
 	move.w bgcolor.l, $ffff8240.w
 	addq.w #1, bgcolor.l
+	rte
+
+TimerC:
+	not.w $ffff8240.w
 	rte
 
 Reset:
