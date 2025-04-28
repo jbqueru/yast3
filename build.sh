@@ -71,7 +71,7 @@ hmsa out/yast3/yast3.st || exit $?
 echo '(*) prepare source archive'
 rm -rf out/yast3src || exit $?
 mkdir -p out/yast3src || exit $?
-cp $(ls -1 | grep -v ^out\$) out/yast3src || exit $?
+cp -r $(ls -1 | grep -v ^out\$) out/yast3src || exit $?
 (cd out && zip -r -9 -q yast3/yast3.src.zip yast3src) || exit $?
 
 echo '(*) prepare final distribution archive'
