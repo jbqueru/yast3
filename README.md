@@ -14,15 +14,43 @@ v2.6.0-devel with EmuTOS 1.3.
 
 # Timeline and design thoughts
 
-Apr 25 2025, Pandafox suggests building a game, a dice game in
+## Apr 25 2025
+Pandafox suggests building a game, a dice game in
 a well-known family, but with an added strategic twist.
 He and Djaybee agree on proceeding, with two specific goals:
 -Using graphical effects to augment the game experience.
 -Later targeting multiple platforms, with Android a stretch goal.
 
 Discussions ensued over several days whether to target ST or STe.
-Poll on social media suggested STe as primary target, with a
-degraded experience for earlier machines.
+Polls on social media suggested that ~93% of users expect the STe
+to get an optimized experience. Within those, 12% want the ST to
+also get a great experience, while 63% would accept a degraded
+experience and 23% would accept having to ST version at all.
+
+## Apr 28 2025
+Notes from Pandafox:
+
+(See design mockup)
+
+For each scoring throw, gain as many coins as total dice pips.
+
+At any time, those coins can be used to purchase modules
+or boosters.
+
+Modules get added before each throw, e.g. a red-6 module
+increases the odds of rolling a 6. green-$ doubles the number
+of coins.
+
+Boosters are general bonuses.
+
+The design on the top-right changes with each level, as well
+as the general design.
+
+Ultimately, there are no scores, but successful games can unlock
+new modules or new boosters for future games. That can be saved
+as parameters or (Djaybee suggestion) exposed as a code. That
+way, there's some replay value.
+
 
 # What's in the package
 
