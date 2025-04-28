@@ -79,6 +79,7 @@ _main_bss_start:
 	move.l #VBL, $70.w
 
 	move.l #TimerB, $120.w
+	move.l #ACIA, $118.w
 	move.l #TimerC, $114.w
 
 	move.b #$40,$fffffa17.w
@@ -88,14 +89,10 @@ _main_bss_start:
 	move.b #0, $fffffa0f.w
 	move.b #$01, $fffffa13.w
 
-	move.b #$20, $fffffa09.w
+	move.b #$60, $fffffa09.w
 	move.b #0, $fffffa0d.w
 	move.b #0, $fffffa11.w
-	move.b #$20, $fffffa15.w
-
-	move.b #0, $fffffa1b.w
-	move.b #200, $fffffa21.w
-	move.b #$08, $fffffa1b.w
+	move.b #$60, $fffffa15.w
 
 	move.b #0, $fffffa1d.w
 	move.b #128, $fffffa23.w
@@ -122,6 +119,11 @@ TimerC:
 
 TimerB:
 	eori.w #$f0, $ffff8240.w
+	rte
+
+ACIA:
+	tst.b $fffffc02.w
+	eori.w #$f00, $ffff8240.w
 	rte
 
 Reset:
