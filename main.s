@@ -56,8 +56,10 @@ _main_bss_start:
 	.text
 
 	lea.l _main_bss_start.l, a0
+	bra.s .EnterLoop
 .Loop:
 	clr.b (a0)+
+.EnterLoop:
 	cmpa.l #_main_bss_end, a0
 	bne.s .Loop
 
