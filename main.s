@@ -80,25 +80,54 @@ _main_bss_start:
 
 	move.l #VBL, $70.w
 
+	move.l #TimerA, $134.w
 	move.l #TimerB, $120.w
 	move.l #ACIA, $118.w
 	move.l #TimerC, $114.w
 
 	move.b #$40,$fffffa17.w
+	move.b #0, $fffffa19.w
+	move.b #0, $fffffa1b.w
+	move.b #0, $fffffa1d.w
 
-	move.b #$01, $fffffa07.w
+	move.b #$21, $fffffa07.w
 	move.b #0, $fffffa0b.w
 	move.b #0, $fffffa0f.w
-	move.b #$01, $fffffa13.w
+	move.b #$21, $fffffa13.w
 
 	move.b #$60, $fffffa09.w
 	move.b #0, $fffffa0d.w
 	move.b #0, $fffffa11.w
 	move.b #$60, $fffffa15.w
 
-	move.b #0, $fffffa1d.w
+	move.b #1, $fffffa1f.w
+	move.b #$08, $fffffa19.w
+
 	move.b #128, $fffffa23.w
 	move.b #$50, $fffffa1d.w
+
+	move.b #0, $ffff8901.w
+
+	move.l #StartSound, d0
+	move.l d0, d1
+	swap d1
+	move.b d1, $ffff8903.w
+	move.w d0, d1
+	ror.w #8, d1
+	move.b d1, $ffff8905.w
+	move.b d0, $ffff8907.w
+
+	move.l #EndSound, d0
+	move.l d0, d1
+	swap d1
+	move.b d1, $ffff890f.w
+	move.w d0, d1
+	ror.w #8, d1
+	move.b d1, $ffff8911.w
+	move.b d0, $ffff8913.w
+
+	move.b #$82, $ffff8921.w
+	move.b #$03, $ffff8901.w
 
 	move.w	#$2300, sr
 
@@ -106,8 +135,7 @@ _main_bss_start:
 	bra.s .Forever
 
 VBL:
-	move.w bgcolor.l, $ffff8240.w
-	addq.w #1, bgcolor.l
+	clr.w $ffff8240.w
 
 	move.b #0, $fffffa1b.w
 	move.b #200, $fffffa21.w
@@ -116,16 +144,20 @@ VBL:
 	rte
 
 TimerC:
-	not.w $ffff8240.w
+	eori.w #$400, $ffff8240.w
 	rte
 
 TimerB:
-	eori.w #$f0, $ffff8240.w
+	eori.w #$333, $ffff8240.w
+	rte
+
+TimerA:
+	eori.w #$004, $ffff8240.w
 	rte
 
 ACIA:
 	tst.b $fffffc02.w
-	eori.w #$f00, $ffff8240.w
+	eori.w #$040, $ffff8240.w
 	rte
 
 Reset:
@@ -134,10 +166,13 @@ Reset:
 	addq.w	#1, d0
 	bra.s Reset
 
-	.bss
+	.data
 	.even
-bgcolor:
-	ds.w	1
+StartSound:
+	.dcb.b 502, 0
+EndSound:
+
+	.bss
 
 _main_bss_end:
 	.end
