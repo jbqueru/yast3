@@ -85,49 +85,50 @@ _main_bss_start:
 	move.l #ACIA, $118.w
 	move.l #TimerC, $114.w
 
-	move.b #$40,$fffffa17.w
-	move.b #0, $fffffa19.w
-	move.b #0, $fffffa1b.w
-	move.b #0, $fffffa1d.w
+	move.b #$40,$fffffa17.w		; table at $100, automatic end interrupt
 
-	move.b #$21, $fffffa07.w
-	move.b #0, $fffffa0b.w
-	move.b #0, $fffffa0f.w
-	move.b #$21, $fffffa13.w
+	move.b #0, $fffffa19.w		; stop timer A
+	move.b #0, $fffffa1b.w		; stop timer B
+	move.b #0, $fffffa1d.w		; stop timers C-D
 
-	move.b #$60, $fffffa09.w
-	move.b #0, $fffffa0d.w
-	move.b #0, $fffffa11.w
-	move.b #$60, $fffffa15.w
+	move.b #$21, $fffffa07.w	; enable timers A ($20) and B ($01)
+	move.b #0, $fffffa0b.w		; nothing pending
+	move.b #0, $fffffa0f.w		; nothing in-service
+	move.b #$ff, $fffffa13.w	; nothing masked
 
-	move.b #1, $fffffa1f.w
-	move.b #$08, $fffffa19.w
+	move.b #$60, $fffffa09.w	; enable ACIA ($40) and timer C ($20)
+	move.b #0, $fffffa0d.w		; nothing pending
+	move.b #0, $fffffa11.w		; nothing in-service
+	move.b #$ff, $fffffa15.w	; nothing masked
 
-	move.b #128, $fffffa23.w
-	move.b #$50, $fffffa1d.w
+	move.b #1, $fffffa1f.w		; timer A, fire every event
+	move.b #$08, $fffffa19.w	; event count
 
-	move.b #0, $ffff8901.w
+	move.b #128, $fffffa23.w	; timer C, fire every 128 ticks, i.e. 300 Hz
+	move.b #$50, $fffffa1d.w	; ticks run at XTAL/64, i.e. 38400 Hz
+
+	move.b #0, $ffff8901.w		; DMA sound off
 
 	move.l #StartSound, d0
 	move.l d0, d1
 	swap d1
-	move.b d1, $ffff8903.w
+	move.b d1, $ffff8903.w		; high byte of start address, must come first
 	move.w d0, d1
 	ror.w #8, d1
-	move.b d1, $ffff8905.w
-	move.b d0, $ffff8907.w
+	move.b d1, $ffff8905.w		; mid byte of start address
+	move.b d0, $ffff8907.w		; low byte of start address, must be even
 
 	move.l #EndSound, d0
 	move.l d0, d1
 	swap d1
-	move.b d1, $ffff890f.w
+	move.b d1, $ffff890f.w		; high byte of end address
 	move.w d0, d1
 	ror.w #8, d1
-	move.b d1, $ffff8911.w
-	move.b d0, $ffff8913.w
+	move.b d1, $ffff8911.w		; mid byte of end address
+	move.b d0, $ffff8913.w		; low byte of end address
 
-	move.b #$82, $ffff8921.w
-	move.b #$03, $ffff8901.w
+	move.b #$81, $ffff8921.w	; mono ($80), 12017 kHz ($01)
+	move.b #$03, $ffff8901.w	; loop ($02), enable ($01)
 
 	move.w	#$2300, sr
 
@@ -169,7 +170,7 @@ Reset:
 	.data
 	.even
 StartSound:
-	.dcb.b 502, 0
+	.dcb.b 250, 0
 EndSound:
 
 	.bss
