@@ -51,6 +51,43 @@ new modules or new boosters for future games. That can be saved
 as parameters or (Djaybee suggestion) exposed as a code. That
 way, there's some replay value.
 
+## Apr 29 2025
+
+Interrupts:
+-VBL + Timer B: direct GPU handling. Primarily around page-flipping
+after line 200, might also be useful for mid-screen palette change,
+with caveats around interrupt latency.
+-Timer C: timekeeping, multitasking backstop.
+-Timer A: PCM sound
+-ACIA: IKBD
+
+## Apr 30 2025
+
+At full speed (i.e. when moving the mouse), there are about
+780 ACIA IKBD packets per second. Waking up a task that often
+seems unnecessary, especially since in the stress case 2/3 of
+those bytes aren't enough to make a whole packet yet. Instead,
+buffering the bytes and only waking up the task where there's
+a whole packet makes sense.
+
+That being said, in the big picture, there's a challenge: a
+cheap implementation of timer B is sensitive to timing. A more
+advanced implementation of timer B might be able to withstand
+some timing variations, has to pay the cost of the worst-case
+scenario for every single interrupt (fire early and poll until
+the expected location). Now, by varying the packet length,
+timer A can be made only to fire during vblank. Similarly,
+by varying the timer data register, timer C can be made only to
+fire during vblank. That avoids the collisions between those
+and timer B. Obviously, VBL and timer B don't collide. That leaves
+the ACIA, whose timing can't be entirely controlled, but whose
+impact can be minimized. If the ACIA interrupt merely gets the
+necessary byte out of the buffer and then returns without ever
+switching tasks, the impact on timer B is minimized, at least to
+the point where timer B might only need 1 extra line of sync if
+it wants to be near-perfect. The buffer of ACIA bytes can then
+be handled by a tasks that fires from another interrupt, most
+probably timer C.
 
 # What's in the package
 
