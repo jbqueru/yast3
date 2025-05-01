@@ -155,6 +155,8 @@ _main_bss_start:
 	bra.s .Forever
 
 SwitchThreads:
+	tst.b delay_thread_switch.l
+	bne.s SwitchThreads.l
 	move.w sr, -(sp)
 	move.w #$2600, sr
 	movem.l d0-a6, -(sp)
@@ -225,6 +227,7 @@ TimerB1:
 	move.l #TimerB2, $120.w
 	move.b #$01, $fffffa13.w
 	move.b #0, $fffffa15.w
+	move.b #1, delay_thread_switch.l
 	rte
 
 TimerB2:
@@ -236,6 +239,7 @@ TimerB2:
 	move.l #TimerB3, $120.w
 	move.b #$ff, $fffffa13.w
 	move.b #$ff, $fffffa15.w
+	clr.b delay_thread_switch.l
 	rte
 
 TimerB3:
@@ -291,6 +295,9 @@ bg_thread_2_stack_top:
 bg_thread_1_ready:
 	ds.b 1
 bg_thread_2_ready:
+	ds.b 1
+
+delay_thread_switch:
 	ds.b 1
 
 _main_bss_end:
