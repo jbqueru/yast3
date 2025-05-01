@@ -153,6 +153,10 @@ TimerC:
 
 TimerB1:
 	eori.w #$333, $ffff8240.w
+	.rept 122
+	nop
+	.endr
+	eori.w #$333, $ffff8240.w
 	move.b #100, $fffffa21.w
 	move.l #TimerB2, $120.w
 	move.b #$01, $fffffa13.w
@@ -161,12 +165,20 @@ TimerB1:
 
 TimerB2:
 	eori.w #$333, $ffff8240.w
+	.rept 122
+	nop
+	.endr
+	eori.w #$333, $ffff8240.w
 	move.l #TimerB3, $120.w
 	move.b #$ff, $fffffa13.w
 	move.b #$ff, $fffffa15.w
 	rte
 
 TimerB3:
+	eori.w #$333, $ffff8240.w
+	.rept 122
+	nop
+	.endr
 	eori.w #$333, $ffff8240.w
 	rte
 
