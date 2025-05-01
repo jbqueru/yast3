@@ -78,6 +78,20 @@ _main_bss_start:
 	move.l #Reset, $42a.w
 	move.l #$31415926, $426.w
 
+	lea.l bg_thread_1_stack_top, a0
+	move.l #Thread1, -(a0)
+	move #$2300, -(a0)
+	lea.l -64(a0), a0
+	move.l a0, bg_thread_1_stack
+
+	lea.l bg_thread_2_stack_top, a0
+	move.l #Thread2, -(a0)
+	move #$2300, -(a0)
+	lea.l -64(a0), a0
+	move.l a0, bg_thread_2_stack
+
+	move.l #main_stack, current_thread
+
 	move.l #VBL, $70.w
 
 	move.l #TimerA, $134.w
@@ -130,17 +144,69 @@ _main_bss_start:
 	move.b #$81, $ffff8921.w	; mono ($80), 12517 kHz ($01)
 	move.b #$03, $ffff8901.w	; loop ($02), enable ($01)
 
-	move.w	#$2300, sr
-
-.Forever:
-	stop #$2300
-	bra.s .Forever
-
-VBL:
 	clr.w $ffff8240.w
 
+	move.w #$2300, sr
+
+	move.b #1, bg_thread_1_ready.l
+	clr.b bg_thread_2_ready.l
+	bsr.w SwitchThreads.l
+.Forever:
+	bra.s .Forever
+
+SwitchThreads:
+	move.w sr, -(sp)
+	move.w #$2600, sr
+	movem.l d0-a6, -(sp)
+	move.l usp, a0
+	move.l a0, -(sp)
+	move.l current_thread, a0
+	move.l sp, (a0)
+
+	tst.b bg_thread_1_ready
+	beq.s .try_bg2
+	lea.l bg_thread_1_stack, a0
+	bra.s .thread_selected
+
+.try_bg2:
+	tst.b bg_thread_2_ready
+	beq.s .use_main
+	lea.l bg_thread_2_stack, a0
+	bra.s .thread_selected
+
+.use_main:
+	lea.l main_stack, a0
+
+.thread_selected:
+	move.l (a0),sp
+	move.l a0,current_thread
+	move.l (sp)+,a0
+	move.l a0,usp
+	movem.l (sp)+,d0-a6
+	rte
+
+
+Thread1:
+	eori.w #$400, $ffff8240.w
+	eori.w #$400, $ffff8240.w
+	move.b #1, bg_thread_2_ready.l
+	clr.b bg_thread_1_ready.l
+	bsr.w SwitchThreads.l
+	bra.s Thread1
+
+Thread2:
+	eori.w #$004, $ffff8240.w
+	eori.w #$004, $ffff8240.w
+	move.b #1, bg_thread_1_ready.l
+	clr.b bg_thread_2_ready.l
+	bsr.w SwitchThreads.l
+	bra.s Thread2
+
+VBL:
+;	clr.w $ffff8240.w
+
 	move.l #TimerB1, $120.w
-	move.b #0, $fffffa1b.w
+	move.b 0, $fffffa1b.w
 	move.b #92, $fffffa21.w
 	move.b #$08, $fffffa1b.w
 	move.b #8, $fffffa21.w
@@ -187,11 +253,12 @@ TimerA:
 	rte
 
 ACIA:
+	eori.w #$020, $ffff8240.w
 	tst.b $fffffc02.w
 	.rept 512
 	nop
 	.endr
-;	eori.w #$040, $ffff8240.w
+	eori.w #$020, $ffff8240.w
 	rte
 
 Reset:
@@ -207,6 +274,26 @@ StartSound:
 EndSound:
 
 	.bss
+
+	.even
+current_thread:
+	ds.l 1
+
+main_stack:
+	ds.l 1
+
+bg_thread_1_stack:
+	ds.l 251
+bg_thread_1_stack_top:
+
+bg_thread_2_stack:
+	ds.l 251
+bg_thread_2_stack_top:
+
+bg_thread_1_ready:
+	ds.b 1
+bg_thread_2_ready:
+	ds.b 1
 
 _main_bss_end:
 	.end
