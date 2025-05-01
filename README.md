@@ -171,6 +171,58 @@ Finally, the STe sound system uses the US ST clock speed, in
 all regions, i.e. it never matches the CPU speed.
 315 / 88 * 227 * 508 * 4 / 640.
 
+### Building around Timer B interrupts
+
+The interrupt handling can be thought about entirely in reverse:
+
+We can imagine a system that has timer A for PCM sound, timer B
+for palette changes, timer C for timekeeping, and an ACIA interrupt
+to read data from the keyboard.
+
+It turns out, most of those interrupts can afford some delays.
+
+The IKBD ACIA can afford a bit more than 1ms.
+
+Timer C can survive delays of several ms, dpending on settings.
+5ms at the default 200Hz, 20+ms at 48Hz.
+
+Timer A can deal with delays as well. Likely sizes for buffers
+start at 14ms, with the understanding that the interrupt has
+to fire early enough to fill the next buffer in time. Still,
+several ms feels very feasible.
+
+Timer B, however, is sensitive. The upper bound for latency
+is probably about 50us on RGB/TV screens, or line-doubled VGA,
+assuming that the palette change can happen mid-line.
+
+All that means that ACIA, Timer C and Timer A interrupts can be
+masked while expecting critical timer B sections. If a critical
+section takes more than about 1ms, the ACIA needs to be polled,
+which is not a hard issue.
+
+Even with no other interrupt sources, there exist reasons
+why the CPU might not be able respond quickly to an interrupt.
+One of those is the existence of very long instructions. DIV
+can exceed 20us in worst-case scenarios. The other is the
+blitter, which blocks the CPU for 32us at a time. In the
+worst-case scenario, those two can add up.
+
+For the least sensitive situations, blitter + DIV only causes
+a minor risk of small temporary glitches, such that there might
+not be a need for any mitigation.
+
+Toward the sensitive end of the spectrum, direct mitigations
+of blitter and large instructions quickly runs into portability
+issues, especially on VGA monitors. For those use cases, the
+best approach is to make sure that the blitter is off when
+expecting sensitive timer B interrupts, and to get the code
+blocked on short instructions, ideally STOP.
+
+The approach in that sensitive case is to make sure that the
+blitter only processes small amounts at a time. 48x48 1bpp
+in NFSR RMW is 528 memory accesses, slightly more than 0.5ms,
+less than 10 lines of a typical PAL/NTSC display
+
 # What's in the package
 
 The distribution package contains this `README.md` file, the main
