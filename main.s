@@ -203,8 +203,6 @@ Thread2:
 	bra.s Thread2
 
 VBL:
-;	clr.w $ffff8240.w
-
 	move.l #TimerB1, $120.w
 	move.b 0, $fffffa1b.w
 	move.b #92, $fffffa21.w
