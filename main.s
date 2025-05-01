@@ -81,7 +81,7 @@ _main_bss_start:
 	move.l #VBL, $70.w
 
 	move.l #TimerA, $134.w
-	move.l #TimerB, $120.w
+	move.l #TimerB1, $120.w
 	move.l #ACIA, $118.w
 	move.l #TimerC, $114.w
 
@@ -127,38 +127,59 @@ _main_bss_start:
 	move.b d1, $ffff8911.w		; mid byte of end address
 	move.b d0, $ffff8913.w		; low byte of end address
 
-	move.b #$81, $ffff8921.w	; mono ($80), 12017 kHz ($01)
+	move.b #$81, $ffff8921.w	; mono ($80), 12517 kHz ($01)
 	move.b #$03, $ffff8901.w	; loop ($02), enable ($01)
 
 	move.w	#$2300, sr
 
 .Forever:
+	stop #$2300
 	bra.s .Forever
 
 VBL:
 	clr.w $ffff8240.w
 
+	move.l #TimerB1, $120.w
 	move.b #0, $fffffa1b.w
-	move.b #200, $fffffa21.w
+	move.b #92, $fffffa21.w
 	move.b #$08, $fffffa1b.w
+	move.b #8, $fffffa21.w
 
 	rte
 
 TimerC:
-	eori.w #$400, $ffff8240.w
+;	eori.w #$400, $ffff8240.w
 	rte
 
-TimerB:
+TimerB1:
+	eori.w #$333, $ffff8240.w
+	move.b #100, $fffffa21.w
+	move.l #TimerB2, $120.w
+	move.b #$01, $fffffa13.w
+	move.b #0, $fffffa15.w
+	rte
+
+TimerB2:
+	eori.w #$333, $ffff8240.w
+	move.l #TimerB3, $120.w
+	move.b #$ff, $fffffa13.w
+	move.b #$ff, $fffffa15.w
+	rte
+
+TimerB3:
 	eori.w #$333, $ffff8240.w
 	rte
 
 TimerA:
-	eori.w #$004, $ffff8240.w
+;	eori.w #$004, $ffff8240.w
 	rte
 
 ACIA:
 	tst.b $fffffc02.w
-	eori.w #$040, $ffff8240.w
+	.rept 512
+	nop
+	.endr
+;	eori.w #$040, $ffff8240.w
 	rte
 
 Reset:
