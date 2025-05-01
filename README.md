@@ -63,12 +63,16 @@ with caveats around interrupt latency.
 
 ## Apr 30 2025
 
+### Interrupts, take 1
+
 At full speed (i.e. when moving the mouse), there are about
 780 ACIA IKBD packets per second. Waking up a task that often
 seems unnecessary, especially since in the stress case 2/3 of
 those bytes aren't enough to make a whole packet yet. Instead,
 buffering the bytes and only waking up the task where there's
 a whole packet makes sense.
+
+### Interrupts, take 2
 
 That being said, in the big picture, there's a challenge: a
 cheap implementation of timer B is sensitive to timing. A more
@@ -88,6 +92,58 @@ the point where timer B might only need 1 extra line of sync if
 it wants to be near-perfect. The buffer of ACIA bytes can then
 be handled by a tasks that fires from another interrupt, most
 probably timer C.
+
+### Interrupts, take 3
+
+Timer B firing on the last line of the frame is the heartbeat of
+graphics. That's a great time to page-flip. Any earlier and we'd
+start drawing into a buffer that's still on-screen. Later (i.e. VBL)
+and there's a performance penalty because the page-flip takes a
+one-frame delay. (if we push further, we could imagine page-flipping
+any time between the last line and the VBL, leaving some breathing
+room for cases where the rendering time temporarily overflows a tiny
+bit the duration of a frame).
+
+VBL is here to ensure that timer B stays in sync - some bugs or
+worst-case scenarios could cause it to get out of the sync.
+
+As discussed above, timers A and C can be engineered to stay away
+from when timer B fires, and ACIA can be kept short enough to
+limit the negative impact.
+
+Still, it gets complicated. Here's what can go wrong:
+-The CPU might have been executing a DIVS, 160 clocks, though
+that's not very likely.
+-The blitter might be eating 256 clocks, and that's actually
+quite likely if the blitter gets used. We're not even talking
+about running the blitter in hog mode.
+-ACIA might come first, duration 200+. A line is 508 clock
+on NTSC 8MHz machines.
+
+256 will be common. Close to 500 is not inconceivable.
+The worst-case scenario is probably above 600.
+
+(IRQ) ;(44)
+movem.l d0/a0, -(sp) ;(24)
+move.b $fffffc00.w, d0 ;(12)
+btst #0, d0 ;(12)
+beq.s .notRx ;(8)
+move.l ACIAbuf, a0 ;(20)
+move.b $fffffc02.w, (a0)+ ;(16)
+move.l a0, d0 ;(4)
+andi.w #$ffe0, d0 ;(8)
+move.l d0, ACIAbuf ;(20)
+move.l (sp)+, d0 ;(12)
+move.l (sp)+, a0 ;(12)
+rte ;(20)
+
+As a note, even ignoring questions of percise timer B, running
+the blitter in hog mode quickly becomes an issue, the interval
+between two ACIA data bytes is about 2560 memory cycles, less if
+we take into account the overhead of other interrupts that might
+be firing at the same time. The maximum size that might somewhat
+fit between ACIA interrupts is along the lines of 96*96 1 bpp
+in read-modify-write modes.
 
 # What's in the package
 
