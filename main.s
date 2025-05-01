@@ -158,10 +158,10 @@ SwitchThreads:
 	tst.b delay_thread_switch.l
 	bne.s SwitchThreads.l
 	move.w sr, -(sp)
-	move.w #$2600, sr
 	movem.l d0-a6, -(sp)
 	move.l usp, a0
 	move.l a0, -(sp)
+	move.w #$2600, sr
 	move.l current_thread, a0
 	move.l sp, (a0)
 
@@ -182,6 +182,7 @@ SwitchThreads:
 .thread_selected:
 	move.l (a0),sp
 	move.l a0,current_thread
+	move.w 64(sp), sr
 	move.l (sp)+,a0
 	move.l a0,usp
 	movem.l (sp)+,d0-a6
