@@ -145,6 +145,32 @@ be firing at the same time. The maximum size that might somewhat
 fit between ACIA interrupts is along the lines of 96*96 1 bpp
 in read-modify-write modes.
 
+## May 01 2025
+
+### Clock speeds
+
+Clock speeds are a mess.
+
+The MFP's timer reference is well known, 2.4576 MHz, i.e. (of
+all possible decompositions) 128 * 19200. It can be used as a
+true time base.
+
+The US ST ran from a crystal at 32.04245 MHz. That value is
+precisely 315 / 88 / 227 * 508 * 4, i.e. 508 pixels (1 line)
+for every 227 NTSC 3.58 color cycles.
+
+The UK ST and STe had a different clock,  32.084988 MHz, which
+is 25 * 625 * (283.75+1/625) / 283 * 512 * 4, i.e. 512 pixels
+(1 line) for every 283 PAL 4.43 color cycles.
+
+The US STe moved to 32.215905 MHz, which is 315 / 88 * 9, i.e.
+9 pixels for every 4 NTSC 3.58 color cycles (which means that
+neither a line nor a frame are a whole number of color cycles).
+
+Finally, the STe sound system uses the US ST clock speed, in
+all regions, i.e. it never matches the CPU speed.
+315 / 88 * 227 * 508 * 4 / 640.
+
 # What's in the package
 
 The distribution package contains this `README.md` file, the main
