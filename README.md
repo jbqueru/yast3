@@ -207,6 +207,11 @@ can exceed 20us in worst-case scenarios. The other is the
 blitter, which blocks the CPU for 32us at a time. In the
 worst-case scenario, those two can add up.
 
+Similarly, code blocks that disable interrupts can disrupt
+interrupt timing. A task-switch falls into that category:
+ignoring all other overhead, and even with shortcuts, is likely
+to exceed 25us, i.e. longer than a DIV.
+
 For the least sensitive situations, blitter + DIV only causes
 a minor risk of small temporary glitches, such that there might
 not be a need for any mitigation.
@@ -221,7 +226,9 @@ blocked on short instructions, ideally STOP.
 The approach in that sensitive case is to make sure that the
 blitter only processes small amounts at a time. 48x48 1bpp
 in NFSR RMW is 528 memory accesses, slightly more than 0.5ms,
-less than 10 lines of a typical PAL/NTSC display
+less than 10 lines of a typical PAL/NTSC display. At the same
+time, task switches have to be delayed, as do sections that
+run expensive instructions.
 
 # What's in the package
 
