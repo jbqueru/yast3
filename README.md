@@ -22,10 +22,10 @@ He and Djaybee agree on proceeding, with two specific goals:
 -Later targeting multiple platforms, with Android a stretch goal.
 
 Discussions ensued over several days whether to target ST or STe.
-Polls on social media suggested that ~93% of users expect the STe
-to get an optimized experience. Within those, 12% want the ST to
-also get a great experience, while 63% would accept a degraded
-experience and 23% would accept having to ST version at all.
+Polls on social media suggested that ~92% of users expect the STe
+to get an optimized experience. Within those, 6% want the ST to
+also get a great experience, while 74% would accept a degraded
+experience and 20% would accept having to ST version at all.
 
 ## Apr 28 2025
 Notes from Pandafox:
