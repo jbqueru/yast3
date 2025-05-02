@@ -110,6 +110,9 @@ _main_bss_start:
 
 	move.l #idle_stack, current_thread
 
+	move.l #acia_rx_buffer, acia_rx_write.l
+	move.l #acia_rx_buffer, acia_rx_read.l
+
 	move.l #VBL, $70.w
 
 	move.l #TimerA, $134.w
@@ -354,7 +357,18 @@ TimerA:
 
 ACIA:
 	eori.w #$444, $ffff8240.w
-	tst.b $fffffc02.w
+	btst.b #0, $fffffc00.w
+	beq.s .NotRx.l
+	move.l a0, -(sp)
+	move.l acia_rx_write.l, a0
+	move.b $fffffc02.w, (a0)+
+	cmpa.l #acia_rx_buffer + 16, a0
+	bne.s .InBuffer
+	lea.l acia_rx_buffer, a0
+.InBuffer:
+	move.l a0, acia_rx_write.l
+	move.l (sp)+, a0
+.NotRx:
 	.rept 512
 	nop
 	.endr
@@ -402,6 +416,11 @@ draw_thread_stack_top:
 idle_stack:
 	ds.l 1
 
+acia_rx_write:
+	.ds.l 1
+acia_rx_read:
+	.ds.l 1
+
 mouse_thread_ready:
 	.ds.b 1
 yamaha_thread_ready:
@@ -420,6 +439,9 @@ timer_c_d5:
 	.ds.b 1
 timer_c_d6:
 	.ds.b 1
+
+acia_rx_buffer:
+	.ds.b 16
 
 _main_bss_end:
 	.end
