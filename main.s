@@ -84,6 +84,12 @@ _main_bss_start:
 	lea.l -64(a0), a0
 	move.l a0, mouse_thread_stack
 
+	lea.l yamaha_thread_stack_top, a0
+	move.l #YamahaThread, -(a0)
+	move #$2300, -(a0)
+	lea.l -64(a0), a0
+	move.l a0, yamaha_thread_stack
+
 	lea.l pcm_thread_stack_top, a0
 	move.l #PcmThread, -(a0)
 	move #$2300, -(a0)
@@ -169,7 +175,7 @@ SwitchFromInt:
 	move.w 6(sp), d0
 	andi.w #$0700, d0
 	cmpi.w #$0400, d0
-	beq.s NoSwitch
+	beq.w NoSwitch
 	move.w (sp)+, d0
 	bra.s DoSwitch
 
@@ -190,6 +196,12 @@ DoSwitch:
 	lea.l mouse_thread_stack, a0
 	bra.s .thread_selected
 .not_mouse:
+
+	tst.b yamaha_thread_ready
+	beq.s .not_yamaha
+	lea.l yamaha_thread_stack, a0
+	bra.s .thread_selected
+.not_yamaha:
 
 	tst.b pcm_thread_ready
 	beq.s .not_pcm
@@ -230,6 +242,14 @@ MouseThread:
 	clr.b mouse_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.w MouseThread.l
+
+YamahaThread:
+	.rept 64
+	eor.w #$373, $ffff8240.w
+	.endr
+	clr.b yamaha_thread_ready.l
+	bsr.w SwitchThreads.l
+	bra.w YamahaThread.l
 
 PcmThread:
 	lea.l StartSound.l, a0
@@ -281,6 +301,11 @@ TimerC:
 	move.b #4, timer_c_d5.l
 	move.b #1, core_thread_ready.l
 not_d5:
+	subq.b #1, timer_c_d6.l
+	bpl.s not_d6
+	move.b #5, timer_c_d6.l
+	move.b #1, yamaha_thread_ready.l
+not_d6:
 	bra.w SwitchFromInt.l
 
 TimerB1:
@@ -358,6 +383,10 @@ mouse_thread_stack:
 	.ds.l 251
 mouse_thread_stack_top:
 
+yamaha_thread_stack:
+	.ds.l 251
+yamaha_thread_stack_top:
+
 pcm_thread_stack:
 	.ds.l 251
 pcm_thread_stack_top:
@@ -374,6 +403,8 @@ idle_stack:
 	ds.l 1
 
 mouse_thread_ready:
+	.ds.b 1
+yamaha_thread_ready:
 	.ds.b 1
 pcm_thread_ready:
 	.ds.b 1
