@@ -171,7 +171,9 @@ _main_bss_start:
 
 .Forever:
 	stop #$2300
-	bra.s .Forever
+	tst.b thread_exit_all.l
+	beq.s .Forever
+	stop #$2700
 
 SwitchFromInt:
 	move.w d0, -(sp)
@@ -239,6 +241,19 @@ NoSwitch:
 	rte
 
 MouseThread:
+	movea.l acia_rx_read.l, a0
+	movea.l acia_rx_write.l, a1
+.NextByte:
+	cmpa.l a0, a1
+	beq.s .all_read.l
+	cmp.b #$39, (a0)+
+	seq.b d0
+	move.b d0, thread_exit_all.l
+	cmpa.l #acia_rx_buffer + 16, a0
+	bne.s .NextByte
+	lea.l acia_rx_buffer.l, a0
+	bra.s .NextByte
+.all_read:
 	.rept 64
 	not.w $ffff8240.w
 	.endr
@@ -433,6 +448,9 @@ draw_thread_ready:
 	.ds.b 1
 
 delay_thread_switch:
+	.ds.b 1
+
+thread_exit_all:
 	.ds.b 1
 
 timer_c_d5:
