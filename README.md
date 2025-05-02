@@ -258,6 +258,29 @@ very least if the other interrupt says so, but it's probably
 not harmful to do it all the time other than the performance
 cost.
 
+### Poll results
+
+The final results are in, in the poll about which hardware
+variant(s) to aim for.
+
+13% of users want a version optimized for plain ST. 92% want
+a version optimized for STe (5% want both, which is why the
+numbers don't otherwise add up to 100%).
+
+Seen from another angle, in addition to the 13% who want ST
+optimizations, 68% want some comaptibility for ST, even if
+the experience is degraded, i.e. 81% overall want something
+that runs on a plain ST, while 19% are OK with only an STe
+version.
+
+Finally, on the side of the main poll, Falcon users expect
+Falcon compatibility, including on VGA monitors. Supporting
+VGA monitors specifically means that the code can't rely on
+graphics running at 50Hz and also needs to support other
+frame rates. That includes 60Hz on VGA, even 71Hz for code
+that might run on a monochrome monitor, but might also include
+25Hz and 30Hz for interlaced cases.
+
 # What's in the package
 
 The distribution package contains this `README.md` file, the main
