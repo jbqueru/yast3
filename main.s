@@ -78,19 +78,25 @@ _main_bss_start:
 	move.l #Reset, $42a.w
 	move.l #$31415926, $426.w
 
-	lea.l bg_thread_1_stack_top, a0
-	move.l #Thread1, -(a0)
+	lea.l audio_thread_stack_top, a0
+	move.l #AudioThread, -(a0)
 	move #$2300, -(a0)
 	lea.l -64(a0), a0
-	move.l a0, bg_thread_1_stack
+	move.l a0, audio_thread_stack
 
-	lea.l bg_thread_2_stack_top, a0
-	move.l #Thread2, -(a0)
+	lea.l core_thread_stack_top, a0
+	move.l #CoreThread, -(a0)
 	move #$2300, -(a0)
 	lea.l -64(a0), a0
-	move.l a0, bg_thread_2_stack
+	move.l a0, core_thread_stack
 
-	move.l #main_stack, current_thread
+	lea.l draw_thread_stack_top, a0
+	move.l #DrawThread, -(a0)
+	move #$2300, -(a0)
+	lea.l -64(a0), a0
+	move.l a0, draw_thread_stack
+
+	move.l #idle_stack, current_thread
 
 	move.l #VBL, $70.w
 
@@ -148,11 +154,8 @@ _main_bss_start:
 
 	move.w #$2300, sr
 
-	move.b #1, bg_thread_1_ready.l
-	clr.b bg_thread_2_ready.l
-	bsr.s SwitchThreads.l
 .Forever:
-	not.w $ffff8240.w
+	stop #$2300
 	bra.s .Forever
 
 SwitchFromInt:
@@ -169,31 +172,36 @@ SwitchThreads:
 	bne.s SwitchThreads.l
 	move.w sr, -(sp)
 DoSwitch:
+	move.w #$2600, sr
 	movem.l d0-a6, -(sp)
 	move.l usp, a0
 	move.l a0, -(sp)
-	move.w #$2600, sr
 	move.l current_thread, a0
 	move.l sp, (a0)
 
-	tst.b bg_thread_1_ready
-	beq.s .try_bg2
-	lea.l bg_thread_1_stack, a0
+	tst.b audio_thread_ready
+	beq.s .not_audio
+	lea.l audio_thread_stack, a0
 	bra.s .thread_selected
+.not_audio:
 
-.try_bg2:
-	tst.b bg_thread_2_ready
-	beq.s .use_main
-	lea.l bg_thread_2_stack, a0
+	tst.b core_thread_ready
+	beq.s .not_core
+	lea.l core_thread_stack, a0
 	bra.s .thread_selected
+.not_core:
 
-.use_main:
-	lea.l main_stack, a0
+	tst.b draw_thread_ready
+	beq.s .not_draw
+	lea.l draw_thread_stack, a0
+	bra.s .thread_selected
+.not_draw:
+
+	lea.l idle_stack, a0
 
 .thread_selected:
 	move.l (a0),sp
 	move.l a0,current_thread
-	move.w 64(sp), sr
 	move.l (sp)+,a0
 	move.l a0,usp
 	movem.l (sp)+,d0-a6
@@ -203,21 +211,34 @@ NoSwitch:
 	move.w (sp)+,d0
 	rte
 
-Thread1:
-	eori.w #$400, $ffff8240.w
-	eori.w #$400, $ffff8240.w
-	move.b #1, bg_thread_2_ready.l
-	clr.b bg_thread_1_ready.l
+AudioThread:
+	lea.l StartSound.l, a0
+	move.w #209, d0
+.FillAudioBuffer:
+	clr.b (a0)+
+	eor.w #$004, $ffff8240.w
+	dbra.w d0, .FillAudioBuffer.l
+	clr.b audio_thread_ready.l
 	bsr.w SwitchThreads.l
-	bra.s Thread1
+	bra.s AudioThread.l
 
-Thread2:
-	eori.w #$004, $ffff8240.w
-	eori.w #$004, $ffff8240.w
-	move.b #1, bg_thread_1_ready.l
-	clr.b bg_thread_2_ready.l
+CoreThread:
+	move.w #199, d0
+.Core:
+	eor.w #$400, $ffff8240.w
+	dbra.w d0, .Core.l
+	clr.b core_thread_ready.l
 	bsr.w SwitchThreads.l
-	bra.s Thread2
+	bra.s CoreThread.l
+
+DrawThread:
+	move.w #999, d0
+.Draw:
+	eor.w #$040, $ffff8240.w
+	dbra.w d0, .Draw.l
+	clr.b draw_thread_ready.l
+	bsr.w SwitchThreads.l
+	bra.s DrawThread.l
 
 VBL:
 	move.l #TimerB1, $120.w
@@ -235,7 +256,13 @@ TimerC:
 	nop
 	.endr
 	eori.w #$440, $ffff8240.w
-	bra SwitchFromInt.l
+	subq.b #1, timer_c_d5.l
+	bmi.s .runcore.l
+	rte
+.runcore:
+	move.b #4, timer_c_d5.l
+	move.b #1, core_thread_ready.l
+	bra.w SwitchFromInt.l
 
 TimerB1:
 	eori.w #$333, $ffff8240.w
@@ -268,15 +295,17 @@ TimerB3:
 	nop
 	.endr
 	eori.w #$333, $ffff8240.w
+	move.b #1, draw_thread_ready.l
 	bra SwitchFromInt.l
 
 TimerA:
-	eori.w #$004, $ffff8240.w
-	.rept 506
+	eori.w #$003, $ffff8240.w
+	.rept 122
 	nop
 	.endr
-	eori.w #$004, $ffff8240.w
-	bra SwitchFromInt.l
+	eori.w #$003, $ffff8240.w
+	move.b #1, audio_thread_ready.l
+	bra.w SwitchFromInt.l
 
 ACIA:
 	eori.w #$020, $ffff8240.w
@@ -305,23 +334,32 @@ EndSound:
 current_thread:
 	ds.l 1
 
-main_stack:
+audio_thread_stack:
+	.ds.l 251
+audio_thread_stack_top:
+
+core_thread_stack:
+	.ds.l 251
+core_thread_stack_top:
+
+draw_thread_stack:
+	.ds.l 251
+draw_thread_stack_top:
+
+idle_stack:
 	ds.l 1
 
-bg_thread_1_stack:
-	ds.l 251
-bg_thread_1_stack_top:
-
-bg_thread_2_stack:
-	ds.l 251
-bg_thread_2_stack_top:
-
-bg_thread_1_ready:
-	ds.b 1
-bg_thread_2_ready:
-	ds.b 1
+audio_thread_ready:
+	.ds.b 1
+core_thread_ready:
+	.ds.b 1
+draw_thread_ready:
+	.ds.b 1
 
 delay_thread_switch:
+	ds.b 1
+
+timer_c_d5:
 	ds.b 1
 
 _main_bss_end:

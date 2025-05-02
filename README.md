@@ -333,9 +333,12 @@ Audio buffer refill is its own thread, waking up from
 timer A.
 
 Core processing wakes up at 60Hz, every 5th tick from
-timer C. It inherits from the initial thread.
+timer C.
 
-Rending wakes up from line 200 of timer B.
+Rendering wakes up from line 200 of timer B.
+
+Idle thread is always ready, does nothing, waits for the
+app to have to exit, inherits from main thread.
 
 No threads are directly tied to the VBL, but, since the VBL
 inhibits thread switches, it also has to triggered deferred
