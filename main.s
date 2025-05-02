@@ -277,11 +277,10 @@ TimerC:
 	.endr
 	eori.w #$440, $ffff8240.w
 	subq.b #1, timer_c_d5.l
-	bmi.s .runcore.l
-	rte
-.runcore:
+	bpl.s not_d5
 	move.b #4, timer_c_d5.l
 	move.b #1, core_thread_ready.l
+not_d5:
 	bra.w SwitchFromInt.l
 
 TimerB1:
@@ -387,6 +386,8 @@ delay_thread_switch:
 	ds.b 1
 
 timer_c_d5:
+	ds.b 1
+timer_c_d6:
 	ds.b 1
 
 _main_bss_end:
