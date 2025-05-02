@@ -414,12 +414,12 @@ draw_thread_ready:
 	.ds.b 1
 
 delay_thread_switch:
-	ds.b 1
+	.ds.b 1
 
 timer_c_d5:
-	ds.b 1
+	.ds.b 1
 timer_c_d6:
-	ds.b 1
+	.ds.b 1
 
 _main_bss_end:
 	.end
