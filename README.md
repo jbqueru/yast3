@@ -281,6 +281,45 @@ frame rates. That includes 60Hz on VGA, even 71Hz for code
 that might run on a monochrome monitor, but might also include
 25Hz and 30Hz for interlaced cases.
 
+### Page-flipping
+
+There are two main options for page-flipping, double- and
+triple-buffering.
+
+Double-buffering takes less RAM, and makes timing management
+simpler. It works very well for situations where rendering
+keeps up with the frame rate.
+
+Triple-buffering allows rendering independently from the
+frame rate, and works very well for situations where rendering
+is only slightly slower than the frame rate.
+
+The most annoying situations are the ones where rendering is
+about as fast as the frame rate, alternating between faster
+and slower. With double-buffering, the rendering rate gets
+sharply cut in half as soon as it it can't keep up with the
+exact frame rate. With triple-buffering, the delay between
+logic and render can vary depending on the rendering speed.
+
+The core state machine for double-buffering is simple:
+In the rendering thread, render a frame in the back buffer,
+and wait until the buffers get swapped. In the interrupt
+handler, if a frame has been fully rendered, swap the buffers
+and unblock the rendering thread.
+
+For triple-buffering, it's a bit more complex. If the most
+recent render was entirely done since the last page-flip,
+no need to start a new render now, wait until the next page-flip,
+even if a buffer is available.
+However, if the most recent render started before the last
+page-flip, we can start rendering immediately.
+In other words, start at most one render per frame.
+In the interrupt handler, swap buffers if a frame as been
+fully rendered, unblock the rendering thread (either it's
+already drawing and unblocking does no harm, or it's currently
+blocked waiting for a page-flip, and it explicitly needs to
+be unblocked).
+
 # What's in the package
 
 The distribution package contains this `README.md` file, the main
