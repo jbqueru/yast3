@@ -230,6 +230,34 @@ less than 10 lines of a typical PAL/NTSC display. At the same
 time, task switches have to be delayed, as do sections that
 run expensive instructions.
 
+## May 02 2025
+
+### VBL, interrupted
+
+When the VLB interrupt fires, it doesn't immediately prevent
+other interrupts from firing. Even if the first instruction in
+the VBL handler is to disable interrupts, there's still a race
+condition.
+
+The risk of that race condition is that the VBL fires while
+one thread is running, and the other interrupt firing on top
+switches to another thread. If that happens, the code that
+should really run within the VBL, i.e. the reset of timer B,
+will be delayed, with harmful effects where a frame has its
+palette changes way out of sync. Removing that logic from
+the VBL seems unwise, because that would mean that timer B
+can't recover if it loses its sync.
+
+Nothing can be done from within the VBL itself, because of the
+race condition mentioned above. However, other interrupts can
+know if they interrupted the VBL (by checking the interrupt
+level in SR on the stack), and, if they interrupted the VBL,
+they can hold off on any thread-switching. However, that also
+means that the VBL must thread-switch when it is done, at the
+very least if the other interrupt says so, but it's probably
+not harmful to do it all the time other than the performance
+cost.
+
 # What's in the package
 
 The distribution package contains this `README.md` file, the main
