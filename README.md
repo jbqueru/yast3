@@ -320,6 +320,27 @@ already drawing and unblocking does no harm, or it's currently
 blocked waiting for a page-flip, and it explicitly needs to
 be unblocked).
 
+### Threads
+
+If keyboard handling is its own thread, it is the top
+priority, since it has the lowest latency need, because
+keyboard packets can come in every 1.28ms. It's possible
+however that the interrupt handler just stores incoming
+bytes into a circular FIFO that gets emptied periodically,
+e.g. from the main thread.
+
+Audio buffer refill is its own thread, waking up from
+timer A.
+
+Core processing wakes up at 60Hz, every 5th tick from
+timer C. It inherits from the initial thread.
+
+Rending wakes up from line 200 of timer B.
+
+No threads are directly tied to the VBL, but, since the VBL
+inhibits thread switches, it also has to triggered deferred
+thread switches.
+
 # What's in the package
 
 The distribution package contains this `README.md` file, the main
