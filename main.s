@@ -84,11 +84,11 @@ _main_bss_start:
 	lea.l -64(a0), a0
 	move.l a0, mouse_thread_stack
 
-	lea.l audio_thread_stack_top, a0
-	move.l #AudioThread, -(a0)
+	lea.l pcm_thread_stack_top, a0
+	move.l #PcmThread, -(a0)
 	move #$2300, -(a0)
 	lea.l -64(a0), a0
-	move.l a0, audio_thread_stack
+	move.l a0, pcm_thread_stack
 
 	lea.l core_thread_stack_top, a0
 	move.l #CoreThread, -(a0)
@@ -191,11 +191,11 @@ DoSwitch:
 	bra.s .thread_selected
 .not_mouse:
 
-	tst.b audio_thread_ready
-	beq.s .not_audio
-	lea.l audio_thread_stack, a0
+	tst.b pcm_thread_ready
+	beq.s .not_pcm
+	lea.l pcm_thread_stack, a0
 	bra.s .thread_selected
-.not_audio:
+.not_pcm:
 
 	tst.b core_thread_ready
 	beq.s .not_core
@@ -231,16 +231,16 @@ MouseThread:
 	bsr.w SwitchThreads.l
 	bra.w MouseThread.l
 
-AudioThread:
+PcmThread:
 	lea.l StartSound.l, a0
 	move.w #209, d0
 .FillAudioBuffer:
 	clr.b (a0)+
 	eor.w #$004, $ffff8240.w
 	dbra.w d0, .FillAudioBuffer.l
-	clr.b audio_thread_ready.l
+	clr.b pcm_thread_ready.l
 	bsr.w SwitchThreads.l
-	bra.s AudioThread.l
+	bra.s PcmThread.l
 
 CoreThread:
 	move.w #199, d0
@@ -325,7 +325,7 @@ TimerA:
 	nop
 	.endr
 	eori.w #$003, $ffff8240.w
-	move.b #1, audio_thread_ready.l
+	move.b #1, pcm_thread_ready.l
 	bra.w SwitchFromInt.l
 
 ACIA:
@@ -359,9 +359,9 @@ mouse_thread_stack:
 	.ds.l 251
 mouse_thread_stack_top:
 
-audio_thread_stack:
+pcm_thread_stack:
 	.ds.l 251
-audio_thread_stack_top:
+pcm_thread_stack_top:
 
 core_thread_stack:
 	.ds.l 251
@@ -376,7 +376,7 @@ idle_stack:
 
 mouse_thread_ready:
 	.ds.b 1
-audio_thread_ready:
+pcm_thread_ready:
 	.ds.b 1
 core_thread_ready:
 	.ds.b 1
