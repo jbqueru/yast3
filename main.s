@@ -245,7 +245,7 @@ MouseThread:
 
 YamahaThread:
 	.rept 64
-	eor.w #$373, $ffff8240.w
+	eor.w #$770, $ffff8240.w
 	.endr
 	clr.b yamaha_thread_ready.l
 	bsr.w SwitchThreads.l
@@ -353,12 +353,12 @@ TimerA:
 	bra.w SwitchFromInt.l
 
 ACIA:
-	eori.w #$020, $ffff8240.w
+	eori.w #$444, $ffff8240.w
 	tst.b $fffffc02.w
 	.rept 512
 	nop
 	.endr
-	eori.w #$020, $ffff8240.w
+	eori.w #$444, $ffff8240.w
 	rte
 
 Reset:
