@@ -150,14 +150,25 @@ _main_bss_start:
 
 	move.b #1, bg_thread_1_ready.l
 	clr.b bg_thread_2_ready.l
-	bsr.w SwitchThreads.l
+	bsr.s SwitchThreads.l
 .Forever:
+	not.w $ffff8240.w
 	bra.s .Forever
+
+SwitchFromInt:
+	move.w d0, -(sp)
+	move.w 6(sp), d0
+	andi.w #$0700, d0
+	cmpi.w #$0400, d0
+	beq.s NoSwitch
+	move.w (sp)+, d0
+	bra.s DoSwitch
 
 SwitchThreads:
 	tst.b delay_thread_switch.l
 	bne.s SwitchThreads.l
 	move.w sr, -(sp)
+DoSwitch:
 	movem.l d0-a6, -(sp)
 	move.l usp, a0
 	move.l a0, -(sp)
@@ -188,6 +199,9 @@ SwitchThreads:
 	movem.l (sp)+,d0-a6
 	rte
 
+NoSwitch:
+	move.w (sp)+,d0
+	rte
 
 Thread1:
 	eori.w #$400, $ffff8240.w
@@ -212,11 +226,16 @@ VBL:
 	move.b #$08, $fffffa1b.w
 	move.b #8, $fffffa21.w
 
-	rte
+	move.w #$2300, sr
+	bra SwitchFromInt.l
 
 TimerC:
-;	eori.w #$400, $ffff8240.w
-	rte
+	eori.w #$440, $ffff8240.w
+	.rept 122
+	nop
+	.endr
+	eori.w #$440, $ffff8240.w
+	bra SwitchFromInt.l
 
 TimerB1:
 	eori.w #$333, $ffff8240.w
@@ -249,11 +268,15 @@ TimerB3:
 	nop
 	.endr
 	eori.w #$333, $ffff8240.w
-	rte
+	bra SwitchFromInt.l
 
 TimerA:
-;	eori.w #$004, $ffff8240.w
-	rte
+	eori.w #$004, $ffff8240.w
+	.rept 506
+	nop
+	.endr
+	eori.w #$004, $ffff8240.w
+	bra SwitchFromInt.l
 
 ACIA:
 	eori.w #$020, $ffff8240.w
@@ -273,7 +296,7 @@ Reset:
 	.data
 	.even
 StartSound:
-	.dcb.b 250, 0
+	.dcb.b 210, 0
 EndSound:
 
 	.bss
