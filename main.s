@@ -284,8 +284,6 @@ MainSuper:
 	clr.w $ffff8240.w
 	move.w #$777, $ffff8242.w
 
-	move.w #$2300, sr
-
 .Forever:
 	stop #$2300
 	tst.b thread_exit_all.l
@@ -312,6 +310,9 @@ DoSwitch:
 	move.l a0, -(sp)
 	move.l current_thread, a0
 	move.l sp, (a0)
+
+	tst.b thread_exit_all.l
+	bne.s .idle_to_exit.l
 
 	tst.b yamaha_thread_ready
 	beq.s .not_yamaha
@@ -343,6 +344,7 @@ DoSwitch:
 	bra.s .thread_selected
 .not_draw:
 
+.idle_to_exit:
 	lea.l idle_stack, a0
 
 .thread_selected:
@@ -502,6 +504,12 @@ CoreThread:
 .Core:
 	eor.w #$400, $ffff8240.w
 	dbra.w d0, .Core.l
+	cmpi.w #319, mouse_x.l
+	bne.s .NotBR
+	cmpi.w #199, mouse_y.l
+	bne.s .NotBR
+	move.b #1, thread_exit_all.l
+.NotBR:
 	clr.b core_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.s CoreThread.l
