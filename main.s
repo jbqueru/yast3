@@ -310,10 +310,18 @@ CoreThread:
 	bra.s CoreThread.l
 
 DrawThread:
-	move.w #999, d0
+	movea.l fb_render.l, a0
+	move.w #199, d7
 .Draw:
 	eor.w #$040, $ffff8240.w
-	dbra.w d0, .Draw.l
+	move.l timer_c_count.l, d0
+	move.w d0, 8(a0)
+	move.w d0, 152(a0)
+	swap.w d0
+	move.w d0, (a0)
+	move.w d0, 144(a0)
+	lea.l 160(a0), a0
+	dbra.w d7, .Draw.l
 	move.b #1, fb_next_ready.l
 	clr.b draw_thread_ready.l
 	bsr.w SwitchThreads.l
