@@ -381,7 +381,7 @@ TimerB3:
 	.endr
 	eori.w #$333, $ffff8240.w
 	tst.l fb_next_ready.l
-	bne.s .NoFb
+	beq.s .NoFb
 	move.l d0, -(sp)
 	move.l fb_next.l, d0
 	move.l fb_render.l, fb_next.l
