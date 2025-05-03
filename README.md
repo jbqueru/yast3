@@ -171,6 +171,10 @@ Finally, the STe sound system uses the US ST clock speed, in
 all regions, i.e. it never matches the CPU speed.
 315 / 88 * 227 * 508 * 4 / 640.
 
+Separately from that, external data sources potentially have
+their own time sources, including the keyboard and MIDI sources,
+such that their bit rates can't be used as reliable time sources.
+
 ### Building around Timer B interrupts
 
 The interrupt handling can be thought about entirely in reverse:
