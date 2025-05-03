@@ -309,6 +309,7 @@ VBL:
 	bra SwitchFromInt.l
 
 TimerC:
+	addq.l #1, timer_c_count
 	eori.w #$440, $ffff8240.w
 	.rept 122
 	nop
@@ -352,6 +353,7 @@ TimerB2:
 	rte
 
 TimerB3:
+	addq.l #1, frame_count
 	eori.w #$333, $ffff8240.w
 	.rept 122
 	nop
@@ -434,6 +436,11 @@ idle_stack:
 acia_rx_write:
 	.ds.l 1
 acia_rx_read:
+	.ds.l 1
+
+timer_c_count:
+	.ds.l 1
+frame_count:
 	.ds.l 1
 
 mouse_thread_ready:
