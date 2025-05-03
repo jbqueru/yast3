@@ -113,6 +113,25 @@ _main_bss_start:
 	move.l #acia_rx_buffer, acia_rx_write.l
 	move.l #acia_rx_buffer, acia_rx_read.l
 
+	moveq.l #0, d0
+	move.b $ffff8201.w, d0
+	lsl.l #8, d0
+	move.b $ffff8203.w, d0
+	lsl.l #8, d0
+	move.l d0, fb_live
+	move.l #framebuffers + 255, d0
+	clr.b d0
+	move.l d0, fb_next
+	add.l #32000, d0
+	move.l d0, fb_render
+
+	movea.l fb_live, a0
+	move.w #7999, d7
+	moveq.l #0, d0
+.ClearFB:
+	move.l d0, (a0)+
+	dbra.w d7, .ClearFB.l
+
 	move.l #VBL, $70.w
 
 	move.l #TimerA, $134.w
@@ -166,6 +185,7 @@ _main_bss_start:
 	move.b #$03, $ffff8901.w	; loop ($02), enable ($01)
 
 	clr.w $ffff8240.w
+	move.w #$777, $ffff8242.w
 
 	move.w #$2300, sr
 
@@ -294,6 +314,7 @@ DrawThread:
 .Draw:
 	eor.w #$040, $ffff8240.w
 	dbra.w d0, .Draw.l
+	move.b #1, fb_next_ready.l
 	clr.b draw_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.s DrawThread.l
@@ -359,6 +380,20 @@ TimerB3:
 	nop
 	.endr
 	eori.w #$333, $ffff8240.w
+	tst.l fb_next_ready.l
+	bne.s .NoFb
+	move.l d0, -(sp)
+	move.l fb_next.l, d0
+	move.l fb_render.l, fb_next.l
+	move.l fb_live.l, fb_render.l
+	move.l d0, fb_live.l
+	lsr.w #8, d0
+	move.b d0, $ffff8203.w
+	swap.w d0
+	move.b d0, $ffff8201.w
+	clr.b fb_next_ready.l
+	move.l (sp)+, d0
+.NoFb:
 	move.b #1, mouse_thread_ready.l
 	move.b #1, draw_thread_ready.l
 	bra SwitchFromInt.l
@@ -443,6 +478,13 @@ timer_c_count:
 frame_count:
 	.ds.l 1
 
+fb_live:
+	.ds.l 1
+fb_next:
+	.ds.l 1
+fb_render:
+	.ds.l 1
+
 mouse_thread_ready:
 	.ds.b 1
 yamaha_thread_ready:
@@ -457,6 +499,9 @@ draw_thread_ready:
 delay_thread_switch:
 	.ds.b 1
 
+fb_next_ready:
+	.ds.b 1
+
 thread_exit_all:
 	.ds.b 1
 
@@ -467,6 +512,9 @@ timer_c_d6:
 
 acia_rx_buffer:
 	.ds.b 16
+
+framebuffers:
+	.ds.b 64255
 
 _main_bss_end:
 	.end
