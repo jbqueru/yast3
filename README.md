@@ -50,6 +50,30 @@ lowest priority. It runs continuously when it can't keep up
 with the screen's refresh rate, or synchronizes itself with
 the display when it has time for that.
 
+## Interrupts
+
+The 5 threads are coordinated by 4+1 interrupts.
+
+Timer A takes care of the PCM buffer. It fires every time
+the PCM buffer is empty, swaps buffers, and wakes up the
+PCM thread to fill the next buffer.
+
+Timer B counts display lines, it updates the palette
+as needed, and, at the end of the last line, swaps display
+buffers if a new buffer is ready, unblocks the keyboard /
+mouse thread, and unblocks the rendering thread.
+
+Timer C runs at 300Hz. It updates a 300Hz counter, useful
+for sub-frame rendering precision, and is unblocked the PSG
+thread at 50Hz and the core logic thread at 60Hz.
+
+Keyboard/MIDI empties the ACIA queue. Note that it explicitly
+doesn't wake up any thread, the processing is done in the
+mouse / keyboard thread.
+
+VBL resets the timer B, to avoid situations where it gets
+out of sync.
+
 # Timeline and design thoughts
 
 ## Apr 25 2025
