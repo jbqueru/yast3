@@ -249,17 +249,17 @@ DoSwitch:
 	bra.s .thread_selected
 .not_mouse:
 
-	tst.b pcm_thread_ready
-	beq.s .not_pcm
-	lea.l pcm_thread_stack, a0
-	bra.s .thread_selected
-.not_pcm:
-
 	tst.b core_thread_ready
 	beq.s .not_core
 	lea.l core_thread_stack, a0
 	bra.s .thread_selected
 .not_core:
+
+	tst.b pcm_thread_ready
+	beq.s .not_pcm
+	lea.l pcm_thread_stack, a0
+	bra.s .thread_selected
+.not_pcm:
 
 	tst.b draw_thread_ready
 	beq.s .not_draw
