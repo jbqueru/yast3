@@ -132,6 +132,27 @@ _main_bss_start:
 	move.l d0, (a0)+
 	dbra.w d7, .ClearFB.l
 
+	movea.l fb_live.l, a0
+	move.w #%00100000000, 80(a0)
+	move.w #%00100000000, 240(a0)
+	move.w #%00100000000, 400(a0)
+	move.w #%00100000000, 560(a0)
+	move.w #%00100000000, 720(a0)
+
+	movea.l fb_next.l, a0
+	move.w #%1110000, 80(a0)
+	move.w #%0010000, 240(a0)
+	move.w #%1110000, 400(a0)
+	move.w #%1000000, 560(a0)
+	move.w #%1110000, 720(a0)
+
+	movea.l fb_render.l, a0
+	move.w #%111, 80(a0)
+	move.w #%001, 240(a0)
+	move.w #%111, 400(a0)
+	move.w #%001, 560(a0)
+	move.w #%111, 720(a0)
+
 	move.l #VBL, $70.w
 
 	move.l #TimerA, $134.w
