@@ -324,6 +324,19 @@ already drawing and unblocking does no harm, or it's currently
 blocked waiting for a page-flip, and it explicitly needs to
 be unblocked).
 
+As a specific note, the page base address on the ST is latched
+at the beginning of VBL. That means that changing that address
+during a VBL interrupt (or as a result of such an interrupt)
+has a one-frame delay. That's annoying in triple-buffering
+because it introduces latency, but that's catastrophic in
+double-buffering as it lowers the frame rate. Classic 50 fps
+demos get away with it because they can predict that one frame
+is enough to do their rendering, but anything that uses a
+variable frame rate and double buffering should be particularly
+careful about the timing of frame swaps, and most probably will
+need to trigger this frame swaps earlier, e.g. after the last
+line of active display.
+
 ### Threads
 
 If keyboard handling is its own thread, it is the top
