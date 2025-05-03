@@ -50,6 +50,8 @@
 
 	.68000
 
+	.include "defines.s"
+
 	.bss
 _main_bss_start:
 
