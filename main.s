@@ -405,6 +405,7 @@ CoreThread:
 	bra.s CoreThread.l
 
 DrawThread:
+	move.l frame_count.l, render_start.l
 	movea.l fb_render.l, a0
 	move.w #199, d7
 .Draw:
@@ -418,6 +419,9 @@ DrawThread:
 	lea.l 160(a0), a0
 	dbra.w d7, .Draw.l
 	move.b #1, fb_next_ready.l
+	move.l render_start.l, d0
+	cmp.l frame_count.l, d0
+	bne.s DrawThread.l
 	clr.b draw_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.s DrawThread.l
@@ -586,6 +590,9 @@ fb_live:
 fb_next:
 	.ds.l 1
 fb_render:
+	.ds.l 1
+
+render_start:
 	.ds.l 1
 
 mouse_x:
