@@ -262,18 +262,52 @@ NoSwitch:
 
 MouseThread:
 	movea.l acia_rx_read.l, a0
-	movea.l acia_rx_write.l, a1
-.NextByte:
-	cmpa.l a0, a1
+	movea.l acia_rx_write.l, a2
+.NextPacket:
+	cmpa.l a0, a2
 	beq.s .all_read.l
-	cmp.b #$39, (a0)+
-	seq.b d0
-	move.b d0, thread_exit_all.l
-	cmpa.l #acia_rx_buffer + 16, a0
-	bne.s .NextByte
-	lea.l acia_rx_buffer.l, a0
-	bra.s .NextByte
+	movea.l a0, a1
+
+	move.b (a1)+, d0
+	cmpa.l #acia_rx_buffer + 48, a1
+	bne.s .NB1.l
+	lea.l -48(a1), a1
+.NB1:
+
+	cmpi.b #$fe, d0
+	blo.s .NotJoy.l
+	cmpa.l a1, a2
+	beq.s .all_read.l
+	move.b (a1)+, d1
+	bra.s .PacketDone
+
+.NotJoy:
+	cmpi.b #$f8, d0
+	blo.s .NotMouse.l
+
+	cmpa.l a1, a2
+	beq.s .all_read.l
+	move.b (a1)+, d1
+	cmpa.l #acia_rx_buffer + 48, a1
+	bne.s .NB2.l
+	lea.l -48(a1), a1
+.NB2:
+
+	cmpa.l a1, a2
+	beq.s .all_read.l
+	move.b (a1)+, d1
+	bra.s .PacketDone.l
+
+.NotMouse:
+
+.PacketDone:
+	movea.l a1, a0
+	cmpa.l #acia_rx_buffer + 48, a0
+	bne.s .NextPacket
+	lea.l -48(a0), a0
+	bra.s .NextPacket
 .all_read:
+	move.l a0, acia_rx_read.l
 	.rept 64
 	not.w $ffff8240.w
 	.endr
@@ -422,7 +456,7 @@ ACIA:
 	move.l a0, -(sp)
 	move.l acia_rx_write.l, a0
 	move.b $fffffc02.w, (a0)+
-	cmpa.l #acia_rx_buffer + 16, a0
+	cmpa.l #acia_rx_buffer + 48, a0
 	bne.s .InBuffer
 	lea.l acia_rx_buffer, a0
 .InBuffer:
@@ -519,7 +553,7 @@ timer_c_d6:
 	.ds.b 1
 
 acia_rx_buffer:
-	.ds.b 16
+	.ds.b 48
 
 framebuffers:
 	.ds.b 64255
