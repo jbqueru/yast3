@@ -5,9 +5,8 @@ This is a game for the Atari ST family, developed by Djaybee and
 Pandafox from the MegaBuSTers, in collaboration with AD from MPS.
 
 The primary target is the STe, with a degraded experience down
-to the plain ST. While the 12-bit palette naturally degrades into
-a 9-bit one and DMA sound can be turned into silence, Blitter and
-hardware scrolling need some fallbacks.
+to the plain ST, upward compatibility to the Falcon, and support
+for the TT.
 
 It's been developed with rmac 2.2.25 and tested under Hatari
 v2.6.0-devel with EmuTOS 1.3.
