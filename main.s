@@ -237,17 +237,17 @@ DoSwitch:
 	move.l current_thread, a0
 	move.l sp, (a0)
 
-	tst.b mouse_thread_ready
-	beq.s .not_mouse
-	lea.l mouse_thread_stack, a0
-	bra.s .thread_selected
-.not_mouse:
-
 	tst.b yamaha_thread_ready
 	beq.s .not_yamaha
 	lea.l yamaha_thread_stack, a0
 	bra.s .thread_selected
 .not_yamaha:
+
+	tst.b mouse_thread_ready
+	beq.s .not_mouse
+	lea.l mouse_thread_stack, a0
+	bra.s .thread_selected
+.not_mouse:
 
 	tst.b pcm_thread_ready
 	beq.s .not_pcm
