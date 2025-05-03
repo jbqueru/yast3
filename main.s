@@ -376,16 +376,16 @@ MouseThread:
 	cmpi.b #$fe, d0
 	blo.s .NotJoy.l
 	cmpa.l a1, a2
-	beq.s .all_read.l
+	beq.w .all_read.l
 	move.b (a1)+, d1
-	bra.s .PacketDone
+	bra.w .PacketDone
 
 .NotJoy:
 	cmpi.b #$f8, d0
 	blo.s .NotMouse.l
 
 	cmpa.l a1, a2
-	beq.s .all_read.l
+	beq.w .all_read.l
 	move.b (a1)+, d1
 	cmpa.l #acia_rx_buffer + 48, a1
 	bne.s .NB2.l
@@ -423,6 +423,24 @@ MouseThread:
 	bra.s .PacketDone.l
 
 .NotMouse:
+	moveq.l #0, d1
+	move.b d0, d1
+	andi.b #$7f, d1
+	move.l d1, d2
+	andi.w #7, d1
+	lsr.w #3, d2
+	lea.l keyboard_state.l, a3
+	adda.w d2, a3
+	moveq.l #0, d2
+	bset.l d1, d2
+	btst.l #7, d0
+	bne.s .KeyRelease
+	or.b d2, (a3)
+	bra.s .KeyDone
+.KeyRelease:
+	not.b d2
+	and.b d2, (a3)
+.KeyDone:
 
 .PacketDone:
 	movea.l a1, a0
@@ -510,6 +528,9 @@ CoreThread:
 	bne.s .NotBR
 	move.b #1, thread_exit_all.l
 .NotBR:
+	btst.b #1, keyboard_state + 7.l
+	sne.b d0
+	or.b d0, thread_exit_all.l
 	clr.b core_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.s CoreThread.l
@@ -780,6 +801,9 @@ timer_c_d6:
 
 acia_rx_buffer:
 	.ds.b 48
+
+keyboard_state:
+	.ds.b 16
 
 framebuffers:
 	.ds.b 64255
