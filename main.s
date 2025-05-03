@@ -22,16 +22,46 @@
 ;
 ; SPDX-License-Identifier: AGPL-3.0-or-later
 
-; Coding style:
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                 YY  YY   AA    SSSS  TTTTTT  3333                   ####
+; ####                 YY  YY  AAAA  SS  SS   TT   33  33                  ####
+; ####                 YY  YY AA  AA SS       TT       33                  ####
+; ####                  YYYY  AA  AA  SSSS    TT     333                   ####
+; ####                   YY   AAAAAA     SS   TT       33                  ####
+; ####                   YY   AA  AA SS  SS   TT   33  33                  ####
+; ####                   YY   AA  AA  SSSS    TT    3333                   ####
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                    A DICE GAME FOR THE ATARI STE                    ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                            Coding style                             ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
 ;	- ASCII
 ;	- hard tabs, 8 characters wide, except in ASCII art
 ;	- 120-ish columns overall
-;	- Standalone block comments must fit in the first 80 columns
+;	- Standalone block comments should fit in the first 80 columns
 ;
 ;	- Assembler directives are .lowercase with a leading period
 ;	- Mnemomics and registers are lowercase unless otherwise required
 ;	- Symbols for code are CamelCase
-;	- Symbols for variables are snake_case
+;	- Symbols for data and variables are snake_case
 ;	- Symbols for app-specific constants are ALL_CAPS
 ;	- Symbols for OS constants, hardware registers are ALL_CAPS
 ;	- File-specific symbols start with an underscore
@@ -48,33 +78,76 @@
 ;		movea instead of move on 680x0 when the code relies on the
 ;		flags not getting modified.
 
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                  OS interactions / initializations                  ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
 	.68000
 
 	.include "defines.s"
 	.include "params.s"
 
 	.bss
-_main_bss_start:
+_main_bss_start:		; Guard to know where BSS starts and ends
+						; TODO: investigate getting that from OS
 
 	.text
 
+Main:
+
+; TODO: Return memory to OS as needed
+
+; #################
+; ##             ##
+; ##  Clear BSS  ##
+; ##             ##
+; #################
+
+; TODO: Optimize
+
 	lea.l _main_bss_start.l, a0
-	bra.s .EnterLoop
 .Loop:
 	clr.b (a0)+
-.EnterLoop:
 	cmpa.l #_main_bss_end, a0
 	bne.s .Loop
 
-	pea.l .MainSuper.l
-	move.w #38, -(sp)
-	trap #14
+; #################################
+; ##                             ##
+; ##  Switch to supervisor mode  ##
+; ##                             ##
+; #################################
+
+	pea.l MainSuper.l
+	move.w #XBIOS_SUPEXEC, -(sp)
+	trap #TRAP_XBIOS
 	addq.l #6, sp
 
-	move.w #0, -(sp)
-	trap #1
+; ####################
+; ##                ##
+; ##  Exit program  ##
+; ##                ##
+; ####################
 
-.MainSuper:
+	move.w #GEMDOS_TERM0, -(sp)
+	trap #TRAP_GEMDOS
+
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                     Main supervisor entry point                     ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
+MainSuper:
 
 	move.w #$2700, sr
 
@@ -620,6 +693,7 @@ mouse_pattern:
 	.bss
 
 	.even
+
 current_thread:
 	ds.l 1
 
