@@ -417,6 +417,10 @@ DrawThread:
 	move.w d0, (a0)
 	move.w d0, 144(a0)
 	lea.l 160(a0), a0
+	moveq.l #127, d6
+.Nothing:
+	rol.b #8, d0
+	dbra.w d6, .Nothing.l
 	dbra.w d7, .Draw.l
 	move.b #1, fb_next_ready.l
 	move.l render_start.l, d0
