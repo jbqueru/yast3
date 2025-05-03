@@ -329,8 +329,12 @@ however that the interrupt handler just stores incoming
 bytes into a circular FIFO that gets emptied periodically,
 e.g. from the main thread.
 
+Mouse motion is a thread, waking up at line 200.
+
 Audio buffer refill is its own thread, waking up from
 timer A.
+
+Yamaha music wakes up at 50Hz, every 6th tick from timer C.
 
 Core processing wakes up at 60Hz, every 5th tick from
 timer C.
