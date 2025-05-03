@@ -265,7 +265,7 @@ MouseThread:
 	movea.l acia_rx_write.l, a2
 .NextPacket:
 	cmpa.l a0, a2
-	beq.s .all_read.l
+	beq.w .all_read.l
 	movea.l a0, a1
 
 	move.b (a1)+, d0
@@ -295,7 +295,32 @@ MouseThread:
 
 	cmpa.l a1, a2
 	beq.s .all_read.l
-	move.b (a1)+, d1
+	move.b (a1)+, d2
+
+	ext.w d1
+	add.w mouse_x, d1
+	bpl.s .OkX1
+	moveq.l #0, d1
+	bra.s .OkX2
+.OkX1:
+	cmpi.w #320, d1
+	blt.s .OkX2
+	move.w #319, d1
+.OkX2:
+	move.w d1, mouse_x
+
+	ext.w d2
+	add.w mouse_y, d2
+	bpl.s .OkY1
+	moveq.l #0, d2
+	bra.s .OkY2
+.OkY1:
+	cmpi.w #200, d2
+	blt.s .OkY2
+	move.w #199, d2
+.OkY2:
+	move.w d2, mouse_y
+
 	bra.s .PacketDone.l
 
 .NotMouse:
@@ -303,14 +328,29 @@ MouseThread:
 .PacketDone:
 	movea.l a1, a0
 	cmpa.l #acia_rx_buffer + 48, a0
-	bne.s .NextPacket
+	bne.w .NextPacket
 	lea.l -48(a0), a0
-	bra.s .NextPacket
+	bra.w .NextPacket
 .all_read:
 	move.l a0, acia_rx_read.l
 	.rept 64
 	not.w $ffff8240.w
 	.endr
+
+	movea.l fb_live, a0
+	move.w mouse_y, d0
+	mulu.w #160, d0
+	adda.w d0, a0
+	move.w mouse_x, d0
+	move.w d0, d1
+	andi.w #$fff0, d0
+	lsr.w #1, d0
+	adda.w d0, a0
+	move.w #$8000, d0
+	andi.w #$f, d1
+	lsr.w d1, d0
+	or.w d0, (a0)
+
 	clr.b mouse_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.w MouseThread.l
@@ -526,6 +566,11 @@ fb_next:
 	.ds.l 1
 fb_render:
 	.ds.l 1
+
+mouse_x:
+	.ds.w 1
+mouse_y:
+	.ds.w 1
 
 mouse_thread_ready:
 	.ds.b 1
