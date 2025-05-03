@@ -51,6 +51,7 @@
 	.68000
 
 	.include "defines.s"
+	.include "params.s"
 
 	.bss
 _main_bss_start:
