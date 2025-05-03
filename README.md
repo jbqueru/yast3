@@ -365,6 +365,17 @@ No threads are directly tied to the VBL, but, since the VBL
 inhibits thread switches, it also has to triggered deferred
 thread switches.
 
+## May 03 2025
+
+### Running on a 60Hz display
+
+When running on a 60Hz display, instead of using timer C as
+a base for core logic, that core logic could be kept in sync
+with the display, for smoother graphics. 60Hz can be reasonably
+safely assumed to be more common, because it's available on both
+TV, RGB, VGA, and it's also what people are most likely to emulate
+on, such that a 60Hz vsync app might also vsync under emulation.
+
 # What's in the package
 
 The distribution package contains this `README.md` file, the main
