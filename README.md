@@ -12,6 +12,44 @@ hardware scrolling need some fallbacks.
 It's been developed with rmac 2.2.25 and tested under Hatari
 v2.6.0-devel with EmuTOS 1.3.
 
+# Code architecture
+
+## Threads
+
+The code is organized around 5 threads, with a fixed strict
+priority order. From highest to lowest priority:
+
+-The PSG thread, running at 50Hz. It does not take much time,
+though still more than would be acceptable in an interrupt
+handler. Running it at a the highest priority guarantees the
+most steady timing.
+
+-The mouse thread, running after the last line of each frame
+(i.e. earlier than vblank). It parses the data queue from the
+keyboard, and updates the mouse cursor. Running at a high
+priority gives enough time to render the mouse cursor before
+the next frame starts, such that it can be rendered into the
+front buffer without any visible graphical glitches.
+
+-The core logic thread, which processes inputs, coordinates,
+collisions, and all other decision logic. It fires at 60Hz.
+It runs at a medium priority because a glitch there isn't
+catastrophic, and (by necessity) repeated glitches should be
+massively avoided. Repeated glitches imply that there isn't
+enough
+
+-The PCM thread, which fills the audio buffer. It fires as
+soon as one of the audio buffers has been read. It is kept at
+a low priority because delays there are more noticeable than
+display delays (skipped frames).
+
+-The render thread, which displays the frames. It takes the
+most time, to the point where there might not be enough speed
+to run to completion, and therefore it needs to run at the
+lowest priority. It runs continuously when it can't keep up
+with the screen's refresh rate, or synchronizes itself with
+the display when it has time for that.
+
 # Timeline and design thoughts
 
 ## Apr 25 2025
