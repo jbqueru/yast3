@@ -153,10 +153,17 @@ Main:
 ; #############################################################################
 ; #############################################################################
 
+	.text
+
 MainSuper:
 	jsr MachineStateSave.l
 
-	move.w #$2700, sr
+	moveq.l #0, d0
+	lea.l $ffff8240.w, a0
+	moveq.l #15, d7
+.ClearPalette:
+	move.w d0, (a0)+
+	dbra.w d7, .ClearPalette
 
 	move.l #Reset, $42a.w
 	move.l #$31415926, $426.w
