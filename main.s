@@ -725,7 +725,7 @@ machine_state_system_resvector:
 	.ds.l 1
 
 machine_state_gfx_palette:
-	.ds.w 8
+	.ds.w 16
 
 machine_state_vector_vbl:
 	.ds.l 1
