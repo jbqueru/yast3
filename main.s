@@ -156,8 +156,23 @@ Main:
 	.text
 
 MainSuper:
+; ##########################
+; ##                      ##
+; ##  Save machine state  ##
+; ##                      ##
+; ##########################
+
 	jsr MachineStateSave.l
 
+; ################################
+; ##                            ##
+; ##  Get A/V to a clean state  ##
+; ##                            ##
+; ################################
+
+; *****************
+; * Clear palette *
+; *****************
 	moveq.l #0, d0
 	lea.l $ffff8240.w, a0
 	moveq.l #15, d7
@@ -165,11 +180,19 @@ MainSuper:
 	move.w d0, (a0)+
 	dbra.w d7, .ClearPalette
 
-	move.l #Reset, $42a.w
-	move.l #$31415926, $426.w
+; ************
+; * Stop PSG *
+; ************
+; TODO: do it!
 
-	move.l #acia_rx_buffer, acia_rx_write.l
-	move.l #acia_rx_buffer, acia_rx_read.l
+; ************
+; * Stop PCM *
+; ************
+	move.b #0, $ffff8901.w		; DMA sound off
+
+; ***************************************
+; * Get framebuffer addresses, clear FB *
+; ***************************************
 
 	moveq.l #0, d0
 	move.b $ffff8201.w, d0
@@ -183,35 +206,6 @@ MainSuper:
 	add.l #32000, d0
 	move.l d0, fb_render
 
-	move.l #VBL, $70.w
-
-	move.l #TimerA, $134.w
-	move.l #TimerB1, $120.w
-	move.l #ACIA, $118.w
-	move.l #TimerC, $114.w
-
-	move.b #$40,$fffffa17.w		; table at $100, automatic end interrupt
-
-	move.b #0, $fffffa19.w		; stop timer A
-	move.b #0, $fffffa1b.w		; stop timer B
-	move.b #0, $fffffa1d.w		; stop timers C-D
-
-	move.b #$21, $fffffa07.w	; enable timers A ($20) and B ($01)
-	move.b #0, $fffffa0b.w		; nothing pending
-	move.b #0, $fffffa0f.w		; nothing in-service
-	move.b #$ff, $fffffa13.w	; nothing masked
-
-	move.b #$60, $fffffa09.w	; enable ACIA ($40) and timer C ($20)
-	move.b #0, $fffffa0d.w		; nothing pending
-	move.b #0, $fffffa11.w		; nothing in-service
-	move.b #$ff, $fffffa15.w	; nothing masked
-
-	move.b #1, $fffffa1f.w		; timer A, fire every event
-	move.b #$08, $fffffa19.w	; event count
-
-	move.b #128, $fffffa23.w	; timer C, fire every 128 ticks, i.e. 300 Hz
-	move.b #$50, $fffffa1d.w	; ticks run at XTAL/64, i.e. 38400 Hz
-
 	movea.l fb_live, a0
 	move.w #7999, d7
 	moveq.l #0, d0
@@ -219,28 +213,22 @@ MainSuper:
 	move.l d0, (a0)+
 	dbra.w d7, .ClearFB.l
 
-	move.b #0, $ffff8901.w		; DMA sound off
+; ###############################################
+; ##                                           ##
+; ##  Prepare variables to support interrupts  ##
+; ##                                           ##
+; ###############################################
 
-	move.l #StartSound, d0
-	move.l d0, d1
-	swap d1
-	move.b d1, $ffff8903.w		; high byte of start address, must come first
-	move.w d0, d1
-	ror.w #8, d1
-	move.b d1, $ffff8905.w		; mid byte of start address
-	move.b d0, $ffff8907.w		; low byte of start address, must be even
+; **********************************
+; * Buffer addresses for IKBD data *
+; **********************************
 
-	move.l #EndSound, d0
-	move.l d0, d1
-	swap d1
-	move.b d1, $ffff890f.w		; high byte of end address
-	move.w d0, d1
-	ror.w #8, d1
-	move.b d1, $ffff8911.w		; mid byte of end address
-	move.b d0, $ffff8913.w		; low byte of end address
+	move.l #acia_rx_buffer, acia_rx_write.l
+	move.l #acia_rx_buffer, acia_rx_read.l
 
-	move.b #$81, $ffff8921.w	; mono ($80), 12517 kHz ($01)
-	move.b #$03, $ffff8901.w	; loop ($02), enable ($01)
+; ************************
+; * Set up thread system *
+; ************************
 
 	lea.l mouse_thread_stack_top, a0
 	move.l #MouseThread, -(a0)
@@ -274,10 +262,81 @@ MainSuper:
 
 	move.l #idle_stack, current_thread
 
+; #####################################
+; ##                                 ##
+; ##  Set up interrupts and vectors  ##
+; ##                                 ##
+; #####################################
+
+	move.l #Reset, $42a.w
+	move.l #$31415926, $426.w
+
+	move.l #VBL, $70.w
+
+	move.l #TimerA, $134.w
+	move.l #TimerB1, $120.w
+	move.l #ACIA, $118.w
+	move.l #TimerC, $114.w
+
+	move.b #$40,$fffffa17.w		; table at $100, automatic end interrupt
+
+	move.b #0, $fffffa19.w		; stop timer A
+	move.b #0, $fffffa1b.w		; stop timer B
+	move.b #0, $fffffa1d.w		; stop timers C-D
+
+	move.b #$21, $fffffa07.w	; enable timers A ($20) and B ($01)
+	move.b #0, $fffffa0b.w		; nothing pending
+	move.b #0, $fffffa0f.w		; nothing in-service
+	move.b #$ff, $fffffa13.w	; nothing masked
+
+	move.b #$60, $fffffa09.w	; enable ACIA ($40) and timer C ($20)
+	move.b #0, $fffffa0d.w		; nothing pending
+	move.b #0, $fffffa11.w		; nothing in-service
+	move.b #$ff, $fffffa15.w	; nothing masked
+
+	move.b #1, $fffffa1f.w		; timer A, fire every event
+	move.b #$08, $fffffa19.w	; event count
+
+	move.b #128, $fffffa23.w	; timer C, fire every 128 ticks, i.e. 300 Hz
+	move.b #$50, $fffffa1d.w	; ticks run at XTAL/64, i.e. 38400 Hz
+
+; ############################################
+; ##                                        ##
+; ##  Start things up that need interrupts  ##
+; ##                                        ##
+; ############################################
+
+	move.l #StartSound, d0
+	move.l d0, d1
+	swap d1
+	move.b d1, $ffff8903.w		; high byte of start address, must come first
+	move.w d0, d1
+	ror.w #8, d1
+	move.b d1, $ffff8905.w		; mid byte of start address
+	move.b d0, $ffff8907.w		; low byte of start address, must be even
+
+	move.l #EndSound, d0
+	move.l d0, d1
+	swap d1
+	move.b d1, $ffff890f.w		; high byte of end address
+	move.w d0, d1
+	ror.w #8, d1
+	move.b d1, $ffff8911.w		; mid byte of end address
+	move.b d0, $ffff8913.w		; low byte of end address
+
+	move.b #$81, $ffff8921.w	; mono ($80), 12517 kHz ($01)
+	move.b #$03, $ffff8901.w	; loop ($02), enable ($01)
+
 	clr.w $ffff8240.w
 	move.w #$777, $ffff8242.w
 
 	tst.b $fffffc02.w
+
+; #################################
+; ##                             ##
+; ##  All setup done, get going  ##
+; ##                             ##
+; #################################
 
 .Idle:
 	stop #$2300
