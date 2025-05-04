@@ -148,6 +148,7 @@ Main:
 ; #############################################################################
 
 MainSuper:
+	jsr MachineStateSave.l
 
 	move.w #$2700, sr
 
@@ -284,11 +285,12 @@ MainSuper:
 	clr.w $ffff8240.w
 	move.w #$777, $ffff8242.w
 
-.Forever:
+.Idle:
 	stop #$2300
 	tst.b thread_exit_all.l
-	beq.s .Forever
-	stop #$2700
+	beq.s .Idle
+	jsr MachineStateRestore.l
+	rts
 
 SwitchFromInt:
 	move.w d0, -(sp)
@@ -669,6 +671,34 @@ ACIA:
 	eori.w #$444, $ffff8240.w
 	rte
 
+	.text
+MachineStateSave:
+	move.w sr, machine_state_sr.l
+
+	move.l SYSTEM_RESVALID.w, machine_state_resvalid.l
+	move.l SYSTEM_RESVECTOR.w, machine_state_resvector.l
+
+	rts
+
+MachineStateRestore:
+	move.l machine_state_resvalid.l, SYSTEM_RESVALID.w
+	move.l machine_state_resvector.l, SYSTEM_RESVECTOR.w
+
+	move.w machine_state_sr.l, sr
+	rts
+
+	.bss
+	.even
+machine_state_sr:
+	.ds.w 1
+
+machine_state_resvalid:
+	.ds.l 1
+
+machine_state_resvector:
+	.ds.l 1
+
+	.text
 Reset:
 	clr.l $426.l
 	move.w d0, $ffff8240.w
