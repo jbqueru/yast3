@@ -183,13 +183,6 @@ MainSuper:
 	add.l #32000, d0
 	move.l d0, fb_render
 
-	movea.l fb_live, a0
-	move.w #7999, d7
-	moveq.l #0, d0
-.ClearFB:
-	move.l d0, (a0)+
-	dbra.w d7, .ClearFB.l
-
 	move.l #VBL, $70.w
 
 	move.l #TimerA, $134.w
@@ -218,6 +211,13 @@ MainSuper:
 
 	move.b #128, $fffffa23.w	; timer C, fire every 128 ticks, i.e. 300 Hz
 	move.b #$50, $fffffa1d.w	; ticks run at XTAL/64, i.e. 38400 Hz
+
+	movea.l fb_live, a0
+	move.w #7999, d7
+	moveq.l #0, d0
+.ClearFB:
+	move.l d0, (a0)+
+	dbra.w d7, .ClearFB.l
 
 	move.b #0, $ffff8901.w		; DMA sound off
 
