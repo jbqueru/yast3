@@ -674,15 +674,42 @@ ACIA:
 	.text
 MachineStateSave:
 	move.w sr, machine_state_sr.l
+	move.w #$2700, sr
 
-	move.l SYSTEM_RESVALID.w, machine_state_resvalid.l
-	move.l SYSTEM_RESVECTOR.w, machine_state_resvector.l
+	move.l SYSTEM_RESVALID.w, machine_state_system_resvalid.l
+	move.l SYSTEM_RESVECTOR.w, machine_state_system_resvector.l
+
+	move.b GFX_VBASE_HIGH.w, machine_state_gfx_vbase_high.l
+	move.b GFX_VBASE_MID.w, machine_state_gfx_vbase_mid.l
+
+	movem.l GFX_PALETTE.w, d0-d7
+	movem.l d0-d7, machine_state_gfx_palette.l
+
+	move.l VECTOR_VBL.w, machine_state_vector_vbl.l
+	move.l VECTOR_MFP_TIMER_A.w, machine_state_vector_mfp_timer_a.l
+	move.l VECTOR_MFP_TIMER_B.w, machine_state_vector_mfp_timer_b.l
+	move.l VECTOR_MFP_TIMER_C.w, machine_state_vector_mfp_timer_c.l
+	move.l VECTOR_MFP_ACIA.w, machine_state_vector_mfp_acia.l
 
 	rts
 
 MachineStateRestore:
-	move.l machine_state_resvalid.l, SYSTEM_RESVALID.w
-	move.l machine_state_resvector.l, SYSTEM_RESVECTOR.w
+	move.w #$2700, sr
+
+	move.l machine_state_vector_vbl.l, VECTOR_VBL.w
+	move.l machine_state_vector_mfp_timer_a.l, VECTOR_MFP_TIMER_A.w
+	move.l machine_state_vector_mfp_timer_b.l, VECTOR_MFP_TIMER_B.w
+	move.l machine_state_vector_mfp_timer_c.l, VECTOR_MFP_TIMER_C.w
+	move.l machine_state_vector_mfp_acia.l, VECTOR_MFP_ACIA.w
+
+	movem.l machine_state_gfx_palette.l, d0-d7
+	movem.l d0-d7, GFX_PALETTE.w
+
+	move.b machine_state_gfx_vbase_high.l, GFX_VBASE_HIGH.w
+	move.b machine_state_gfx_vbase_mid.l, GFX_VBASE_MID.w
+
+	move.l machine_state_system_resvalid.l, SYSTEM_RESVALID.w
+	move.l machine_state_system_resvector.l, SYSTEM_RESVECTOR.w
 
 	move.w machine_state_sr.l, sr
 	rts
@@ -692,16 +719,34 @@ MachineStateRestore:
 machine_state_sr:
 	.ds.w 1
 
-machine_state_resvalid:
+machine_state_system_resvalid:
+	.ds.l 1
+machine_state_system_resvector:
 	.ds.l 1
 
-machine_state_resvector:
+machine_state_gfx_palette:
+	.ds.w 8
+
+machine_state_vector_vbl:
 	.ds.l 1
+machine_state_vector_mfp_timer_a:
+	.ds.l 1
+machine_state_vector_mfp_timer_b:
+	.ds.l 1
+machine_state_vector_mfp_timer_c:
+	.ds.l 1
+machine_state_vector_mfp_acia:
+	.ds.l 1
+
+machine_state_gfx_vbase_high:
+	.ds.b 1
+machine_state_gfx_vbase_mid:
+	.ds.b 1
 
 	.text
 Reset:
-	move.l machine_state_resvalid.l, SYSTEM_RESVALID.w
-	move.l machine_state_resvector.l, SYSTEM_RESVECTOR.w
+	move.l machine_state_system_resvalid.l, SYSTEM_RESVALID.w
+	move.l machine_state_system_resvector.l, SYSTEM_RESVECTOR.w
 
 	move.w d0, $ffff8240.w
 	addq.w	#1, d0
