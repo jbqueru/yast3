@@ -93,6 +93,12 @@
 	.include "defines.s"
 	.include "params.s"
 
+; #########################
+; ##                     ##
+; ##  BSS guard address  ##
+; ##                     ##
+; #########################
+
 	.bss
 _main_bss_start:		; Guard to know where BSS starts and ends
 						; TODO: investigate getting that from OS
@@ -671,26 +677,63 @@ ACIA:
 	eori.w #$444, $ffff8240.w
 	rte
 
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                     Save/restore machine state                      ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
+; ##################
+; ##              ##
+; ##  Save state  ##
+; ##              ##
+; ##################
+
 	.text
+
 MachineStateSave:
+; *******************************
+; * Save SR, disable interrupts *
+; *******************************
 	move.w sr, machine_state_sr.l
 	move.w #$2700, sr
 
+; *********************
+; * Save reset vector *
+; *********************
 	move.l SYSTEM_RESVALID.w, machine_state_system_resvalid.l
 	move.l SYSTEM_RESVECTOR.w, machine_state_system_resvector.l
 
+; ****************************
+; * Save framebuffer address *
+; ****************************
 	move.b GFX_VBASE_HIGH.w, machine_state_gfx_vbase_high.l
 	move.b GFX_VBASE_MID.w, machine_state_gfx_vbase_mid.l
+; TODO: save low byte on STe+?
+; TODO: save other STe registers?
 
+; ****************
+; * Save palette *
+; ****************
 	movem.l GFX_PALETTE.w, d0-d7
 	movem.l d0-d7, machine_state_gfx_palette.l
 
+; **************************
+; * Save interrupt vectors *
+; **************************
 	move.l VECTOR_VBL.w, machine_state_vector_vbl.l
 	move.l VECTOR_MFP_TIMER_A.w, machine_state_vector_mfp_timer_a.l
 	move.l VECTOR_MFP_TIMER_B.w, machine_state_vector_mfp_timer_b.l
 	move.l VECTOR_MFP_TIMER_C.w, machine_state_vector_mfp_timer_c.l
 	move.l VECTOR_MFP_ACIA.w, machine_state_vector_mfp_acia.l
 
+; ******************
+; * Save MFP state *
+; ******************
 	move.b MFP_IERA.w, machine_state_mfp_iera.l
 	move.b MFP_IERB.w, machine_state_mfp_ierb.l
 	move.b MFP_IPRA.w, machine_state_mfp_ipra.l
@@ -706,13 +749,46 @@ MachineStateSave:
 	move.b MFP_TADR.w, machine_state_mfp_tadr.l
 	move.b MFP_TBDR.w, machine_state_mfp_tbdr.l
 	move.b MFP_TCDR.w, machine_state_mfp_tcdr.l
+	move.b #192, machine_state_mfp_tcdr.l		; likely system value
+; TODO: infer real value of MFP data registers?
+
+; ******************
+; * Save PSG state *
+; ******************
+; TODO: do it
+
+; ******************
+; * Save PCM state *
+; ******************
+; TODO: do it
 
 	rts
 
+; #####################
+; ##                 ##
+; ##  Restore state  ##
+; ##                 ##
+; #####################
+
 MachineStateRestore:
+
+; **********************
+; * Disable interrupts *
+; **********************
 	move.w #$2700, sr
+
+; *********************
+; * Restore PCM state *
+; *********************
 	move.b #0, $ffff8901.w		; DMA sound off
 
+; *********************
+; * Restore PSG state *
+; *********************
+
+; *********************
+; * Restore MFP state *
+; *********************
 	move.b machine_state_mfp_iera.l, MFP_IERA.w
 	move.b machine_state_mfp_ierb.l, MFP_IERB.w
 	move.b machine_state_mfp_ipra.l, MFP_IPRA.w
@@ -727,27 +803,46 @@ MachineStateRestore:
 	move.b machine_state_mfp_tcdcr.l, MFP_TCDCR.w
 	move.b machine_state_mfp_tadr.l, MFP_TADR.w
 	move.b machine_state_mfp_tbdr.l, MFP_TBDR.w
-;	move.b machine_state_mfp_tcdr.l, MFP_TCDR.w
-	move.b #192, MFP_TCDR.w
-;	TODO: Try to figure out if the actual value can be guessed
+	move.b machine_state_mfp_tcdr.l, MFP_TCDR.w
 
+; *****************************
+; * Restore interrupt vectors *
+; *****************************
 	move.l machine_state_vector_vbl.l, VECTOR_VBL.w
 	move.l machine_state_vector_mfp_timer_a.l, VECTOR_MFP_TIMER_A.w
 	move.l machine_state_vector_mfp_timer_b.l, VECTOR_MFP_TIMER_B.w
 	move.l machine_state_vector_mfp_timer_c.l, VECTOR_MFP_TIMER_C.w
 	move.l machine_state_vector_mfp_acia.l, VECTOR_MFP_ACIA.w
 
+; *******************
+; * Restore palette *
+; *******************
 	movem.l machine_state_gfx_palette.l, d0-d7
 	movem.l d0-d7, GFX_PALETTE.w
 
+; *******************************
+; * Restore framebuffer address *
+; *******************************
 	move.b machine_state_gfx_vbase_high.l, GFX_VBASE_HIGH.w
 	move.b machine_state_gfx_vbase_mid.l, GFX_VBASE_MID.w
 
+; ************************
+; * Restore reset vector *
+; ************************
 	move.l machine_state_system_resvalid.l, SYSTEM_RESVALID.w
 	move.l machine_state_system_resvector.l, SYSTEM_RESVECTOR.w
 
+; **************
+; * Restore SR *
+; **************
 	move.w machine_state_sr.l, sr
 	rts
+
+; ###########################
+; ##                       ##
+; ##  Variables for state  ##
+; ##                       ##
+; ###########################
 
 	.bss
 	.even
@@ -951,5 +1046,22 @@ keyboard_state:
 framebuffers:
 	.ds.b 64255
 
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                         That's all, folks!                          ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
+; #########################
+; ##                     ##
+; ##  BSS guard address  ##
+; ##                     ##
+; #########################
+
+	.bss
 _main_bss_end:
 	.end
