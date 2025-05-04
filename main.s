@@ -691,10 +691,45 @@ MachineStateSave:
 	move.l VECTOR_MFP_TIMER_C.w, machine_state_vector_mfp_timer_c.l
 	move.l VECTOR_MFP_ACIA.w, machine_state_vector_mfp_acia.l
 
+	move.b MFP_IERA.w, machine_state_mfp_iera.l
+	move.b MFP_IERB.w, machine_state_mfp_ierb.l
+	move.b MFP_IPRA.w, machine_state_mfp_ipra.l
+	move.b MFP_IPRB.w, machine_state_mfp_iprb.l
+	move.b MFP_ISRA.w, machine_state_mfp_isra.l
+	move.b MFP_ISRB.w, machine_state_mfp_isrb.l
+	move.b MFP_IMRA.w, machine_state_mfp_imra.l
+	move.b MFP_IMRB.w, machine_state_mfp_imrb.l
+	move.b MFP_VR.w, machine_state_mfp_vr.l
+	move.b MFP_TACR.w, machine_state_mfp_tacr.l
+	move.b MFP_TBCR.w, machine_state_mfp_tbcr.l
+	move.b MFP_TCDCR.w, machine_state_mfp_tcdcr.l
+	move.b MFP_TADR.w, machine_state_mfp_tadr.l
+	move.b MFP_TBDR.w, machine_state_mfp_tbdr.l
+	move.b MFP_TCDR.w, machine_state_mfp_tcdr.l
+
 	rts
 
 MachineStateRestore:
 	move.w #$2700, sr
+	move.b #0, $ffff8901.w		; DMA sound off
+
+	move.b machine_state_mfp_iera.l, MFP_IERA.w
+	move.b machine_state_mfp_ierb.l, MFP_IERB.w
+	move.b machine_state_mfp_ipra.l, MFP_IPRA.w
+	move.b machine_state_mfp_iprb.l, MFP_IPRB.w
+	move.b machine_state_mfp_isra.l, MFP_ISRA.w
+	move.b machine_state_mfp_isrb.l, MFP_ISRB.w
+	move.b machine_state_mfp_imra.l, MFP_IMRA.w
+	move.b machine_state_mfp_imrb.l, MFP_IMRB.w
+	move.b machine_state_mfp_vr.l, MFP_VR.w
+	move.b machine_state_mfp_tacr.l, MFP_TACR.w
+	move.b machine_state_mfp_tbcr.l, MFP_TBCR.w
+	move.b machine_state_mfp_tcdcr.l, MFP_TCDCR.w
+	move.b machine_state_mfp_tadr.l, MFP_TADR.w
+	move.b machine_state_mfp_tbdr.l, MFP_TBDR.w
+;	move.b machine_state_mfp_tcdr.l, MFP_TCDR.w
+	move.b #192, MFP_TCDR.w
+;	TODO: Try to figure out if the actual value can be guessed
 
 	move.l machine_state_vector_vbl.l, VECTOR_VBL.w
 	move.l machine_state_vector_mfp_timer_a.l, VECTOR_MFP_TIMER_A.w
@@ -741,6 +776,37 @@ machine_state_vector_mfp_acia:
 machine_state_gfx_vbase_high:
 	.ds.b 1
 machine_state_gfx_vbase_mid:
+	.ds.b 1
+
+machine_state_mfp_iera:
+	.ds.b 1
+machine_state_mfp_ierb:
+	.ds.b 1
+machine_state_mfp_ipra:
+	.ds.b 1
+machine_state_mfp_iprb:
+	.ds.b 1
+machine_state_mfp_isra:
+	.ds.b 1
+machine_state_mfp_isrb:
+	.ds.b 1
+machine_state_mfp_imra:
+	.ds.b 1
+machine_state_mfp_imrb:
+	.ds.b 1
+machine_state_mfp_vr:
+	.ds.b 1
+machine_state_mfp_tacr:
+	.ds.b 1
+machine_state_mfp_tbcr:
+	.ds.b 1
+machine_state_mfp_tcdcr:
+	.ds.b 1
+machine_state_mfp_tadr:
+	.ds.b 1
+machine_state_mfp_tbdr:
+	.ds.b 1
+machine_state_mfp_tcdr:
 	.ds.b 1
 
 	.text
