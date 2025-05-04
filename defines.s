@@ -122,7 +122,7 @@ GFX_MODE_COLOW .equ %00000000
 GFX_MODE_COMID .equ %00000001
 GFX_MODE_MONO .equ %00000010
 
-PSG_REG  .equ $ffff8800
+PSG_REG .equ $ffff8800
 PSG_READ .equ $ffff8800
 PSG_WRITE .equ $ffff8802
 
@@ -161,12 +161,12 @@ BLIT_HOP .equ $ffff8a3a ; ......sh
                         ;       +-- 1 = clear bits from source
 BLIT_HOP_HTONE .equ %00000001
 BLIT_HOP_SRC .equ %00000010
-BLIT_OP  .equ $ffff8a3b ; ....abcd
-                        ;     ||||
-                        ;     |||+- 1 = include bits from source and target
-                        ;     ||+-- 1 = include bits from source and not target
-                        ;     |+--- 1 = include bits from not source and target
-                        ;     +---- 1 = include bits from not source and not target
+BLIT_OP .equ $ffff8a3b ; ....abcd
+                       ;     ||||
+                       ;     |||+- 1 = include bits from source and target
+                       ;     ||+-- 1 = include bits from source and not target
+                       ;     |+--- 1 = include bits from not source and target
+                       ;     +---- 1 = include bits from not source and not target
 BLIT_OP_ST .equ %00000001
 BLIT_OP_SNT .equ %00000010
 BLIT_OP_NST .equ %00000100
@@ -193,8 +193,8 @@ BLIT_SHIFT_IFSR .equ %00000000
 
 
 MFP_GPDR .equ $fffffa01
-MFP_AER  .equ $fffffa03
-MFP_DDR  .equ $fffffa05
+MFP_AER .equ $fffffa03
+MFP_DDR .equ $fffffa05
 MFP_IERA .equ $fffffa07
 MFP_IERB .equ $fffffa09
 MFP_IPRA .equ $fffffa0b
@@ -203,7 +203,7 @@ MFP_ISRA .equ $fffffa0f
 MFP_ISRB .equ $fffffa11
 MFP_IMRA .equ $fffffa13
 MFP_IMRB .equ $fffffa15
-MFP_VR  .equ $fffffa17
+MFP_VR .equ $fffffa17
 MFP_TACR .equ $fffffa19
 MFP_TBCR .equ $fffffa1b
 MFP_TCDCR .equ $fffffa1d
@@ -211,8 +211,8 @@ MFP_TADR .equ $fffffa1f
 MFP_TBDR .equ $fffffa21
 MFP_TCDR .equ $fffffa23
 MFP_TDDR .equ $fffffa25
-MFP_SCR  .equ $fffffa27
-MFP_UCR  .equ $fffffa29
-MFP_RSR  .equ $fffffa2b
-MFP_TSR  .equ $fffffa2d
-MFP_UDR  .equ $fffffa2f
+MFP_SCR .equ $fffffa27
+MFP_UCR .equ $fffffa29
+MFP_RSR .equ $fffffa2b
+MFP_TSR .equ $fffffa2d
+MFP_UDR .equ $fffffa2f
