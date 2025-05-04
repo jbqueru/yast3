@@ -168,38 +168,6 @@ MainSuper:
 	move.l #Reset, $42a.w
 	move.l #$31415926, $426.w
 
-	lea.l mouse_thread_stack_top, a0
-	move.l #MouseThread, -(a0)
-	move #$2300, -(a0)
-	lea.l -64(a0), a0
-	move.l a0, mouse_thread_stack
-
-	lea.l yamaha_thread_stack_top, a0
-	move.l #YamahaThread, -(a0)
-	move #$2300, -(a0)
-	lea.l -64(a0), a0
-	move.l a0, yamaha_thread_stack
-
-	lea.l pcm_thread_stack_top, a0
-	move.l #PcmThread, -(a0)
-	move #$2300, -(a0)
-	lea.l -64(a0), a0
-	move.l a0, pcm_thread_stack
-
-	lea.l core_thread_stack_top, a0
-	move.l #CoreThread, -(a0)
-	move #$2300, -(a0)
-	lea.l -64(a0), a0
-	move.l a0, core_thread_stack
-
-	lea.l draw_thread_stack_top, a0
-	move.l #DrawThread, -(a0)
-	move #$2300, -(a0)
-	lea.l -64(a0), a0
-	move.l a0, draw_thread_stack
-
-	move.l #idle_stack, current_thread
-
 	move.l #acia_rx_buffer, acia_rx_write.l
 	move.l #acia_rx_buffer, acia_rx_read.l
 
@@ -294,6 +262,38 @@ MainSuper:
 
 	move.b #$81, $ffff8921.w	; mono ($80), 12517 kHz ($01)
 	move.b #$03, $ffff8901.w	; loop ($02), enable ($01)
+
+	lea.l mouse_thread_stack_top, a0
+	move.l #MouseThread, -(a0)
+	move #$2300, -(a0)
+	lea.l -64(a0), a0
+	move.l a0, mouse_thread_stack
+
+	lea.l yamaha_thread_stack_top, a0
+	move.l #YamahaThread, -(a0)
+	move #$2300, -(a0)
+	lea.l -64(a0), a0
+	move.l a0, yamaha_thread_stack
+
+	lea.l pcm_thread_stack_top, a0
+	move.l #PcmThread, -(a0)
+	move #$2300, -(a0)
+	lea.l -64(a0), a0
+	move.l a0, pcm_thread_stack
+
+	lea.l core_thread_stack_top, a0
+	move.l #CoreThread, -(a0)
+	move #$2300, -(a0)
+	lea.l -64(a0), a0
+	move.l a0, core_thread_stack
+
+	lea.l draw_thread_stack_top, a0
+	move.l #DrawThread, -(a0)
+	move #$2300, -(a0)
+	lea.l -64(a0), a0
+	move.l a0, draw_thread_stack
+
+	move.l #idle_stack, current_thread
 
 	clr.w $ffff8240.w
 	move.w #$777, $ffff8242.w
