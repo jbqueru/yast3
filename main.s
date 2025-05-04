@@ -298,6 +298,8 @@ MainSuper:
 	clr.w $ffff8240.w
 	move.w #$777, $ffff8242.w
 
+	tst.b $fffffc02.w
+
 .Idle:
 	stop #$2300
 	tst.b thread_exit_all.l
