@@ -700,7 +700,9 @@ machine_state_resvector:
 
 	.text
 Reset:
-	clr.l $426.l
+	move.l machine_state_resvalid.l, SYSTEM_RESVALID.w
+	move.l machine_state_resvector.l, SYSTEM_RESVECTOR.w
+
 	move.w d0, $ffff8240.w
 	addq.w	#1, d0
 	bra.s Reset
