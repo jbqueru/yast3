@@ -11,6 +11,9 @@ for the TT.
 It's been developed with rmac 2.2.25 and tested under Hatari
 v2.6.0-devel with EmuTOS 1.3.
 
+Get the source code at https://codeberg.org/jbqueru/yast3
+or https://github.com/jbqueru/yast3
+
 # Code architecture
 
 ## Threads
