@@ -355,16 +355,6 @@ MainSuper:
 ; #############################################################################
 ; #############################################################################
 
-VBL:
-	move.l #TimerB1, $120.w
-	move.b 0, $fffffa1b.w
-	move.b #92, $fffffa21.w
-	move.b #$08, $fffffa1b.w
-	move.b #8, $fffffa21.w
-
-	move.w #$2300, sr
-	bra SwitchFromInt.l
-
 TimerC:
 	addq.l #1, timer_c_count
 	eori.w #$440, $ffff8240.w
@@ -383,6 +373,16 @@ not_d5:
 	move.b #1, yamaha_thread_ready.l
 not_d6:
 	bra.w SwitchFromInt.l
+
+VBL:
+	move.l #TimerB1, $120.w
+	move.b 0, $fffffa1b.w
+	move.b #92, $fffffa21.w
+	move.b #$08, $fffffa1b.w
+	move.b #8, $fffffa21.w
+
+	move.w #$2300, sr
+	bra SwitchFromInt.l
 
 TimerB1:
 	eori.w #$333, $ffff8240.w
