@@ -345,6 +345,124 @@ MainSuper:
 	jsr MachineStateRestore.l
 	rts
 
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                   Interrupts and thread management                  ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
+VBL:
+	move.l #TimerB1, $120.w
+	move.b 0, $fffffa1b.w
+	move.b #92, $fffffa21.w
+	move.b #$08, $fffffa1b.w
+	move.b #8, $fffffa21.w
+
+	move.w #$2300, sr
+	bra SwitchFromInt.l
+
+TimerC:
+	addq.l #1, timer_c_count
+	eori.w #$440, $ffff8240.w
+	.rept 122
+	nop
+	.endr
+	eori.w #$440, $ffff8240.w
+	subq.b #1, timer_c_d5.l
+	bpl.s not_d5
+	move.b #4, timer_c_d5.l
+	move.b #1, core_thread_ready.l
+not_d5:
+	subq.b #1, timer_c_d6.l
+	bpl.s not_d6
+	move.b #5, timer_c_d6.l
+	move.b #1, yamaha_thread_ready.l
+not_d6:
+	bra.w SwitchFromInt.l
+
+TimerB1:
+	eori.w #$333, $ffff8240.w
+	.rept 122
+	nop
+	.endr
+	eori.w #$333, $ffff8240.w
+	move.b #100, $fffffa21.w
+	move.l #TimerB2, $120.w
+	move.b #$01, $fffffa13.w
+	move.b #0, $fffffa15.w
+	move.b #1, delay_thread_switch.l
+	rte
+
+TimerB2:
+	eori.w #$333, $ffff8240.w
+	.rept 122
+	nop
+	.endr
+	eori.w #$333, $ffff8240.w
+	move.l #TimerB3, $120.w
+	move.b #$ff, $fffffa13.w
+	move.b #$ff, $fffffa15.w
+	clr.b delay_thread_switch.l
+	rte
+
+TimerB3:
+	addq.l #1, frame_count
+	eori.w #$333, $ffff8240.w
+	.rept 122
+	nop
+	.endr
+	eori.w #$333, $ffff8240.w
+	tst.b fb_next_ready.l
+	beq.s .NoFb
+	move.l d0, -(sp)
+	move.l fb_next.l, d0
+	move.l fb_render.l, fb_next.l
+	move.l fb_live.l, fb_render.l
+	move.l d0, fb_live.l
+	lsr.w #8, d0
+	move.b d0, $ffff8203.w
+	swap.w d0
+	move.b d0, $ffff8201.w
+	clr.b fb_next_ready.l
+	move.l (sp)+, d0
+.NoFb:
+	move.b #1, mouse_thread_ready.l
+	move.b #1, draw_thread_ready.l
+	bra SwitchFromInt.l
+
+TimerA:
+	eori.w #$003, $ffff8240.w
+	.rept 122
+	nop
+	.endr
+	eori.w #$003, $ffff8240.w
+	move.b #1, pcm_thread_ready.l
+	bra.w SwitchFromInt.l
+
+ACIA:
+	eori.w #$444, $ffff8240.w
+	btst.b #0, $fffffc00.w
+	beq.s .NotRx.l
+	move.l a0, -(sp)
+	move.l acia_rx_write.l, a0
+	move.b $fffffc02.w, (a0)+
+	cmpa.l #acia_rx_buffer + 48, a0
+	bne.s .InBuffer
+	lea.l acia_rx_buffer, a0
+.InBuffer:
+	move.l a0, acia_rx_write.l
+	move.l (sp)+, a0
+.NotRx:
+	.rept 512
+	nop
+	.endr
+	eori.w #$444, $ffff8240.w
+	rte
+
 SwitchFromInt:
 	move.w d0, -(sp)
 	move.w 6(sp), d0
@@ -615,114 +733,6 @@ DrawThread:
 	clr.b draw_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.s DrawThread.l
-
-VBL:
-	move.l #TimerB1, $120.w
-	move.b 0, $fffffa1b.w
-	move.b #92, $fffffa21.w
-	move.b #$08, $fffffa1b.w
-	move.b #8, $fffffa21.w
-
-	move.w #$2300, sr
-	bra SwitchFromInt.l
-
-TimerC:
-	addq.l #1, timer_c_count
-	eori.w #$440, $ffff8240.w
-	.rept 122
-	nop
-	.endr
-	eori.w #$440, $ffff8240.w
-	subq.b #1, timer_c_d5.l
-	bpl.s not_d5
-	move.b #4, timer_c_d5.l
-	move.b #1, core_thread_ready.l
-not_d5:
-	subq.b #1, timer_c_d6.l
-	bpl.s not_d6
-	move.b #5, timer_c_d6.l
-	move.b #1, yamaha_thread_ready.l
-not_d6:
-	bra.w SwitchFromInt.l
-
-TimerB1:
-	eori.w #$333, $ffff8240.w
-	.rept 122
-	nop
-	.endr
-	eori.w #$333, $ffff8240.w
-	move.b #100, $fffffa21.w
-	move.l #TimerB2, $120.w
-	move.b #$01, $fffffa13.w
-	move.b #0, $fffffa15.w
-	move.b #1, delay_thread_switch.l
-	rte
-
-TimerB2:
-	eori.w #$333, $ffff8240.w
-	.rept 122
-	nop
-	.endr
-	eori.w #$333, $ffff8240.w
-	move.l #TimerB3, $120.w
-	move.b #$ff, $fffffa13.w
-	move.b #$ff, $fffffa15.w
-	clr.b delay_thread_switch.l
-	rte
-
-TimerB3:
-	addq.l #1, frame_count
-	eori.w #$333, $ffff8240.w
-	.rept 122
-	nop
-	.endr
-	eori.w #$333, $ffff8240.w
-	tst.b fb_next_ready.l
-	beq.s .NoFb
-	move.l d0, -(sp)
-	move.l fb_next.l, d0
-	move.l fb_render.l, fb_next.l
-	move.l fb_live.l, fb_render.l
-	move.l d0, fb_live.l
-	lsr.w #8, d0
-	move.b d0, $ffff8203.w
-	swap.w d0
-	move.b d0, $ffff8201.w
-	clr.b fb_next_ready.l
-	move.l (sp)+, d0
-.NoFb:
-	move.b #1, mouse_thread_ready.l
-	move.b #1, draw_thread_ready.l
-	bra SwitchFromInt.l
-
-TimerA:
-	eori.w #$003, $ffff8240.w
-	.rept 122
-	nop
-	.endr
-	eori.w #$003, $ffff8240.w
-	move.b #1, pcm_thread_ready.l
-	bra.w SwitchFromInt.l
-
-ACIA:
-	eori.w #$444, $ffff8240.w
-	btst.b #0, $fffffc00.w
-	beq.s .NotRx.l
-	move.l a0, -(sp)
-	move.l acia_rx_write.l, a0
-	move.b $fffffc02.w, (a0)+
-	cmpa.l #acia_rx_buffer + 48, a0
-	bne.s .InBuffer
-	lea.l acia_rx_buffer, a0
-.InBuffer:
-	move.l a0, acia_rx_write.l
-	move.l (sp)+, a0
-.NotRx:
-	.rept 512
-	nop
-	.endr
-	eori.w #$444, $ffff8240.w
-	rte
 
 	.text
 Reset:
