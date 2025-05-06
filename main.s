@@ -268,37 +268,37 @@ MainSuper:
 ; ##                                 ##
 ; #####################################
 
-	move.l #Reset, $42a.w
-	move.l #$31415926, $426.w
+	move.l #Reset, SYSTEM_RESVECTOR.w
+	move.l #SYSTEM_RESVALID_MAGIC, SYSTEM_RESVALID.w
 
-	move.l #VBL, $70.w
+	move.l #VBL, VECTOR_VBL.w
 
-	move.l #TimerA, $134.w
-	move.l #TimerB1, $120.w
-	move.l #ACIA, $118.w
-	move.l #TimerC, $114.w
+	move.l #TimerA, VECTOR_MFP_TIMER_A.w
+	move.l #TimerB1, VECTOR_MFP_TIMER_B.w
+	move.l #ACIA, VECTOR_MFP_ACIA.w
+	move.l #TimerC, VECTOR_MFP_TIMER_C.w
 
-	move.b #$40,$fffffa17.w		; table at $100, automatic end interrupt
+	move.b #$40,MFP_VR.w		; table at $100, automatic end interrupt
 
-	move.b #0, $fffffa19.w		; stop timer A
-	move.b #0, $fffffa1b.w		; stop timer B
-	move.b #0, $fffffa1d.w		; stop timers C-D
+	move.b #0, MFP_TACR.w		; stop timer A
+	move.b #0, MFP_TBCR.w		; stop timer B
+	move.b #0, MFP_TCDCR.w		; stop timers C-D
 
-	move.b #$21, $fffffa07.w	; enable timers A ($20) and B ($01)
-	move.b #0, $fffffa0b.w		; nothing pending
-	move.b #0, $fffffa0f.w		; nothing in-service
-	move.b #$ff, $fffffa13.w	; nothing masked
+	move.b #$21, MFP_IERA.w	; enable timers A ($20) and B ($01)
+	move.b #0, MFP_IPRA.w		; nothing pending
+	move.b #0, MFP_ISRA.w		; nothing in-service
+	move.b #$ff, MFP_IMRA.w	; nothing masked
 
-	move.b #$60, $fffffa09.w	; enable ACIA ($40) and timer C ($20)
-	move.b #0, $fffffa0d.w		; nothing pending
-	move.b #0, $fffffa11.w		; nothing in-service
-	move.b #$ff, $fffffa15.w	; nothing masked
+	move.b #$60, MFP_IERB.w	; enable ACIA ($40) and timer C ($20)
+	move.b #0, MFP_IPRB.w		; nothing pending
+	move.b #0, MFP_ISRB.w		; nothing in-service
+	move.b #$ff, MFP_IMRB.w	; nothing masked
 
-	move.b #1, $fffffa1f.w		; timer A, fire every event
-	move.b #$08, $fffffa19.w	; event count
+	move.b #1, MFP_TADR.w		; timer A, fire every event
+	move.b #$08, MFP_TACR.w	; event count
 
-	move.b #128, $fffffa23.w	; timer C, fire every 128 ticks, i.e. 300 Hz
-	move.b #$50, $fffffa1d.w	; ticks run at XTAL/64, i.e. 38400 Hz
+	move.b #128, MFP_TCDR.w	; timer C, fire every 128 ticks, i.e. 300 Hz
+	move.b #$50, MFP_TCDCR.w	; ticks run at XTAL/64, i.e. 38400 Hz
 
 ; ############################################
 ; ##                                        ##
