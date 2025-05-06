@@ -284,20 +284,20 @@ MainSuper:
 	move.b #0, MFP_TBCR.w		; stop timer B
 	move.b #0, MFP_TCDCR.w		; stop timers C-D
 
-	move.b #$21, MFP_IERA.w	; enable timers A ($20) and B ($01)
+	move.b #$21, MFP_IERA.w		; enable timers A ($20) and B ($01)
 	move.b #0, MFP_IPRA.w		; nothing pending
 	move.b #0, MFP_ISRA.w		; nothing in-service
-	move.b #$ff, MFP_IMRA.w	; nothing masked
+	move.b #$ff, MFP_IMRA.w		; nothing masked
 
-	move.b #$60, MFP_IERB.w	; enable ACIA ($40) and timer C ($20)
+	move.b #$60, MFP_IERB.w		; enable ACIA ($40) and timer C ($20)
 	move.b #0, MFP_IPRB.w		; nothing pending
 	move.b #0, MFP_ISRB.w		; nothing in-service
-	move.b #$ff, MFP_IMRB.w	; nothing masked
+	move.b #$ff, MFP_IMRB.w		; nothing masked
 
 	move.b #1, MFP_TADR.w		; timer A, fire every event
-	move.b #$08, MFP_TACR.w	; event count
+	move.b #$08, MFP_TACR.w		; event count
 
-	move.b #128, MFP_TCDR.w	; timer C, fire every 128 ticks, i.e. 300 Hz
+	move.b #128, MFP_TCDR.w		; timer C, fire every 128 ticks, i.e. 300 Hz
 	move.b #$50, MFP_TCDCR.w	; ticks run at XTAL/64, i.e. 38400 Hz
 
 ; ############################################
