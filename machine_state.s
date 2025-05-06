@@ -46,20 +46,20 @@ MachineStateSave:
 ; *******************************
 ; * Save SR, disable interrupts *
 ; *******************************
-	move.w sr, machine_state_sr.l
+	move.w sr, _machine_state_sr.l
 	move.w #$2700, sr
 
 ; *********************
 ; * Save reset vector *
 ; *********************
-	move.l SYSTEM_RESVALID.w, machine_state_system_resvalid.l
-	move.l SYSTEM_RESVECTOR.w, machine_state_system_resvector.l
+	move.l SYSTEM_RESVALID.w, _machine_state_system_resvalid.l
+	move.l SYSTEM_RESVECTOR.w, _machine_state_system_resvector.l
 
 ; ****************************
 ; * Save framebuffer address *
 ; ****************************
-	move.b GFX_VBASE_HIGH.w, machine_state_gfx_vbase_high.l
-	move.b GFX_VBASE_MID.w, machine_state_gfx_vbase_mid.l
+	move.b GFX_VBASE_HIGH.w, _machine_state_gfx_vbase_high.l
+	move.b GFX_VBASE_MID.w, _machine_state_gfx_vbase_mid.l
 ; TODO: save low byte on STe+?
 ; TODO: save other STe registers?
 
@@ -67,36 +67,36 @@ MachineStateSave:
 ; * Save palette *
 ; ****************
 	movem.l GFX_PALETTE.w, d0-d7
-	movem.l d0-d7, machine_state_gfx_palette.l
+	movem.l d0-d7, _machine_state_gfx_palette.l
 
 ; **************************
 ; * Save interrupt vectors *
 ; **************************
-	move.l VECTOR_VBL.w, machine_state_vector_vbl.l
-	move.l VECTOR_MFP_TIMER_A.w, machine_state_vector_mfp_timer_a.l
-	move.l VECTOR_MFP_TIMER_B.w, machine_state_vector_mfp_timer_b.l
-	move.l VECTOR_MFP_TIMER_C.w, machine_state_vector_mfp_timer_c.l
-	move.l VECTOR_MFP_ACIA.w, machine_state_vector_mfp_acia.l
+	move.l VECTOR_VBL.w, _machine_state_vector_vbl.l
+	move.l VECTOR_MFP_TIMER_A.w, _machine_state_vector_mfp_timer_a.l
+	move.l VECTOR_MFP_TIMER_B.w, _machine_state_vector_mfp_timer_b.l
+	move.l VECTOR_MFP_TIMER_C.w, _machine_state_vector_mfp_timer_c.l
+	move.l VECTOR_MFP_ACIA.w, _machine_state_vector_mfp_acia.l
 
 ; ******************
 ; * Save MFP state *
 ; ******************
-	move.b MFP_IERA.w, machine_state_mfp_iera.l
-	move.b MFP_IERB.w, machine_state_mfp_ierb.l
-	move.b MFP_IPRA.w, machine_state_mfp_ipra.l
-	move.b MFP_IPRB.w, machine_state_mfp_iprb.l
-	move.b MFP_ISRA.w, machine_state_mfp_isra.l
-	move.b MFP_ISRB.w, machine_state_mfp_isrb.l
-	move.b MFP_IMRA.w, machine_state_mfp_imra.l
-	move.b MFP_IMRB.w, machine_state_mfp_imrb.l
-	move.b MFP_VR.w, machine_state_mfp_vr.l
-	move.b MFP_TACR.w, machine_state_mfp_tacr.l
-	move.b MFP_TBCR.w, machine_state_mfp_tbcr.l
-	move.b MFP_TCDCR.w, machine_state_mfp_tcdcr.l
-	move.b MFP_TADR.w, machine_state_mfp_tadr.l
-	move.b MFP_TBDR.w, machine_state_mfp_tbdr.l
-	move.b MFP_TCDR.w, machine_state_mfp_tcdr.l
-	move.b #192, machine_state_mfp_tcdr.l		; likely system value
+	move.b MFP_IERA.w, _machine_state_mfp_iera.l
+	move.b MFP_IERB.w, _machine_state_mfp_ierb.l
+	move.b MFP_IPRA.w, _machine_state_mfp_ipra.l
+	move.b MFP_IPRB.w, _machine_state_mfp_iprb.l
+	move.b MFP_ISRA.w, _machine_state_mfp_isra.l
+	move.b MFP_ISRB.w, _machine_state_mfp_isrb.l
+	move.b MFP_IMRA.w, _machine_state_mfp_imra.l
+	move.b MFP_IMRB.w, _machine_state_mfp_imrb.l
+	move.b MFP_VR.w, _machine_state_mfp_vr.l
+	move.b MFP_TACR.w, _machine_state_mfp_tacr.l
+	move.b MFP_TBCR.w, _machine_state_mfp_tbcr.l
+	move.b MFP_TCDCR.w, _machine_state_mfp_tcdcr.l
+	move.b MFP_TADR.w, _machine_state_mfp_tadr.l
+	move.b MFP_TBDR.w, _machine_state_mfp_tbdr.l
+;	move.b MFP_TCDR.w, m_achine_state_mfp_tcdr.l
+	move.b #192, _machine_state_mfp_tcdr.l		; likely system value
 ; TODO: infer real value of MFP data registers?
 
 ; ******************
@@ -136,54 +136,65 @@ MachineStateRestore:
 ; *********************
 ; * Restore MFP state *
 ; *********************
-	move.b machine_state_mfp_iera.l, MFP_IERA.w
-	move.b machine_state_mfp_ierb.l, MFP_IERB.w
-	move.b machine_state_mfp_ipra.l, MFP_IPRA.w
-	move.b machine_state_mfp_iprb.l, MFP_IPRB.w
-	move.b machine_state_mfp_isra.l, MFP_ISRA.w
-	move.b machine_state_mfp_isrb.l, MFP_ISRB.w
-	move.b machine_state_mfp_imra.l, MFP_IMRA.w
-	move.b machine_state_mfp_imrb.l, MFP_IMRB.w
-	move.b machine_state_mfp_vr.l, MFP_VR.w
-	move.b machine_state_mfp_tacr.l, MFP_TACR.w
-	move.b machine_state_mfp_tbcr.l, MFP_TBCR.w
-	move.b machine_state_mfp_tcdcr.l, MFP_TCDCR.w
-	move.b machine_state_mfp_tadr.l, MFP_TADR.w
-	move.b machine_state_mfp_tbdr.l, MFP_TBDR.w
-	move.b machine_state_mfp_tcdr.l, MFP_TCDR.w
+	move.b _machine_state_mfp_iera.l, MFP_IERA.w
+	move.b _machine_state_mfp_ierb.l, MFP_IERB.w
+	move.b _machine_state_mfp_ipra.l, MFP_IPRA.w
+	move.b _machine_state_mfp_iprb.l, MFP_IPRB.w
+	move.b _machine_state_mfp_isra.l, MFP_ISRA.w
+	move.b _machine_state_mfp_isrb.l, MFP_ISRB.w
+	move.b _machine_state_mfp_imra.l, MFP_IMRA.w
+	move.b _machine_state_mfp_imrb.l, MFP_IMRB.w
+	move.b _machine_state_mfp_vr.l, MFP_VR.w
+	move.b _machine_state_mfp_tacr.l, MFP_TACR.w
+	move.b _machine_state_mfp_tbcr.l, MFP_TBCR.w
+	move.b _machine_state_mfp_tcdcr.l, MFP_TCDCR.w
+	move.b _machine_state_mfp_tadr.l, MFP_TADR.w
+	move.b _machine_state_mfp_tbdr.l, MFP_TBDR.w
+	move.b _machine_state_mfp_tcdr.l, MFP_TCDR.w
 
 ; *****************************
 ; * Restore interrupt vectors *
 ; *****************************
-	move.l machine_state_vector_vbl.l, VECTOR_VBL.w
-	move.l machine_state_vector_mfp_timer_a.l, VECTOR_MFP_TIMER_A.w
-	move.l machine_state_vector_mfp_timer_b.l, VECTOR_MFP_TIMER_B.w
-	move.l machine_state_vector_mfp_timer_c.l, VECTOR_MFP_TIMER_C.w
-	move.l machine_state_vector_mfp_acia.l, VECTOR_MFP_ACIA.w
+	move.l _machine_state_vector_vbl.l, VECTOR_VBL.w
+	move.l _machine_state_vector_mfp_timer_a.l, VECTOR_MFP_TIMER_A.w
+	move.l _machine_state_vector_mfp_timer_b.l, VECTOR_MFP_TIMER_B.w
+	move.l _machine_state_vector_mfp_timer_c.l, VECTOR_MFP_TIMER_C.w
+	move.l _machine_state_vector_mfp_acia.l, VECTOR_MFP_ACIA.w
 
 ; *******************
 ; * Restore palette *
 ; *******************
-	movem.l machine_state_gfx_palette.l, d0-d7
+	movem.l _machine_state_gfx_palette.l, d0-d7
 	movem.l d0-d7, GFX_PALETTE.w
 
 ; *******************************
 ; * Restore framebuffer address *
 ; *******************************
-	move.b machine_state_gfx_vbase_high.l, GFX_VBASE_HIGH.w
-	move.b machine_state_gfx_vbase_mid.l, GFX_VBASE_MID.w
+	move.b _machine_state_gfx_vbase_high.l, GFX_VBASE_HIGH.w
+	move.b _machine_state_gfx_vbase_mid.l, GFX_VBASE_MID.w
 
 ; ************************
 ; * Restore reset vector *
 ; ************************
-	move.l machine_state_system_resvalid.l, SYSTEM_RESVALID.w
-	move.l machine_state_system_resvector.l, SYSTEM_RESVECTOR.w
+	bsr.s MachineStateRestoreReset.l
 
 ; **************
 ; * Restore SR *
 ; **************
-	move.w machine_state_sr.l, sr
+	move.w _machine_state_sr.l, sr
 	rts
+
+; #################################
+; ##                             ##
+; ##  Restore only reset vector  ##
+; ##                             ##
+; #################################
+
+MachineStateRestoreReset:
+	move.l _machine_state_system_resvalid.l, SYSTEM_RESVALID.w
+	move.l _machine_state_system_resvector.l, SYSTEM_RESVECTOR.w
+	rts
+
 
 ; ###########################
 ; ##                       ##
@@ -193,60 +204,60 @@ MachineStateRestore:
 
 	.bss
 	.even
-machine_state_sr:
+_machine_state_sr:
 	.ds.w 1
 
-machine_state_system_resvalid:
+_machine_state_system_resvalid:
 	.ds.l 1
-machine_state_system_resvector:
+_machine_state_system_resvector:
 	.ds.l 1
 
-machine_state_gfx_palette:
+_machine_state_gfx_palette:
 	.ds.w 16
 
-machine_state_vector_vbl:
+_machine_state_vector_vbl:
 	.ds.l 1
-machine_state_vector_mfp_timer_a:
+_machine_state_vector_mfp_timer_a:
 	.ds.l 1
-machine_state_vector_mfp_timer_b:
+_machine_state_vector_mfp_timer_b:
 	.ds.l 1
-machine_state_vector_mfp_timer_c:
+_machine_state_vector_mfp_timer_c:
 	.ds.l 1
-machine_state_vector_mfp_acia:
+_machine_state_vector_mfp_acia:
 	.ds.l 1
 
-machine_state_gfx_vbase_high:
+_machine_state_gfx_vbase_high:
 	.ds.b 1
-machine_state_gfx_vbase_mid:
+_machine_state_gfx_vbase_mid:
 	.ds.b 1
 
-machine_state_mfp_iera:
+_machine_state_mfp_iera:
 	.ds.b 1
-machine_state_mfp_ierb:
+_machine_state_mfp_ierb:
 	.ds.b 1
-machine_state_mfp_ipra:
+_machine_state_mfp_ipra:
 	.ds.b 1
-machine_state_mfp_iprb:
+_machine_state_mfp_iprb:
 	.ds.b 1
-machine_state_mfp_isra:
+_machine_state_mfp_isra:
 	.ds.b 1
-machine_state_mfp_isrb:
+_machine_state_mfp_isrb:
 	.ds.b 1
-machine_state_mfp_imra:
+_machine_state_mfp_imra:
 	.ds.b 1
-machine_state_mfp_imrb:
+_machine_state_mfp_imrb:
 	.ds.b 1
-machine_state_mfp_vr:
+_machine_state_mfp_vr:
 	.ds.b 1
-machine_state_mfp_tacr:
+_machine_state_mfp_tacr:
 	.ds.b 1
-machine_state_mfp_tbcr:
+_machine_state_mfp_tbcr:
 	.ds.b 1
-machine_state_mfp_tcdcr:
+_machine_state_mfp_tcdcr:
 	.ds.b 1
-machine_state_mfp_tadr:
+_machine_state_mfp_tadr:
 	.ds.b 1
-machine_state_mfp_tbdr:
+_machine_state_mfp_tbdr:
 	.ds.b 1
-machine_state_mfp_tcdr:
+_machine_state_mfp_tcdr:
 	.ds.b 1

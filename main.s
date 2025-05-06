@@ -726,8 +726,7 @@ ACIA:
 
 	.text
 Reset:
-	move.l machine_state_system_resvalid.l, SYSTEM_RESVALID.w
-	move.l machine_state_system_resvector.l, SYSTEM_RESVECTOR.w
+	jsr MachineStateRestoreReset.l
 
 	move.w d0, $ffff8240.w
 	addq.w	#1, d0
