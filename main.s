@@ -105,7 +105,7 @@ _main_bss_start:		; Guard to know where BSS starts and ends
 
 	.text
 
-Main:
+_Main:
 
 ; TODO: Return memory to OS as needed
 
@@ -118,10 +118,10 @@ Main:
 ; TODO: Optimize
 
 	lea.l _main_bss_start.l, a0
-.Loop:
+.ClearBssLoop:
 	clr.b (a0)+
 	cmpa.l #_main_bss_end, a0
-	bne.s .Loop
+	bne.s .ClearBssLoop
 
 ; #################################
 ; ##                             ##
@@ -129,7 +129,7 @@ Main:
 ; ##                             ##
 ; #################################
 
-	pea.l MainSuper.l
+	pea.l _MainSuper.l
 	move.w #XBIOS_SUPEXEC, -(sp)
 	trap #TRAP_XBIOS
 	addq.l #6, sp
@@ -155,7 +155,7 @@ Main:
 
 	.text
 
-MainSuper:
+_MainSuper:
 ; ##########################
 ; ##                      ##
 ; ##  Save machine state  ##
@@ -338,10 +338,10 @@ MainSuper:
 ; ##                             ##
 ; #################################
 
-.Idle:
+.MainIdleLoop:
 	stop #$2300
 	tst.b thread_exit_all.l
-	beq.s .Idle
+	beq.s .MainIdleLoop
 	jsr MachineStateRestore.l
 	rts
 
