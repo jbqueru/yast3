@@ -349,7 +349,7 @@ _MainSuper:
 ; #############################################################################
 ; ####                                                                     ####
 ; ####                                                                     ####
-; ####                   Interrupts and thread management                  ####
+; ####                         Interrupt handling                          ####
 ; ####                                                                     ####
 ; ####                                                                     ####
 ; #############################################################################
@@ -371,7 +371,7 @@ _Interrupt_300Hz:
 	subq.b #1, _interrupt_timer_c_divide_5.l
 	bpl.s .Not60Hz
 	move.b #4, _interrupt_timer_c_divide_5.l
-	move.b #1, core_thread_ready.l				; every 5 ticks, schedule the code thread (60Hz)
+	move.b #1, core_thread_ready.l				; every 5 ticks, schedule the core thread (60Hz)
 .Not60Hz:
 	subq.b #1, _interrupt_timer_c_divide_6.l
 	bpl.s .Not50Hz
@@ -469,6 +469,28 @@ ACIA:
 	eori.w #$444, $ffff8240.w
 	rte
 
+	.bss
+	.even
+interrupt_ticks_300hz:
+	.ds.l 1
+
+_interrupt_timer_c_divide_5:
+	.ds.b 1
+_interrupt_timer_c_divide_6:
+	.ds.b 1
+
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                          Thread management                          ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
+	.text
+
 SwitchFromInt:
 	move.w d0, -(sp)
 	move.w 6(sp), d0
@@ -537,17 +559,6 @@ DoSwitch:
 NoSwitch:
 	move.w (sp)+,d0
 	rte
-
-	.bss
-	.even
-interrupt_ticks_300hz:
-	.ds.l 1
-
-_interrupt_timer_c_divide_5:
-	.ds.b 1
-_interrupt_timer_c_divide_6:
-	.ds.b 1
-
 
 ; #############################################################################
 ; #############################################################################
