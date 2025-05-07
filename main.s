@@ -363,11 +363,13 @@ _MainSuper:
 
 _Interrupt_300Hz:
 	addq.l #1, interrupt_ticks_300hz			; increment count of 300Hz time base
-;	eori.w #$440, $ffff8240.w
-;	.rept 122
-;	nop
-;	.endr
-;	eori.w #$440, $ffff8240.w
+.if ^^defined COLOR_SHOW_TIMER_C
+	eori.w #COLOR_SHOW_TIMER_C, GFX_COLOR_0.w
+	.rept 122
+	nop
+	.endr
+	eori.w #COLOR_SHOW_TIMER_C, GFX_COLOR_0.w
+.endif
 	subq.b #1, _interrupt_timer_c_divide_5.l
 	bpl.s .Not60Hz
 	move.b #4, _interrupt_timer_c_divide_5.l
@@ -491,7 +493,7 @@ _interrupt_timer_c_divide_6:
 
 	.text
 
-SwitchFromInt:
+SwitchFromInt:			; TODO: rename, make private
 	move.w d0, -(sp)
 	move.w 6(sp), d0
 	andi.w #$0700, d0
@@ -500,13 +502,13 @@ SwitchFromInt:
 	move.w (sp)+, d0
 	bra.s DoSwitch
 
-SwitchThreads:
+SwitchThreads:			; TODO: rename
 	tst.b delay_thread_switch.l
 	bne.s SwitchThreads.l
 	move.w sr, -(sp)
-DoSwitch:
+DoSwitch:			; TODO: rename, make private, re-oder code to make local
 	move.w #$2600, sr
-	movem.l d0-a6, -(sp)
+	movem.l d0-a6, -(sp)		; TODO: don't save on yield
 	move.l usp, a0
 	move.l a0, -(sp)
 	move.l current_thread, a0
@@ -773,6 +775,16 @@ DrawThread:
 	clr.b draw_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.s DrawThread.l
+
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                            Reset vector                             ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
 
 	.text
 Reset:

@@ -98,23 +98,23 @@ GFX_SYNC_EXTERN .equ %00000001
 GFX_SYNC_60HZ .equ %00000000
 GFX_SYNC_50HZ .equ %00000010
 
-GFX_COLOR0 .equ $ffff8240
-GFX_COLOR1 .equ $ffff8242
-GFX_COLOR2 .equ $ffff8244
-GFX_COLOR3 .equ $ffff8246
-GFX_COLOR4 .equ $ffff8248
-GFX_COLOR5 .equ $ffff824a
-GFX_COLOR6 .equ $ffff824c
-GFX_COLOR7 .equ $ffff824e
-GFX_COLOR8 .equ $ffff8250
-GFX_COLOR9 .equ $ffff8252
-GFX_COLOR10 .equ $ffff8254
-GFX_COLOR11 .equ $ffff8256
-GFX_COLOR12 .equ $ffff8258
-GFX_COLOR13 .equ $ffff825a
-GFX_COLOR14 .equ $ffff825c
-GFX_COLOR15 .equ $ffff825e
-GFX_PALETTE .equ GFX_COLOR0
+GFX_COLOR_0 .equ $ffff8240
+GFX_COLOR_1 .equ $ffff8242
+GFX_COLOR_2 .equ $ffff8244
+GFX_COLOR_3 .equ $ffff8246
+GFX_COLOR_4 .equ $ffff8248
+GFX_COLOR_5 .equ $ffff824a
+GFX_COLOR_6 .equ $ffff824c
+GFX_COLOR_7 .equ $ffff824e
+GFX_COLOR_8 .equ $ffff8250
+GFX_COLOR_9 .equ $ffff8252
+GFX_COLOR_10 .equ $ffff8254
+GFX_COLOR_11 .equ $ffff8256
+GFX_COLOR_12 .equ $ffff8258
+GFX_COLOR_13 .equ $ffff825a
+GFX_COLOR_14 .equ $ffff825c
+GFX_COLOR_15 .equ $ffff825e
+GFX_PALETTE .equ GFX_COLOR_0
 GFX_MODE .equ $ffff8260 ; ......mm
                         ;       ||
                         ;       ++- (0 = 320x200x4@50/60Hz, 1 = 640x200x2@50/60Hz, 2=640x400x1@71Hz)
