@@ -276,7 +276,7 @@ MainSuper:
 	move.l #TimerA, VECTOR_MFP_TIMER_A.w
 	move.l #TimerB1, VECTOR_MFP_TIMER_B.w
 	move.l #ACIA, VECTOR_MFP_ACIA.w
-	move.l #TimerC, VECTOR_MFP_TIMER_C.w
+	move.l #_Interrupt_300Hz, VECTOR_MFP_TIMER_C.w
 
 	move.b #$40,MFP_VR.w		; table at $100, automatic end interrupt
 
@@ -355,23 +355,29 @@ MainSuper:
 ; #############################################################################
 ; #############################################################################
 
-TimerC:
-	addq.l #1, timer_c_count
-	eori.w #$440, $ffff8240.w
-	.rept 122
-	nop
-	.endr
-	eori.w #$440, $ffff8240.w
-	subq.b #1, timer_c_d5.l
-	bpl.s not_d5
-	move.b #4, timer_c_d5.l
-	move.b #1, core_thread_ready.l
-not_d5:
-	subq.b #1, timer_c_d6.l
-	bpl.s not_d6
-	move.b #5, timer_c_d6.l
-	move.b #1, yamaha_thread_ready.l
-not_d6:
+; #############################################
+; ##                                         ##
+; ##  300Hz Heartbeat, running from timer C  ##
+; ##                                         ##
+; #############################################
+
+_Interrupt_300Hz:
+	addq.l #1, interrupt_ticks_300hz			; increment count of 300Hz time base
+;	eori.w #$440, $ffff8240.w
+;	.rept 122
+;	nop
+;	.endr
+;	eori.w #$440, $ffff8240.w
+	subq.b #1, _interrupt_timer_c_divide_5.l
+	bpl.s .Not60Hz
+	move.b #4, _interrupt_timer_c_divide_5.l
+	move.b #1, core_thread_ready.l				; every 5 ticks, schedule the code thread (60Hz)
+.Not60Hz:
+	subq.b #1, _interrupt_timer_c_divide_6.l
+	bpl.s .Not50Hz
+	move.b #5, _interrupt_timer_c_divide_6.l
+	move.b #1, yamaha_thread_ready.l			; every 6 ticks, schedule the PSG thread (50Hz)
+.Not50Hz:
 	bra.w SwitchFromInt.l
 
 VBL:
@@ -531,6 +537,29 @@ DoSwitch:
 NoSwitch:
 	move.w (sp)+,d0
 	rte
+
+	.bss
+	.even
+interrupt_ticks_300hz:
+	.ds.l 1
+
+_interrupt_timer_c_divide_5:
+	.ds.b 1
+_interrupt_timer_c_divide_6:
+	.ds.b 1
+
+
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                         Thread entry points                         ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
+	.text
 
 MouseThread:
 	movea.l acia_rx_read.l, a0
@@ -714,7 +743,7 @@ DrawThread:
 	move.w #199, d7
 .Draw:
 	eor.w #$040, $ffff8240.w
-	move.l timer_c_count.l, d0
+	move.l interrupt_ticks_300hz.l, d0
 	move.w d0, 8(a0)
 	move.w d0, 152(a0)
 	swap.w d0
@@ -821,8 +850,6 @@ acia_rx_write:
 acia_rx_read:
 	.ds.l 1
 
-timer_c_count:
-	.ds.l 1
 frame_count:
 	.ds.l 1
 
@@ -859,11 +886,6 @@ fb_next_ready:
 	.ds.b 1
 
 thread_exit_all:
-	.ds.b 1
-
-timer_c_d5:
-	.ds.b 1
-timer_c_d6:
 	.ds.b 1
 
 acia_rx_buffer:
