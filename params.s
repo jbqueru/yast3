@@ -32,5 +32,6 @@ DEBUG .equ 1
 .if DEBUG
 
 COLOR_SHOW_TIMER_C .equ $440
+COLOR_SHOW_TIMER_B .equ $333
 
 .endif

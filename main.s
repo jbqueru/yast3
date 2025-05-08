@@ -271,10 +271,10 @@ _MainSuper:
 	move.l #Reset, SYSTEM_RESVECTOR.w
 	move.l #SYSTEM_RESVALID_MAGIC, SYSTEM_RESVALID.w
 
-	move.l #VBL, VECTOR_VBL.w
+	move.l #_Interrupt_Vertical_Blank, VECTOR_VBL.w
 
 	move.l #TimerA, VECTOR_MFP_TIMER_A.w
-	move.l #TimerB1, VECTOR_MFP_TIMER_B.w
+	move.l #_Interrupt_End_Line_92, VECTOR_MFP_TIMER_B.w
 	move.l #ACIA, VECTOR_MFP_ACIA.w
 	move.l #_Interrupt_300Hz, VECTOR_MFP_TIMER_C.w
 
@@ -355,11 +355,11 @@ _MainSuper:
 ; #############################################################################
 ; #############################################################################
 
-; #############################################
-; ##                                         ##
-; ##  300Hz Heartbeat, running from timer C  ##
-; ##                                         ##
-; #############################################
+; ####################################################################
+; ##                                                                ##
+; ##  300Hz Heartbeat, running from MFP timer C, interrupt level 6  ##
+; ##                                                                ##
+; ####################################################################
 
 _Interrupt_300Hz:
 	addq.l #1, interrupt_ticks_300hz			; increment count of 300Hz time base
@@ -382,65 +382,119 @@ _Interrupt_300Hz:
 .Not50Hz:
 	bra.w SwitchFromInt.l
 
-VBL:
-	move.l #TimerB1, $120.w
-	move.b 0, $fffffa1b.w
-	move.b #92, $fffffa21.w
-	move.b #$08, $fffffa1b.w
-	move.b #8, $fffffa21.w
+; ############################################
+; ##                                        ##
+; ##  Vertical blank, autovectored level 4  ##
+; ##                                        ##
+; ############################################
 
-	move.w #$2300, sr
-	bra SwitchFromInt.l
+; While this is technical the vblank interrupt, in practice, we run
+; most typical vblank tasks at the end of the last visible line,
+; called _Interrupt_End_Line_200. Running at the end of line 200
+; allows us to swap the base framebuffer address before it gets
+; latched (it's too late during vblank), and gives us more time to
+; run things before the first line of the next frame, such as
+; displaying the mouse pointer.
+; Vblank still exists to prevent drift in end-of-line interrupts,
+; and to change the palette at a point that is invisible.
 
-TimerB1:
-	eori.w #$333, $ffff8240.w
+_Interrupt_Vertical_Blank:
+	move.l #_Interrupt_End_Line_92, VECTOR_MFP_TIMER_B.w		; handler for the first line interrupt that'll fire
+	move.b #$00, MFP_TBCR.w						; turn timer off
+	move.b #92, MFP_TBDR.w						; count 92 ticks. written both to data and main register, since timer is off
+	move.b #$08, MFP_TBCR.w						; turn timer on, even counting mode
+	move.b #8, MFP_TBDR.w						; write to data register. written only to data register, since timer is on
+
+	move.w #$2300, sr							; lower interrupt level so that the thread switching code isn't suppressed
+												; TODO: jump to a point where the suppression is ineffective
+	bra SwitchFromInt.l							; switch threads in case a thread-switching interrupt fired on top of us
+												; TODO: only switch if there is a switch pending
+
+; ################################################################
+; ##                                                            ##
+; ##  End of visible line, from MFP timer B, interrupt level 6  ##
+; ##                                                            ##
+; ################################################################
+
+; ***********
+; * Line 92 *
+; ***********
+
+_Interrupt_End_Line_92:
+.if ^^defined COLOR_SHOW_TIMER_B
+	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
 	.rept 122
 	nop
 	.endr
-	eori.w #$333, $ffff8240.w
-	move.b #100, $fffffa21.w
-	move.l #TimerB2, $120.w
-	move.b #$01, $fffffa13.w
-	move.b #0, $fffffa15.w
-	move.b #1, delay_thread_switch.l
+	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
+.endif
+
+	move.b #100, MFP_TBDR.w							; number of lines between next interrupt and subsequent one
+	move.l #_Interrupt_End_Line_100, VECTOR_MFP_TIMER_B.w	; handler for next interrupt
+	move.b #$01, MFP_IMRA.w							; mask away all interrupts except timer B, so that the next
+	move.b #$00, MFP_IMRB.w							; 			interrupt has a precise timing
+	move.b #1, delay_thread_switch.l				; tell the schedule not to reschedule yet
 	rte
 
-TimerB2:
-	eori.w #$333, $ffff8240.w
+; ************
+; * Line 100 *
+; ************
+
+_Interrupt_End_Line_100:
+.if ^^defined COLOR_SHOW_TIMER_B
+	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
 	.rept 122
 	nop
 	.endr
-	eori.w #$333, $ffff8240.w
-	move.l #TimerB3, $120.w
-	move.b #$ff, $fffffa13.w
-	move.b #$ff, $fffffa15.w
-	clr.b delay_thread_switch.l
+	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
+.endif
+
+	move.l #_Interrupt_End_Line_200, VECTOR_MFP_TIMER_B.w
+	move.b #$ff, MFP_IMRA.w							; unmask all interrupts back in
+	move.b #$ff, MFP_IMRB.w
+	clr.b delay_thread_switch.l						; tell the scheduler to so its things again
 	rte
 
-TimerB3:
-	addq.l #1, frame_count
-	eori.w #$333, $ffff8240.w
+; ************
+; * Line 200 *
+; ************
+
+_Interrupt_End_Line_200:
+.if ^^defined COLOR_SHOW_TIMER_B
+	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
 	.rept 122
 	nop
 	.endr
-	eori.w #$333, $ffff8240.w
-	tst.b fb_next_ready.l
-	beq.s .NoFb
+	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
+.endif
+
+	addq.l #1, frame_count							; increment frame counter
+
+	tst.b fb_next_ready.l							; check if framebuffers ready to swap
+	beq.s .DoneFbSwap
 	move.l d0, -(sp)
-	move.l fb_next.l, d0
+	move.l fb_next.l, d0							; rotate the 3 framebuffer addresses
 	move.l fb_render.l, fb_next.l
 	move.l fb_live.l, fb_render.l
 	move.l d0, fb_live.l
-	lsr.w #8, d0
+
+	lsr.w #8, d0									; set the live framebuffer address into the GPU
 	move.b d0, $ffff8203.w
 	swap.w d0
 	move.b d0, $ffff8201.w
-	clr.b fb_next_ready.l
+
+	clr.b fb_next_ready.l							; be ready for next frame to be rendered
 	move.l (sp)+, d0
-.NoFb:
-	move.b #1, mouse_thread_ready.l
-	move.b #1, draw_thread_ready.l
-	bra SwitchFromInt.l
+.DoneFbSwap:
+	move.b #1, mouse_thread_ready.l					; unblock mouse thread, to update mouse cursor
+	move.b #1, draw_thread_ready.l					; unblobk rendering thread... which might not be blocked
+	bra SwitchFromInt.l								; switch threads
+
+; #####################################################################
+; ##                                                                 ##
+; ##  End of DMA for PCM sound, from MFP timer A, interrupt level 6  ##
+; ##                                                                 ##
+; #####################################################################
 
 TimerA:
 	eori.w #$003, $ffff8240.w
@@ -450,6 +504,12 @@ TimerA:
 	eori.w #$003, $ffff8240.w
 	move.b #1, pcm_thread_ready.l
 	bra.w SwitchFromInt.l
+
+; ###############################################
+; ##                                           ##
+; ##  ACIA, from MFP GPIP4, interrupt level 6  ##
+; ##                                           ##
+; ###############################################
 
 ACIA:
 	eori.w #$444, $ffff8240.w
