@@ -495,7 +495,7 @@ _interrupt_timer_c_divide_6:
 
 SwitchFromInt:			; TODO: rename, make private
 	move.w d0, -(sp)
-	move.w 6(sp), d0
+	move.w 2(sp), d0
 	andi.w #$0700, d0
 	cmpi.w #$0400, d0
 	beq.w NoSwitch
