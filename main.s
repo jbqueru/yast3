@@ -677,9 +677,9 @@ MouseThread:
 	moveq.l #0, d1
 	bra.s .OkX2
 .OkX1:
-	cmpi.w #320, d1
+	cmpi.w #640, d1
 	blt.s .OkX2
-	move.w #319, d1
+	move.w #639, d1
 .OkX2:
 	move.w d1, mouse_x
 
@@ -736,13 +736,13 @@ MouseThread:
 	mulu.w #160, d0
 	adda.w d0, a0
 	move.w mouse_x, d0
-	cmpi.w #303, d0
+	cmpi.w #623, d0
 	blt.s .InSX
-	move.w #303, d0
+	move.w #623, d0
 .InSX:
 	move.w d0, d1
 	andi.w #$fff0, d0
-	lsr.w #1, d0
+	lsr.w #2, d0
 	adda.w d0, a0
 	andi.w #$f, d1
 	lea.l mouse_mask.l, a1
@@ -751,18 +751,14 @@ MouseThread:
 .DrawMouse:
 	move.l (a1)+, d0
 	ror.l d1, d0
-	and.w d0, 8(a0)
-	and.w d0, 10(a0)
-	and.w d0, 12(a0)
-	and.w d0, 14(a0)
+	and.w d0, 4(a0)
+	and.w d0, 6(a0)
 	swap.w d0
 	and.w d0, (a0)
 	and.w d0, 2(a0)
-	and.w d0, 4(a0)
-	and.w d0, 6(a0)
 	move.l (a2)+, d0
 	ror.l d1, d0
-	or.w d0, 8(a0)
+	or.w d0, 4(a0)
 	swap.w d0
 	or.w d0, (a0)
 	lea 160(a0), a0
@@ -797,7 +793,7 @@ CoreThread:
 .Core:
 	eor.w #$400, $ffff8240.w
 	dbra.w d0, .Core.l
-	cmpi.w #319, mouse_x.l
+	cmpi.w #639, mouse_x.l
 	bne.s .NotBR
 	cmpi.w #199, mouse_y.l
 	bne.s .NotBR
@@ -817,11 +813,11 @@ DrawThread:
 .Draw:
 	eor.w #$040, $ffff8240.w
 	move.l interrupt_ticks_300hz.l, d0
-	move.w d0, 8(a0)
-	move.w d0, 152(a0)
+	move.w d0, 4(a0)
+	move.w d0, 156(a0)
 	swap.w d0
 	move.w d0, (a0)
-	move.w d0, 144(a0)
+	move.w d0, 152(a0)
 	lea.l 160(a0), a0
 	moveq.l #127, d6
 .Nothing:
