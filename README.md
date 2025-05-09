@@ -440,6 +440,25 @@ safely assumed to be more common, because it's available on both
 TV, RGB, VGA, and it's also what people are most likely to emulate
 on, such that a 60Hz vsync app might also vsync under emulation.
 
+## May 09 2025
+
+### Triple buffering issues
+
+There's a kink in my triple-buffering code. In a nutshell,
+while the GPU programming and the rendering thread work in lockstep,
+with one of them waiting for the other (which one waits depends on
+the rendering speed), they're not in sync enough for either of
+them to be 100% sure about what the other one is doing, because
+they switch their respective views asynchronously from each other.
+
+The GPU side needs to maintain its own view of which framebuffer
+is currently live, and which two are next in line. Those change
+during vertical border/blank, when the rendering side says so.
+The rendering side needs to maintain its view of which framebuffer
+is currently rendered into, and which one to use next. Those change
+at the beginning or end of rendering a frame, when teh GPU side
+says so.
+
 # What's in the package
 
 The distribution package contains this `README.md` file, the main
