@@ -26,7 +26,7 @@
 ; #############################################################################
 ; ####                                                                     ####
 ; ####                                                                     ####
-; ####                     Core game logic / graphics                      ####
+; ####                     Main game logic entry point                     ####
 ; ####                                                                     ####
 ; ####                                                                     ####
 ; #############################################################################
@@ -52,8 +52,23 @@ CoreThread:
 	bsr.w SwitchThreads.l
 	bra.s CoreThread.l
 
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                     Main rendering entry point                      ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
 DrawThread:
+
+; Remember when we started to render this frame, so that we can throttle
+; ourselves in case we render faster than the screen refresh.
 	move.l frame_count.l, render_start.l
+
+; Do the actual drawing
 	movea.l fb_render.l, a0
 	move.w #199, d7
 .Draw:
@@ -70,10 +85,22 @@ DrawThread:
 	rol.b #8, d0
 	dbra.w d6, .Nothing.l
 	dbra.w d7, .Draw.l
+
+; Signal to the GPU-handling code that we have a new frame ready
 	move.b #1, fb_next_ready.l
+
+; Check whether we've completed the render faster than the screen refresh.
 	move.l render_start.l, d0
 	cmp.l frame_count.l, d0
+
+; If we're already in a different frame, no need to throttle ourselves, the
+; rendering can start immmediately, we are guaranteed to have a buffer
+; available.
 	bne.s DrawThread.l
+
+; We're still in the same thread, throttle ourselves by blocking.
+; (In a world where the drawing thread is alone at the lowest non-idle
+; priority, we could busy-wait, but that's not future-proof).
 	clr.b draw_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.s DrawThread.l
