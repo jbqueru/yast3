@@ -788,50 +788,6 @@ PcmThread:
 	bsr.w SwitchThreads.l
 	bra.s PcmThread.l
 
-CoreThread:
-	move.w #199, d0
-.Core:
-	eor.w #$400, $ffff8240.w
-	dbra.w d0, .Core.l
-	cmpi.w #639, mouse_x.l
-	bne.s .NotBR
-	cmpi.w #199, mouse_y.l
-	bne.s .NotBR
-	move.b #1, thread_exit_all.l
-.NotBR:
-	btst.b #1, keyboard_state + 7.l
-	sne.b d0
-	or.b d0, thread_exit_all.l
-	clr.b core_thread_ready.l
-	bsr.w SwitchThreads.l
-	bra.s CoreThread.l
-
-DrawThread:
-	move.l frame_count.l, render_start.l
-	movea.l fb_render.l, a0
-	move.w #199, d7
-.Draw:
-	eor.w #$040, $ffff8240.w
-	move.l interrupt_ticks_300hz.l, d0
-	move.w d0, 4(a0)
-	move.w d0, 156(a0)
-	swap.w d0
-	move.w d0, (a0)
-	move.w d0, 152(a0)
-	lea.l 160(a0), a0
-	moveq.l #127, d6
-.Nothing:
-	rol.b #8, d0
-	dbra.w d6, .Nothing.l
-	dbra.w d7, .Draw.l
-	move.b #1, fb_next_ready.l
-	move.l render_start.l, d0
-	cmp.l frame_count.l, d0
-	bne.s DrawThread.l
-	clr.b draw_thread_ready.l
-	bsr.w SwitchThreads.l
-	bra.s DrawThread.l
-
 ; #############################################################################
 ; #############################################################################
 ; ####                                                                     ####
@@ -977,6 +933,7 @@ framebuffers:
 	.ds.b 64255
 
 .include "machine_state.s"
+.include "game.s"
 
 ; #############################################################################
 ; #############################################################################
