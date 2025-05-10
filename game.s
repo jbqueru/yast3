@@ -242,6 +242,46 @@ DrawLoop:
 	moveq.l #5, d2
 	bsr _DrawChar.l
 
+	moveq.l #11, d0
+	moveq.l #2, d1
+	moveq.l #0, d2
+	bsr _DrawChar.l
+	moveq.l #12, d0
+	moveq.l #2, d1
+	moveq.l #0, d2
+	bsr _DrawChar.l
+	moveq.l #13, d0
+	moveq.l #2, d1
+	moveq.l #0, d2
+	bsr _DrawChar.l
+
+	moveq.l #12, d0
+	moveq.l #4, d1
+	moveq.l #1, d2
+	bsr _DrawChar.l
+
+	moveq.l #8, d0
+	moveq.l #6, d1
+	moveq.l #6, d2
+	bsr _DrawChar.l
+	moveq.l #10, d0
+	moveq.l #6, d1
+	moveq.l #6, d2
+	bsr _DrawChar.l
+	moveq.l #12, d0
+	moveq.l #6, d1
+	moveq.l #6, d2
+	bsr _DrawChar.l
+	moveq.l #14, d0
+	moveq.l #6, d1
+	moveq.l #6, d2
+	bsr _DrawChar.l
+	moveq.l #16, d0
+	moveq.l #6, d1
+	moveq.l #6, d2
+	bsr _DrawChar.l
+
+
 .if ^^defined DEBUG_COLOR_SHOW_RENDER
 	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
 .endif
