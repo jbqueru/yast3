@@ -679,8 +679,11 @@ MouseThread:
 .NB2:
 
 	cmpa.l a1, a2
-	beq.s .all_read.l
+	beq.w .all_read.l
 	move.b (a1)+, d2
+
+	andi.w #$3, d0
+	move.w d0, mouse_buttons
 
 	ext.w d1
 	add.w mouse_x, d1
@@ -920,6 +923,8 @@ fb_render:
 render_start:
 	.ds.l 1
 
+mouse_buttons:
+	.ds.w 1
 mouse_x:
 	.ds.w 1
 mouse_y:
