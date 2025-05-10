@@ -252,15 +252,14 @@ DrawLoop:
 	move.b #1, fb_next_ready.l
 
 ; Check whether we've completed the render faster than the screen refresh.
-	move.l render_start.l, d0
-	cmp.l frame_count.l, d0
-
 ; If we're already in a different frame, no need to throttle ourselves, the
 ; rendering can start immmediately, we are guaranteed to have a buffer
 ; available.
+	move.l render_start.l, d0
+	cmp.l frame_count.l, d0
 	bne.w DrawLoop.l
 
-; We're still in the same thread, throttle ourselves by blocking.
+; We're faster than the screen refresh, throttle ourselves by blocking.
 ; (In a world where the drawing thread is alone at the lowest non-idle
 ; priority, we could busy-wait, but that's not future-proof).
 	clr.b draw_thread_ready.l
