@@ -41,12 +41,6 @@ CoreThread:
 	eori.w #DEBUG_COLOR_SHOW_CORE, GFX_COLOR_0.w
 	dbra.w d0, .Core.l
 .endif
-	cmpi.w #639, mouse_x.l
-	bne.s .NotBR
-	cmpi.w #199, mouse_y.l
-	bne.s .NotBR
-	move.b #1, thread_exit_all.l
-.NotBR:
 	btst.b #1, keyboard_state + 7.l
 	sne.b d0
 	or.b d0, thread_exit_all.l
