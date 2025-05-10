@@ -35,10 +35,12 @@
 	.text
 
 CoreThread:
+.if ^^defined DEBUG_COLOR_SHOW_CORE
 	move.w #199, d0
 .Core:
-	eor.w #$400, $ffff8240.w
+	eori.w #DEBUG_COLOR_SHOW_CORE, GFX_COLOR_0.w
 	dbra.w d0, .Core.l
+.endif
 	cmpi.w #639, mouse_x.l
 	bne.s .NotBR
 	cmpi.w #199, mouse_y.l
@@ -73,7 +75,9 @@ DrawLoop:
 	move.l render_base.l, a0
 	move.w #199, d7
 .Draw:
-	eor.w #$040, $ffff8240.w
+.if ^^defined DEBUG_COLOR_SHOW_RENDER
+	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
+.endif
 	move.l interrupt_ticks_300hz.l, d0
 	move.w d0, 4(a0)
 	move.w d0, 156(a0)

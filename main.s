@@ -363,12 +363,12 @@ _MainSuper:
 
 _Interrupt_300Hz:
 	addq.l #1, interrupt_ticks_300hz			; increment count of 300Hz time base
-.if ^^defined COLOR_SHOW_TIMER_C
-	eori.w #COLOR_SHOW_TIMER_C, GFX_COLOR_0.w
+.if ^^defined DEBUG_COLOR_SHOW_TIMER_C
+	eori.w #DEBUG_COLOR_SHOW_TIMER_C, GFX_COLOR_0.w
 	.rept 122
 	nop
 	.endr
-	eori.w #COLOR_SHOW_TIMER_C, GFX_COLOR_0.w
+	eori.w #DEBUG_COLOR_SHOW_TIMER_C, GFX_COLOR_0.w
 .endif
 	subq.b #1, _interrupt_timer_c_divide_5.l
 	bpl.s .Not60Hz
@@ -426,12 +426,12 @@ _Interrupt_Vertical_Blank:
 ; ***********
 
 _Interrupt_End_Line_92:
-.if ^^defined COLOR_SHOW_TIMER_B
-	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
+.if ^^defined DEBUG_COLOR_SHOW_TIMER_B
+	eori.w #DEBUG_COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
 	.rept 122
 	nop
 	.endr
-	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
+	eori.w #DEBUG_COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
 .endif
 
 	move.b #100, MFP_TBDR.w							; number of lines between next interrupt and subsequent one
@@ -446,12 +446,12 @@ _Interrupt_End_Line_92:
 ; ************
 
 _Interrupt_End_Line_100:
-.if ^^defined COLOR_SHOW_TIMER_B
-	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
+.if ^^defined DEBUG_COLOR_SHOW_TIMER_B
+	eori.w #DEBUG_COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
 	.rept 122
 	nop
 	.endr
-	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
+	eori.w #DEBUG_COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
 .endif
 
 	move.l #_Interrupt_End_Line_200, VECTOR_MFP_TIMER_B.w
@@ -466,11 +466,11 @@ _Interrupt_End_Line_100:
 
 _Interrupt_End_Line_200:
 .if ^^defined COLOR_SHOW_TIMER_B
-	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
+	eori.w #DEBUG_COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
 	.rept 122
 	nop
 	.endr
-	eori.w #COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
+	eori.w #DEBUG_COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
 .endif
 
 	addq.l #1, frame_count							; increment frame counter
@@ -502,11 +502,13 @@ _Interrupt_End_Line_200:
 ; #####################################################################
 
 TimerA:
-	eori.w #$003, $ffff8240.w
+.if ^^defined COLOR_SHOW_TIMER_A
+	eori.w #DEBUG_COLOR_SHOW_TIMER_A, GFX_COLOR_0.w
 	.rept 122
 	nop
 	.endr
-	eori.w #$003, $ffff8240.w
+	eori.w #DEBUG_COLOR_SHOW_TIMER_A, GFX_COLOR_0.w
+.endif
 	move.b #1, pcm_thread_ready.l
 	bra.w SwitchFromInt.l
 
@@ -517,7 +519,9 @@ TimerA:
 ; ###############################################
 
 ACIA:
-	eori.w #$444, $ffff8240.w
+.if ^^defined DEBUG_COLOR_SHOW_ACIA
+	eori.w #DEBUG_COLOR_SHOW_ACIA, GFX_COLOR_0.w
+.endif
 	btst.b #0, $fffffc00.w
 	beq.s .NotRx.l
 	move.l a0, -(sp)
@@ -530,10 +534,12 @@ ACIA:
 	move.l a0, acia_rx_write.l
 	move.l (sp)+, a0
 .NotRx:
+.if ^^defined DEBUG_COLOR_SHOW_ACIA
 	.rept 512
 	nop
 	.endr
-	eori.w #$444, $ffff8240.w
+	eori.w #DEBUG_COLOR_SHOW_ACIA, GFX_COLOR_0.w
+.endif
 	rte
 
 	.bss
@@ -730,7 +736,9 @@ MouseThread:
 	bra.w .NextPacket
 .all_read:
 	move.l a0, acia_rx_read.l
-	not.w $ffff8240.w
+.if ^^defined DEBUG_COLOR_SHOW_MOUSE
+	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
+.endif
 
 	movea.l fb_live, a0
 	move.w mouse_y, d0
@@ -768,16 +776,20 @@ MouseThread:
 	or.w d0, (a0)
 	lea 160(a0), a0
 	dbra.w d7, .DrawMouse.l
-	not.w $ffff8240.w
+.if ^^defined DEBUG_COLOR_SHOW_MOUSE
+	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
+.endif
 
 	clr.b mouse_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.w MouseThread.l
 
 YamahaThread:
+.if ^^defined DEBUG_COLOR_SHOW_PSG
 	.rept 64
-	eor.w #$770, $ffff8240.w
+	eor.w #DEBUG_COLOR_SHOW_PSG, GFX_COLOR_0.w
 	.endr
+.endif
 	clr.b yamaha_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.w YamahaThread.l
@@ -787,7 +799,9 @@ PcmThread:
 	move.w #209, d0
 .FillAudioBuffer:
 	clr.b (a0)+
-	eor.w #$004, $ffff8240.w
+.if ^^defined DEBUG_COLOR_SHOW_PCM
+	eori.w #$004, GFX_COLOR_0.w
+.endif
 	dbra.w d0, .FillAudioBuffer.l
 	clr.b pcm_thread_ready.l
 	bsr.w SwitchThreads.l

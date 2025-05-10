@@ -27,11 +27,21 @@
 ; #############################################################################
 ; #############################################################################
 
-DEBUG .equ 1
+DEBUG .equ 0
+DEBUG_COLOR_SHOW_ALL .equ 0
 
 .if DEBUG
+DEBUG_COLOR_SHOW_ALL .equ 1
+.endif
 
-COLOR_SHOW_TIMER_C .equ $440
-COLOR_SHOW_TIMER_B .equ $333
-
+.if DEBUG_COLOR_SHOW_ALL
+DEBUG_COLOR_SHOW_TIMER_A .equ $003
+DEBUG_COLOR_SHOW_TIMER_B .equ $333
+DEBUG_COLOR_SHOW_TIMER_C .equ $440
+DEBUG_COLOR_SHOW_ACIA .equ $444
+DEBUG_COLOR_SHOW_MOUSE .equ $777
+DEBUG_COLOR_SHOW_PSG .equ $770
+DEBUG_COLOR_SHOW_PCM .equ $004
+DEBUG_COLOR_SHOW_CORE .equ $400
+DEBUG_COLOR_SHOW_RENDER .equ $040
 .endif
