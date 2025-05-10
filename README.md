@@ -444,20 +444,141 @@ on, such that a 60Hz vsync app might also vsync under emulation.
 
 ### Triple buffering issues
 
-There's a kink in my triple-buffering code. In a nutshell,
-while the GPU programming and the rendering thread work in lockstep,
-with one of them waiting for the other (which one waits depends on
-the rendering speed), they're not in sync enough for either of
-them to be 100% sure about what the other one is doing, because
-they switch their respective views asynchronously from each other.
+(Incorrect thoughts, deleted)
 
-The GPU side needs to maintain its own view of which framebuffer
-is currently live, and which two are next in line. Those change
-during vertical border/blank, when the rendering side says so.
-The rendering side needs to maintain its view of which framebuffer
-is currently rendered into, and which one to use next. Those change
-at the beginning or end of rendering a frame, when teh GPU side
-says so.
+## May 10 2025
+
+### More triple-buffering thinking
+
+There are 3 framebuffers in the system, currently called "live", "next",
+and "render".
+
+When the GPU code does the page-flipping, it rotates them like this:
+live <- next <- render <- live, and the new live framebuffer becomes
+active immeditely.
+
+When the render thread starts a frame, it renders into the "render"
+framebuffer.
+
+When rendering is faster than the refresh, the render thread fills
+the "render" buffer, and, once done, the GPU code displays the "next"
+buffer, and takes the "live" buffer as the next "render" buffer.
+Note how, in this case, there's an unnecessary one-frame delay: a
+frame doesn't get displayed immediately after it gets rendered.
+
+When rendering is slower than the refresh, the render thread samples
+the "render" buffer right as it unblocks page-flipping. Page-flip happens
+during rendering, such that the buffer that gets rendered into is now
+called "next", and the buffer that was "live" when rendering started
+is now called "render" and will be used for the next frame. There is
+no delay, things are working as intended.
+
+The fundamental difference between those two is that, in the latter
+case, the "render" value is sampled by the render thread immediately
+after scheduling a page-flip but without waiting for that page-flip,
+while in the former case it is sampled after waiting for a page-flip.
+
+If the former case were modified to sample immediately after scheduling
+a page-flip but without waiting for it, the problem would be resolved.
+
+With that approach, though, there's potentially an issue when timing
+switches between the two modes.
+
+```
+L1 N2 R3
+sample and start render in 3
+--- VBL
+L2 N3 R1
+--- [VBL*]
+--- EOF end render in 3, VBL happened since start, keep going
+sample and start render in 1
+--- VBL display 3
+L3 N1 R2
+--- [VBL*]
+--- EOF end render in 1, VBL happened since start, keep going
+sample and start render in 2
+--- EOF end render in 2, no VBL happened since start, wait
+sample render in 2
+--- VBL display 1 (note that 2 is ready, 1 should be discarded)
+L1 N2 R3
+start render in 2 (the completed frame gets overridden)
+--- EOF end render in 2, no VBL happened since start, wait
+sample render in 3
+--- VBL display 2
+L2 N3 R1
+start render in 3
+--- EOF end render in 3, no VBL happened since start, wait
+sample render in 1
+--- VBL display 3
+L3 N1 R2
+start render in 1
+--- EOF end render in 1, no VBL happened since start, wait
+sample render in 2
+--- VBL display 1
+L1 N2 R3
+start render in 2
+--- VBL
+--- VBL*
+--- EOF end render in 2, VBL happened since start, keep going
+sample and start render in 3
+--- VBL display 2
+L2 N3 R1
+--- VBL*
+--- EOF end render in 3, VBL happened since start, keep going
+sample and start render in 1
+--- VBL display 3
+L3 N1 R2
+```
+
+The timing issue here is that, when the rendering suddenly becomes
+faster than the refresh, the first page-flip doesn't display the
+latest frame. Note that, if we don't discard a frame, the one-frame
+delay perpetuates forever (or until the render becomes slower than
+the refresh again).
+
+Here are the invariants from the current approach:
+
+-The current live frame is never drawn into.
+
+-When at least one frame has been rendered that is newer than the
+current live frame, one newer frame is available for page-flipping.
+
+Here are the desired invariants:
+
+-The current live frame is never drawn into.
+
+-When at least one frame has been rendered that is newer than the
+current live frame, the latest such frame is available for
+and used in page-flipping.
+
+As added notes that can guide future implementations:
+
+-There is room to improve so that the discarded frame occurs one
+frame earlier. The extra complexity for the data handling will
+require to stop interrupts for a small instant, though, so it
+needs to be done carefully against interrupt-critical timings.
+
+-Rendering doesn't necessarily need ever to stop. There are 3
+buffers so that there can always be a live frame, a frame ready to
+be swapped, and a frame available for rendering.
+
+-Rendering could run continuously, and run extrapolations between
+logic ticks, or could unblock itself at logic ticks in addition
+to frames. Ultimately, though, those discussions only make sense
+if the rendering is faster enough than both the refresh and the
+game logic, and that might not make sense on a plain ST/Mega/STe
+where there's not enough power to significantly outrun the
+refresh while displaying the kind of graphics that would benefit
+from the latency improvements.
+
+-In the end, the most important aspect will be to run the logic
+in sync with the screen refresh when that is close enough to 60Hz.
+
+-As of May 10, no immediate change to the current implementation.
+Future plans TBD but might not need significant changes until
+specifically targeting TT of Falcon, and even then that might only
+make sense in low-resolution modes (32kb as opposed to the TT's
+150kiB and Falcon's typical 300kiB).
 
 # What's in the package
 
