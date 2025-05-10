@@ -65,14 +65,21 @@ CoreThread:
 ; #############################################################################
 
 DrawStart:
-	move.l fb_render.l, render_base.l
+	move.l fb_render.l, _draw_base.l
 DrawLoop:
 ; Remember when we started to render this frame, so that we can throttle
 ; ourselves in case we render faster than the screen refresh.
 	move.l frame_count.l, render_start.l
 
 ; Do the actual drawing
-	move.l render_base.l, a0
+	movea.l _draw_base.l, a0
+	moveq.l #0, d0
+	move.w #7999, d7
+.ClearScreen:
+	move.l d0, (a0)+
+	dbra.w d7, .ClearScreen.l
+
+	move.l _draw_base.l, a0
 	move.w #199, d7
 .Draw:
 .if ^^defined DEBUG_COLOR_SHOW_RENDER
@@ -85,13 +92,9 @@ DrawLoop:
 	move.w d0, (a0)
 	move.w d0, 152(a0)
 	lea.l 160(a0), a0
-	moveq.l #127, d6
-.Nothing:
-	rol.b #8, d0
-	dbra.w d6, .Nothing.l
 	dbra.w d7, .Draw.l
 
-	move.l fb_render.l, render_base.l
+	move.l fb_render.l, _draw_base.l
 
 ; Signal to the GPU-handling code that we have a new frame ready
 	move.b #1, fb_next_ready.l
@@ -114,5 +117,5 @@ DrawLoop:
 
 	.bss
 	.even
-render_base:
+_draw_base:
 	.ds.l 1
