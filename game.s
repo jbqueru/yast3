@@ -79,20 +79,178 @@ DrawLoop:
 	move.l d0, (a0)+
 	dbra.w d7, .ClearScreen.l
 
-	move.l _draw_base.l, a0
-	move.w #199, d7
-.Draw:
 .if ^^defined DEBUG_COLOR_SHOW_RENDER
 	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
 .endif
-	move.l interrupt_ticks_300hz.l, d0
-	move.w d0, 4(a0)
-	move.w d0, 156(a0)
-	swap.w d0
-	move.w d0, (a0)
-	move.w d0, 152(a0)
-	lea.l 160(a0), a0
-	dbra.w d7, .Draw.l
+
+	moveq.l #60, d0
+	moveq.l #0, d1
+	moveq.l #1, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #1, d1
+	moveq.l #2, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #2, d1
+	moveq.l #3, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #3, d1
+	moveq.l #4, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #4, d1
+	moveq.l #5, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #5, d1
+	moveq.l #6, d2
+	bsr _DrawChar.l
+
+	moveq.l #59, d0
+	moveq.l #7, d1
+	moveq.l #3, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #7, d1
+	moveq.l #5, d2
+	bsr _DrawChar.l
+
+	moveq.l #58, d0
+	moveq.l #9, d1
+	moveq.l #3, d2
+	bsr _DrawChar.l
+	moveq.l #59, d0
+	moveq.l #9, d1
+	moveq.l #3, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #9, d1
+	moveq.l #3, d2
+	bsr _DrawChar.l
+
+	moveq.l #57, d0
+	moveq.l #10, d1
+	moveq.l #4, d2
+	bsr _DrawChar.l
+	moveq.l #58, d0
+	moveq.l #10, d1
+	moveq.l #4, d2
+	bsr _DrawChar.l
+	moveq.l #59, d0
+	moveq.l #10, d1
+	moveq.l #4, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #10, d1
+	moveq.l #4, d2
+	bsr _DrawChar.l
+
+	moveq.l #56, d0
+	moveq.l #11, d1
+	moveq.l #1, d2
+	bsr _DrawChar.l
+	moveq.l #57, d0
+	moveq.l #11, d1
+	moveq.l #1, d2
+	bsr _DrawChar.l
+	moveq.l #58, d0
+	moveq.l #11, d1
+	moveq.l #1, d2
+	bsr _DrawChar.l
+	moveq.l #59, d0
+	moveq.l #11, d1
+	moveq.l #2, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #11, d1
+	moveq.l #2, d2
+	bsr _DrawChar.l
+
+	moveq.l #57, d0
+	moveq.l #12, d1
+	moveq.l #1, d2
+	bsr _DrawChar.l
+	moveq.l #58, d0
+	moveq.l #12, d1
+	moveq.l #2, d2
+	bsr _DrawChar.l
+	moveq.l #59, d0
+	moveq.l #12, d1
+	moveq.l #3, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #12, d1
+	moveq.l #4, d2
+	bsr _DrawChar.l
+
+	moveq.l #56, d0
+	moveq.l #13, d1
+	moveq.l #2, d2
+	bsr _DrawChar.l
+	moveq.l #57, d0
+	moveq.l #13, d1
+	moveq.l #3, d2
+	bsr _DrawChar.l
+	moveq.l #58, d0
+	moveq.l #13, d1
+	moveq.l #4, d2
+	bsr _DrawChar.l
+	moveq.l #59, d0
+	moveq.l #13, d1
+	moveq.l #5, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #13, d1
+	moveq.l #6, d2
+	bsr _DrawChar.l
+
+	moveq.l #56, d0
+	moveq.l #14, d1
+	moveq.l #5, d2
+	bsr _DrawChar.l
+	moveq.l #57, d0
+	moveq.l #14, d1
+	moveq.l #5, d2
+	bsr _DrawChar.l
+	moveq.l #58, d0
+	moveq.l #14, d1
+	moveq.l #5, d2
+	bsr _DrawChar.l
+	moveq.l #59, d0
+	moveq.l #14, d1
+	moveq.l #5, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #14, d1
+	moveq.l #5, d2
+	bsr _DrawChar.l
+
+	moveq.l #56, d0
+	moveq.l #15, d1
+	moveq.l #3, d2
+	bsr _DrawChar.l
+	moveq.l #57, d0
+	moveq.l #15, d1
+	moveq.l #1, d2
+	bsr _DrawChar.l
+	moveq.l #58, d0
+	moveq.l #15, d1
+	moveq.l #4, d2
+	bsr _DrawChar.l
+	moveq.l #59, d0
+	moveq.l #15, d1
+	moveq.l #1, d2
+	bsr _DrawChar.l
+	moveq.l #60, d0
+	moveq.l #15, d1
+	moveq.l #5, d2
+	bsr _DrawChar.l
+
+.if ^^defined DEBUG_COLOR_SHOW_RENDER
+	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
+.endif
 
 	move.l fb_render.l, _draw_base.l
 
@@ -106,14 +264,127 @@ DrawLoop:
 ; If we're already in a different frame, no need to throttle ourselves, the
 ; rendering can start immmediately, we are guaranteed to have a buffer
 ; available.
-	bne.s DrawLoop.l
+	bne.w DrawLoop.l
 
 ; We're still in the same thread, throttle ourselves by blocking.
 ; (In a world where the drawing thread is alone at the lowest non-idle
 ; priority, we could busy-wait, but that's not future-proof).
 	clr.b draw_thread_ready.l
 	bsr.w SwitchThreads.l
-	bra.s DrawLoop.l
+	bra.w DrawLoop.l
+
+_DrawChar:
+	movea.l _draw_base, a1
+	mulu.w #1280, d1
+	adda.w d1, a1
+	move.w d0, d1
+	andi.w #$fffe, d0
+	add.w d0, d0
+	adda.w d0, a1
+	andi.w #$0001, d1
+	adda.w d1, a1
+	lea.l font, a0
+	lsl.w #3, d2
+	adda.w d2, a0
+	moveq.l #7, d0
+.DrawCharLine:
+	move.b (a0)+, (a1)
+	lea.l 160(a1), a1
+	dbra.w d0, .DrawCharLine
+	rts
+
+	.data
+font:
+
+	dc.b %00111100
+	dc.b %01100110
+	dc.b %01100110
+	dc.b %01100110
+	dc.b %01100110
+	dc.b %01100110
+	dc.b %00111100
+	dc.b %00000000
+
+	dc.b %00011000
+	dc.b %00111000
+	dc.b %00111000
+	dc.b %00011000
+	dc.b %00011000
+	dc.b %00011000
+	dc.b %00111100
+	dc.b %00000000
+
+	dc.b %00111100
+	dc.b %01100110
+	dc.b %00000110
+	dc.b %00111100
+	dc.b %01100000
+	dc.b %01100000
+	dc.b %01111110
+	dc.b %00000000
+
+	dc.b %00111100
+	dc.b %01100110
+	dc.b %00000110
+	dc.b %00011100
+	dc.b %00000110
+	dc.b %01100110
+	dc.b %00111100
+	dc.b %00000000
+
+	dc.b %01100000
+	dc.b %01100000
+	dc.b %01100000
+	dc.b %01101100
+	dc.b %01111110
+	dc.b %00001100
+	dc.b %00001100
+	dc.b %00000000
+
+	dc.b %01111110
+	dc.b %01100000
+	dc.b %01100000
+	dc.b %01111100
+	dc.b %00000110
+	dc.b %01100110
+	dc.b %00111100
+	dc.b %00000000
+
+	dc.b %00111100
+	dc.b %01100110
+	dc.b %01100000
+	dc.b %01111100
+	dc.b %01100110
+	dc.b %01100110
+	dc.b %00111100
+	dc.b %00000000
+
+	dc.b %01111110
+	dc.b %00000110
+	dc.b %00001100
+	dc.b %00011000
+	dc.b %00011000
+	dc.b %00011000
+	dc.b %00011000
+	dc.b %00000000
+
+	dc.b %00111100
+	dc.b %01100110
+	dc.b %01100110
+	dc.b %00111100
+	dc.b %01100110
+	dc.b %01100110
+	dc.b %00111100
+	dc.b %00000000
+
+	dc.b %00111100
+	dc.b %01100110
+	dc.b %01100110
+	dc.b %00111110
+	dc.b %00000110
+	dc.b %01100110
+	dc.b %00111100
+	dc.b %00000000
 
 	.bss
 	.even
