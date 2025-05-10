@@ -405,6 +405,11 @@ _Interrupt_Vertical_Blank:
 	move.b #$08, MFP_TBCR.w						; turn timer on, even counting mode
 	move.b #8, MFP_TBDR.w						; write to data register. written only to data register, since timer is on
 
+	move.w #$102, GFX_COLOR_0.w
+	move.w #$574, GFX_COLOR_1.w
+	move.w #$607, GFX_COLOR_2.w
+	move.w #$334, GFX_COLOR_3.w
+
 	move.w #$2300, sr							; lower interrupt level so that the thread switching code isn't suppressed
 												; TODO: jump to a point where the suppression is ineffective
 	bra SwitchFromInt.l							; switch threads in case a thread-switching interrupt fired on top of us
