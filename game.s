@@ -62,14 +62,15 @@ CoreThread:
 ; #############################################################################
 ; #############################################################################
 
-DrawThread:
-
+DrawStart:
+	move.l fb_render.l, render_base.l
+DrawLoop:
 ; Remember when we started to render this frame, so that we can throttle
 ; ourselves in case we render faster than the screen refresh.
 	move.l frame_count.l, render_start.l
 
 ; Do the actual drawing
-	movea.l fb_render.l, a0
+	move.l render_base.l, a0
 	move.w #199, d7
 .Draw:
 	eor.w #$040, $ffff8240.w
@@ -86,6 +87,8 @@ DrawThread:
 	dbra.w d6, .Nothing.l
 	dbra.w d7, .Draw.l
 
+	move.l fb_render.l, render_base.l
+
 ; Signal to the GPU-handling code that we have a new frame ready
 	move.b #1, fb_next_ready.l
 
@@ -96,11 +99,16 @@ DrawThread:
 ; If we're already in a different frame, no need to throttle ourselves, the
 ; rendering can start immmediately, we are guaranteed to have a buffer
 ; available.
-	bne.s DrawThread.l
+	bne.s DrawLoop.l
 
 ; We're still in the same thread, throttle ourselves by blocking.
 ; (In a world where the drawing thread is alone at the lowest non-idle
 ; priority, we could busy-wait, but that's not future-proof).
 	clr.b draw_thread_ready.l
 	bsr.w SwitchThreads.l
-	bra.s DrawThread.l
+	bra.s DrawLoop.l
+
+	.bss
+	.even
+render_base:
+	.ds.l 1
