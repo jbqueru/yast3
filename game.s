@@ -66,7 +66,7 @@ CoreStart:
 	bne.s .zone_loop.l
 	moveq.l #0, d0
 .zone_done:
-	move.w d0, _core_mouse_over.l
+	move.b d0, _core_mouse_over.l
 
 	btst.b #1, keyboard_state + 7.l
 	sne.b d0
@@ -103,6 +103,23 @@ DrawLoop:
 .if ^^defined DEBUG_COLOR_SHOW_RENDER
 	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
 .endif
+
+	lea.l chars_list.l, a2
+	lea.l chars_list_end.l, a3
+.loop_chars:
+	moveq.l #0, d0
+	move.b (a2)+, d0
+	moveq.l #0, d1
+	move.b (a2)+, d1
+	moveq.l #0, d2
+	move.b (a2)+, d2
+	move.b (a2)+, d3
+	cmp.b _core_mouse_over.l, d3
+	seq.b d3
+	andi.w #1, d3
+	bsr.w _DrawChar
+	cmpa.l a3, a2
+	bne.s .loop_chars
 
 	moveq.l #60, d0
 	moveq.l #0, d1
@@ -308,28 +325,6 @@ DrawLoop:
 	moveq.l #0, d3
 	bsr _DrawChar.l
 
-	moveq.l #11, d0
-	moveq.l #2, d1
-	moveq.l #0, d2
-	cmpi.w #1, _core_mouse_over.l
-	seq.b d3
-	andi.w #1, d3
-	bsr _DrawChar.l
-	moveq.l #12, d0
-	moveq.l #2, d1
-	moveq.l #0, d2
-	cmpi.w #1, _core_mouse_over.l
-	seq.b d3
-	andi.w #1, d3
-	bsr _DrawChar.l
-	moveq.l #13, d0
-	moveq.l #2, d1
-	moveq.l #0, d2
-	cmpi.w #1, _core_mouse_over.l
-	seq.b d3
-	andi.w #1, d3
-	bsr _DrawChar.l
-
 	moveq.l #12, d0
 	moveq.l #4, d1
 	moveq.l #1, d2
@@ -414,6 +409,12 @@ _DrawChar:
 mouse_zones:
 	.dc.w 88, 111, 16, 23
 mouse_zones_end:
+
+chars_list:
+	.dc.b 11, 2, 0, 1
+	.dc.b 12, 2, 0, 1
+	.dc.b 13, 2, 0, 1
+chars_list_end:
 
 font:
 
@@ -513,6 +514,6 @@ _draw_base:
 	.ds.l 1
 
 _core_mouse_over:
-	.ds.w 1
+	.ds.b 1
 _core_mouse_click:
-	.ds.w 1
+	.ds.b 1
