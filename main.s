@@ -231,30 +231,35 @@ _MainSuper:
 ; ************************
 
 	lea.l mouse_thread_stack_top, a0
+	clr.w -(a0)
 	move.l #MouseThread, -(a0)
 	move #$2300, -(a0)
 	lea.l -64(a0), a0
 	move.l a0, mouse_thread_stack
 
 	lea.l yamaha_thread_stack_top, a0
+	clr.w -(a0)
 	move.l #YamahaThread, -(a0)
 	move #$2300, -(a0)
 	lea.l -64(a0), a0
 	move.l a0, yamaha_thread_stack
 
 	lea.l pcm_thread_stack_top, a0
+	clr.w -(a0)
 	move.l #PcmThread, -(a0)
 	move #$2300, -(a0)
 	lea.l -64(a0), a0
 	move.l a0, pcm_thread_stack
 
 	lea.l core_thread_stack_top, a0
+	clr.w -(a0)
 	move.l #CoreThread, -(a0)
 	move #$2300, -(a0)
 	lea.l -64(a0), a0
 	move.l a0, core_thread_stack
 
 	lea.l draw_thread_stack_top, a0
+	clr.w -(a0)
 	move.l #_ThreadStartDraw, -(a0)
 	move #$2300, -(a0)
 	lea.l -64(a0), a0
@@ -577,6 +582,14 @@ SwitchThreads:			; TODO: rename
 	tst.b delay_thread_switch.l
 	bne.s SwitchThreads.l
 	move.w sr, -(sp)
+	tst.w $59e.w
+	beq.s .shortframe
+	subq.l #2, sp
+	move.w 2(sp), (sp)
+	move.w 4(sp), 2(sp)
+	move.w 6(sp), 4(sp)
+	clr.w 6(sp)
+.shortframe:
 DoSwitch:			; TODO: rename, make private, re-oder code to make local
 	move.w #$2600, sr
 	movem.l d0-a6, -(sp)		; TODO: don't save on yield
