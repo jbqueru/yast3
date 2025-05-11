@@ -28,10 +28,13 @@
 ; #############################################################################
 
 DEBUG .equ 0
-DEBUG_COLOR_SHOW_ALL .equ 0
 
 .if DEBUG
 DEBUG_COLOR_SHOW_ALL .equ 1
+.endif
+
+.if !(^^defined DEBUG_COLOR_SHOW_ALL)
+DEBUG_COLOR_SHOW_ALL .equ 0
 .endif
 
 .if DEBUG_COLOR_SHOW_ALL
