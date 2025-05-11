@@ -41,39 +41,39 @@ CoreStart:
 	eori.w #DEBUG_COLOR_SHOW_CORE, GFX_COLOR_0.w
 	dbra.w d0, .Core.l
 .endif
-	tst.w _core_mouse_status.l
-	bne.s .check_status_1.l
 
-	tst.w mouse_buttons.l
-	beq.s .mouse_done.l
+; Check if the mouse is in one of the active zones
+	lea.l mouse_zones.l, a0
+	lea.l mouse_zones_end.l, a1
+	moveq.l #1, d0
+	move.w mouse_x.l, d1
+	move.w mouse_y.l, d2
 
-	cmpi.w #88, mouse_x.l
-	blt.s .not_click_reset.l
-	cmpi.w #112, mouse_x.l
-	bge.s .not_click_reset.l
-	cmpi.w #16, mouse_y.l
-	blt.s .not_click_reset.l
-	cmpi.w #24, mouse_y.l
-	bge.s .not_click_reset.l
+.zone_loop:
+	cmp.w (a0), d1
+	blt.s .not_in_zone.l
+	cmp.w 2(a0), d1
+	bgt.s .not_in_zone.l
+	cmp.w 4(a0), d2
+	blt.s .not_in_zone.l
+	cmp.w 6(a0), d2
+	ble.s .zone_done.l
 
-	move.w #1, _core_mouse_status.l
+.not_in_zone:
+	addq.w #1, d0
+	addq.l #8, a0
+	cmpa.l a1, a0
+	bne.s .zone_loop.l
+	moveq.l #0, d0
+.zone_done:
+	move.w d0, _core_mouse_over.l
 
-.not_click_reset:
-	bra.s .mouse_done.l
-
-.check_status_1:
-	tst.w mouse_buttons.l
-	bne.s .mouse_done.l
-	clr.w _core_mouse_status.l
-	bra.s .mouse_done.l
-
-.mouse_done:
 	btst.b #1, keyboard_state + 7.l
 	sne.b d0
 	or.b d0, thread_exit_all.l
 	clr.b core_thread_ready.l
 	bsr.w SwitchThreads.l
-	bra.s CoreStart.l
+	bra.w CoreStart.l
 
 ; #############################################################################
 ; #############################################################################
@@ -311,17 +311,23 @@ DrawLoop:
 	moveq.l #11, d0
 	moveq.l #2, d1
 	moveq.l #0, d2
-	move.w _core_mouse_status.l, d3
+	cmpi.w #1, _core_mouse_over.l
+	seq.b d3
+	andi.w #1, d3
 	bsr _DrawChar.l
 	moveq.l #12, d0
 	moveq.l #2, d1
 	moveq.l #0, d2
-	move.w _core_mouse_status.l, d3
+	cmpi.w #1, _core_mouse_over.l
+	seq.b d3
+	andi.w #1, d3
 	bsr _DrawChar.l
 	moveq.l #13, d0
 	moveq.l #2, d1
 	moveq.l #0, d2
-	move.w _core_mouse_status.l, d3
+	cmpi.w #1, _core_mouse_over.l
+	seq.b d3
+	andi.w #1, d3
 	bsr _DrawChar.l
 
 	moveq.l #12, d0
@@ -404,6 +410,11 @@ _DrawChar:
 	rts
 
 	.data
+	.even
+mouse_zones:
+	.dc.w 88, 111, 16, 23
+mouse_zones_end:
+
 font:
 
 	dc.b %00111100
@@ -501,5 +512,7 @@ font:
 _draw_base:
 	.ds.l 1
 
-_core_mouse_status:
+_core_mouse_over:
+	.ds.w 1
+_core_mouse_click:
 	.ds.w 1
