@@ -253,7 +253,7 @@ _MainSuper:
 
 	lea.l core_thread_stack_top, a0
 	clr.w -(a0)
-	move.l #CoreThread, -(a0)
+	move.l #_ThreadStartCore, -(a0)
 	move #$2300, -(a0)
 	lea.l -64(a0), a0
 	move.l a0, core_thread_stack
@@ -823,8 +823,11 @@ PcmThread:
 	bsr.w SwitchThreads.l
 	bra.s PcmThread.l
 
+_ThreadStartCore:
+	bra.w CoreStart.l
+
 _ThreadStartDraw:
-	jmp DrawStart.l
+	bra.w DrawStart.l
 
 ; #############################################################################
 ; #############################################################################

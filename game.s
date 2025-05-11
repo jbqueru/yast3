@@ -34,7 +34,7 @@
 
 	.text
 
-CoreThread:
+CoreStart:
 .if ^^defined DEBUG_COLOR_SHOW_CORE
 	move.w #199, d0
 .Core:
@@ -46,7 +46,7 @@ CoreThread:
 	or.b d0, thread_exit_all.l
 	clr.b core_thread_ready.l
 	bsr.w SwitchThreads.l
-	bra.s CoreThread.l
+	bra.s CoreStart.l
 
 ; #############################################################################
 ; #############################################################################
