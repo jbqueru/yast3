@@ -41,6 +41,33 @@ CoreStart:
 	eori.w #DEBUG_COLOR_SHOW_CORE, GFX_COLOR_0.w
 	dbra.w d0, .Core.l
 .endif
+	tst.w _core_mouse_status.l
+	bne.s .check_status_1.l
+
+	tst.w mouse_buttons.l
+	beq.s .mouse_done.l
+
+	cmpi.w #88, mouse_x.l
+	blt.s .not_click_reset.l
+	cmpi.w #112, mouse_x.l
+	bge.s .not_click_reset.l
+	cmpi.w #16, mouse_y.l
+	blt.s .not_click_reset.l
+	cmpi.w #24, mouse_y.l
+	bge.s .not_click_reset.l
+
+	move.w #1, _core_mouse_status.l
+
+.not_click_reset:
+	bra.s .mouse_done.l
+
+.check_status_1:
+	tst.w mouse_buttons.l
+	bne.s .mouse_done.l
+	clr.w _core_mouse_status.l
+	bra.s .mouse_done.l
+
+.mouse_done:
 	btst.b #1, keyboard_state + 7.l
 	sne.b d0
 	or.b d0, thread_exit_all.l
@@ -80,205 +107,253 @@ DrawLoop:
 	moveq.l #60, d0
 	moveq.l #0, d1
 	moveq.l #1, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #1, d1
 	moveq.l #2, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #2, d1
 	moveq.l #3, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #3, d1
 	moveq.l #4, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #4, d1
 	moveq.l #5, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #5, d1
 	moveq.l #6, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 
 	moveq.l #59, d0
 	moveq.l #7, d1
 	moveq.l #3, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #7, d1
 	moveq.l #5, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 
 	moveq.l #58, d0
 	moveq.l #9, d1
 	moveq.l #3, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #59, d0
 	moveq.l #9, d1
 	moveq.l #3, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #9, d1
 	moveq.l #3, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 
 	moveq.l #57, d0
 	moveq.l #10, d1
 	moveq.l #4, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #58, d0
 	moveq.l #10, d1
 	moveq.l #4, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #59, d0
 	moveq.l #10, d1
 	moveq.l #4, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #10, d1
 	moveq.l #4, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 
 	moveq.l #56, d0
 	moveq.l #11, d1
 	moveq.l #1, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #57, d0
 	moveq.l #11, d1
 	moveq.l #1, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #58, d0
 	moveq.l #11, d1
 	moveq.l #1, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #59, d0
 	moveq.l #11, d1
 	moveq.l #2, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #11, d1
 	moveq.l #2, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 
 	moveq.l #57, d0
 	moveq.l #12, d1
 	moveq.l #1, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #58, d0
 	moveq.l #12, d1
 	moveq.l #2, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #59, d0
 	moveq.l #12, d1
 	moveq.l #3, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #12, d1
 	moveq.l #4, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 
 	moveq.l #56, d0
 	moveq.l #13, d1
 	moveq.l #2, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #57, d0
 	moveq.l #13, d1
 	moveq.l #3, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #58, d0
 	moveq.l #13, d1
 	moveq.l #4, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #59, d0
 	moveq.l #13, d1
 	moveq.l #5, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #13, d1
 	moveq.l #6, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 
 	moveq.l #56, d0
 	moveq.l #14, d1
 	moveq.l #5, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #57, d0
 	moveq.l #14, d1
 	moveq.l #5, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #58, d0
 	moveq.l #14, d1
 	moveq.l #5, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #59, d0
 	moveq.l #14, d1
 	moveq.l #5, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #14, d1
 	moveq.l #5, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 
 	moveq.l #56, d0
 	moveq.l #15, d1
 	moveq.l #3, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #57, d0
 	moveq.l #15, d1
 	moveq.l #1, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #58, d0
 	moveq.l #15, d1
 	moveq.l #4, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #59, d0
 	moveq.l #15, d1
 	moveq.l #1, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #60, d0
 	moveq.l #15, d1
 	moveq.l #5, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 
 	moveq.l #11, d0
 	moveq.l #2, d1
 	moveq.l #0, d2
+	move.w _core_mouse_status.l, d3
 	bsr _DrawChar.l
 	moveq.l #12, d0
 	moveq.l #2, d1
 	moveq.l #0, d2
+	move.w _core_mouse_status.l, d3
 	bsr _DrawChar.l
 	moveq.l #13, d0
 	moveq.l #2, d1
 	moveq.l #0, d2
+	move.w _core_mouse_status.l, d3
 	bsr _DrawChar.l
 
 	moveq.l #12, d0
 	moveq.l #4, d1
 	moveq.l #1, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 
 	moveq.l #8, d0
 	moveq.l #6, d1
 	moveq.l #6, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #10, d0
 	moveq.l #6, d1
 	moveq.l #6, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #12, d0
 	moveq.l #6, d1
 	moveq.l #6, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #14, d0
 	moveq.l #6, d1
 	moveq.l #6, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 	moveq.l #16, d0
 	moveq.l #6, d1
 	moveq.l #6, d2
+	moveq.l #0, d3
 	bsr _DrawChar.l
 
 
@@ -316,6 +391,8 @@ _DrawChar:
 	adda.w d0, a1
 	andi.w #$0001, d1
 	adda.w d1, a1
+	add.w d3, d3
+	adda.w d3, a1
 	lea.l font, a0
 	lsl.w #3, d2
 	adda.w d2, a0
@@ -423,3 +500,6 @@ font:
 	.even
 _draw_base:
 	.ds.l 1
+
+_core_mouse_status:
+	.ds.w 1
