@@ -103,11 +103,17 @@ DrawLoop:
 .if ^^defined DEBUG_COLOR_SHOW_RENDER
 	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
 .endif
-	lea.l _draw_colors, a4
+	lea.l _draw_colors, a0
+	moveq.l #25, d0
+.ClearColors:
+	move.b #1, (a0)+
+	dbra.w d0, .ClearColors
+	lea.l _draw_colors, a0
 	moveq.l #0, d3
 	move.b _core_mouse_over, d3
-	move.b #1, (a4, d3.w)
-
+	beq.s .Zone0
+	move.b #2, (a0, d3.w)
+.Zone0:
 
 	lea.l chars_list.l, a2
 	lea.l chars_list_end.l, a3
