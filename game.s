@@ -103,9 +103,15 @@ DrawLoop:
 .if ^^defined DEBUG_COLOR_SHOW_RENDER
 	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
 .endif
+	lea.l _draw_colors, a4
+	moveq.l #0, d3
+	move.b _core_mouse_over, d3
+	move.b #1, (a4, d3.w)
+
 
 	lea.l chars_list.l, a2
 	lea.l chars_list_end.l, a3
+	lea.l _draw_colors, a4
 .loop_chars:
 	moveq.l #0, d0
 	move.b (a2)+, d0
@@ -113,10 +119,9 @@ DrawLoop:
 	move.b (a2)+, d1
 	moveq.l #0, d2
 	move.b (a2)+, d2
+	moveq.l #0, d3
 	move.b (a2)+, d3
-	cmp.b _core_mouse_over.l, d3
-	seq.b d3
-	andi.w #1, d3
+	move.b (a4, d3.w), d3
 	bsr.w _DrawChar
 	cmpa.l a3, a2
 	bne.s .loop_chars
@@ -172,11 +177,11 @@ _DrawChar:
 mouse_zones:
 	.dc.w 88, 111, 16, 23
 	.dc.w 96, 103, 32, 39
-	.dc.w 64, 71, 48, 55
-	.dc.w 80, 87, 48, 55
-	.dc.w 96, 103, 48, 55
-	.dc.w 112, 119, 48, 55
-	.dc.w 128, 137, 48, 55
+	.dc.w 64, 71, 48, 63
+	.dc.w 80, 87, 48, 63
+	.dc.w 96, 103, 48, 63
+	.dc.w 112, 119, 48, 63
+	.dc.w 128, 137, 48, 63
 	.dc.w 480, 487, 0, 7
 	.dc.w 480, 487, 8, 15
 	.dc.w 480, 487, 16, 23
@@ -205,6 +210,12 @@ chars_list:
 	.dc.b 14, 6, 6, 6
 	.dc.b 16, 6, 6, 7
 
+	.dc.b 8, 7, 6, 21
+	.dc.b 10, 7, 6, 22
+	.dc.b 12, 7, 6, 23
+	.dc.b 14, 7, 6, 24
+	.dc.b 16, 7, 6, 25
+
 	.dc.b 60, 0, 1, 8
 	.dc.b 60, 1, 2, 9
 	.dc.b 60, 2, 3, 10
@@ -212,8 +223,8 @@ chars_list:
 	.dc.b 60, 4, 5, 12
 	.dc.b 60, 5, 6, 13
 
-	.dc.b 59, 7, 3, 255
-	.dc.b 60, 7, 5, 255
+	.dc.b 59, 7, 3, 0
+	.dc.b 60, 7, 5, 0
 
 	.dc.b 58, 9, 3, 14
 	.dc.b 59, 9, 3, 14
@@ -351,6 +362,9 @@ font:
 	.even
 _draw_base:
 	.ds.l 1
+
+_draw_colors:
+	.ds.b 26
 
 _core_mouse_over:
 	.ds.b 1
