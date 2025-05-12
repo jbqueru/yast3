@@ -160,14 +160,20 @@ _DrawChar:
 	adda.w d0, a1
 	andi.w #$0001, d1
 	adda.w d1, a1
-	add.w d3, d3
-	adda.w d3, a1
 	lea.l font, a0
 	lsl.w #3, d2
 	adda.w d2, a0
 	moveq.l #7, d0
 .DrawCharLine:
-	move.b (a0)+, (a1)
+	move.b (a0)+, d1
+	btst.l #0, d3
+	beq.s .bit0done
+	move.b d1, (a1)
+.bit0done:
+	btst.l #1, d3
+	beq.s .bit1done
+	move.b d1, 2(a1)
+.bit1done:
 	lea.l 160(a1), a1
 	dbra.w d0, .DrawCharLine
 	rts
