@@ -68,6 +68,18 @@ CoreStart:
 .zone_done:
 	move.b d0, _core_mouse_over.l
 
+	lea.l _draw_colors, a0
+	moveq.l #25, d0
+.ClearColors:
+	move.b #1, (a0)+
+	dbra.w d0, .ClearColors
+	lea.l _draw_colors, a0
+	moveq.l #0, d3
+	move.b _core_mouse_over, d3
+	beq.s .Zone0
+	move.b #2, (a0, d3.w)
+.Zone0:
+
 	btst.b #1, keyboard_state + 7.l
 	sne.b d0
 	or.b d0, thread_exit_all.l
@@ -103,18 +115,6 @@ DrawLoop:
 .if ^^defined DEBUG_COLOR_SHOW_RENDER
 	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
 .endif
-	lea.l _draw_colors, a0
-	moveq.l #25, d0
-.ClearColors:
-	move.b #1, (a0)+
-	dbra.w d0, .ClearColors
-	lea.l _draw_colors, a0
-	moveq.l #0, d3
-	move.b _core_mouse_over, d3
-	beq.s .Zone0
-	move.b #2, (a0, d3.w)
-.Zone0:
-
 	lea.l chars_list.l, a2
 	lea.l chars_list_end.l, a3
 	lea.l _draw_colors, a4
