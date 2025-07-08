@@ -602,6 +602,131 @@ being preempted by the renderer.
 With a fully synchronous renderer, 4 are enough. The code is
 also simpler.
 
+## Jul 8 2025
+
+### Thread design feedback
+
+After discussion with experienced game developers, it turned out that my
+approach to threading is not ideal.
+
+In a nutshell, game design is primarily a matter of resampling and latency.
+Every time data gets passed from one time base to another, a resampling
+happens, which introduces some latency.
+
+On any machine, the display has its own time base (the frame rate).
+
+In situations where the renderer runs slower than the frame rate,
+and especially if the renderer runs at a variable rate and/or not
+synchronized with the frame rate, there's a resampling between the
+renderer in the display.
+
+We note that the ST can't swap framebuffers mid-frame. Later machines
+can do so, with significant caveats.
+
+Upstream from that is the game logic, which gets constrained by two
+aspects: on the one hand, its output needs to be independent from
+the rate at which it runs: the game must have the same timing
+characteristics regardless of internal timing details. But, at the
+same time, the game logic should run synchronously with the renderer
+to avoid a resampling between the two (and the complexities
+associated with that).
+
+Finally, inputs might have their own timing. On machines where the
+game logic runs quickly enough and where inputs are polled by the
+CPU, reading the input state once per tick of the game logic might
+be enough (and, depending on machine architecture, it might be
+harder to do more than that depending on what interrupts and/or timing
+information are available). On machines such as the Atari ST, though,
+the IKBD pushes input updates asynchronously from other time sources.
+
+### Thread designs
+
+#### Simplest: all synchronized
+
+Run the game logic synchronized with the renderer, assuming that the
+renderer runs in constant time. Use the latest state of the inputs
+to compute the state of the game, and render accordingly. This might
+work enough for strategy games.
+
+#### A bit more advanced: account for variable render time
+
+Run one tick of game logic for each rendered frame, from the latest state
+of the inputs, but take into account how much time has elapsed since the
+last frame in the logic calculations, so that the overall game logic runs
+in constant predictable time. This is the minimum for an action game
+that might run on machines with different speeds, e.g. the Atari ST family.
+For a variety of reasons, this might be implemented as a sequence of
+fixed-duration ticks instead of a single variable-duration tick, based on
+tradeoffs between code complexity and code speeds.
+
+#### Further: fixed-duration ticks and intermediate inputs.
+
+Instead of considering the state of the inputs once per rendered
+frame, inputs are sampled more often, and, when running the game
+logic in multiple ticks, using the recorded past state of the inputs
+for each tick. That way, the entire game logic, as driven by the
+inputs, is entirely independent from the rendering speed.
+
+#### Predicting a bit: logic past the most recent tick.
+
+In the previous approach, the inputs are sampled and recorded
+at a rate that'll later match the ticks of the game logic.
+However, there might exist some input data that's more recent
+than the latest tick. To maintain the independence between
+rendering speed and game behavior, that input data can't be
+kept in any data that's used for eventual consistency. However,
+one extra tick can be computed predictively, from which the
+rendered can then run, so that all inputs that have already
+been received when the rendering starts have been taken into
+account.
+
+#### Hunting down rendering and display latency.
+
+It's easy to render graphics based on the state of the game
+at the time when the renderer starts. Ideally, though, the
+renderer should be accurate for the time when the output
+of the frame get displayed. Building on the previous step,
+additional ticks of game logic can be run speculatively
+until the expected time of the display. This requires to
+predict how long the game logic and renderer will take, most
+likely building from past frames. This ideally also takes
+into account the delay between rendering being finished, the
+frame being displayed for the first time, and the frame being
+displayed for the last time. Here again, recent data will
+helps extrapolate future rendering time.
+
+There's a risk of death spiral here: if each tick of the
+game logic takes too long, running more speculative ticks
+will slow down the overall rendering loop, which in turn
+will cause more speculative ticks to be computed in future
+frames.
+
+#### Ultimate approaches
+
+Not all pixels in a frame are rendered at the same time. There's
+e.g. a delay of 18.4 ms between the first and the last active line
+in a PAL display. That can be taken into account for sub-frame
+predictions where items that appear lower on the display are run
+speculatively for a few more sub-frame ticks. Chances are, this
+requires ticks that are at least 2 to 3 times the frame rate. The
+typical 200Hz timer C on the Atari ST, or the 300Hz interrupt
+on the Amstrad CPC are reasonable candidates, though in the
+latter case it might work well enough only to consider every
+other tick.
+
+Also, and especially if we assume that the game logic will run
+comparatively fast compared to the renderer, there's a possibility
+that new input information will be received before rendering has
+completed, but will potentially be ignored. Instead of running
+the entire game logic first and pushing its result into the
+renderer, the renderer could be pulling speculative display
+information from the game logic, which could then use any input
+information that has been received in the meantime.
+
+Those two approaches can be combined, with items at the top of
+the frame rendered first, so that those at the bottom of the frame
+can take more inputs into account.
+
 # What's in the package
 
 The distribution package contains this `README.md` file, the main
