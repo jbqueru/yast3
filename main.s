@@ -101,7 +101,8 @@
 
 	.bss
 _main_bss_start:		; Guard to know where BSS starts and ends
-						; TODO: investigate getting that from OS
+						; TODO: investigate getting that from OS API
+						; WARN: OS API might be unreliable with compression
 
 	.text
 
