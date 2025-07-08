@@ -580,6 +580,28 @@ specifically targeting TT of Falcon, and even then that might only
 make sense in low-resolution modes (32kb as opposed to the TT's
 150kiB and Falcon's typical 300kiB).
 
+## Jun 01 2025
+
+### Renderer instructions
+
+With a fully asynchronous renderer, there need to be 6 sets of
+renderer instructions:
+-The inactive framebuffers use 2
+-The framebuffer being rendered into use 2
+-The game logic uses 2 (one active, one ready)
+In that case, switching between the buffers is tricky.
+
+With a semi-synchronous renderer (that doesn't run while the
+game logic runs), 5 sets are enough, the game logic
+only needs 1 since the renderer won't start while the
+game logic runs, so it's OK that there are no clean instructions
+while the logic is running. The game logic doesn't need to
+worry about the renderer, so it can switch the buffers without
+being preempted by the renderer.
+
+With a fully synchronous renderer, 4 are enough. The code is
+also simpler.
+
 # What's in the package
 
 The distribution package contains this `README.md` file, the main
