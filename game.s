@@ -68,6 +68,9 @@ CoreStart:
 .zone_done:
 	move.b d0, _core_mouse_over.l
 
+; Build the colors list based on internal state and mouse position
+; TODO: build one for each framebuffer to avoid race condition
+
 	lea.l _draw_colors, a0
 	moveq.l #25, d0
 .ClearColors:
