@@ -238,13 +238,6 @@ _MainSuper:
 	lea.l -64(a0), a0
 	move.l a0, mouse_thread_stack
 
-	lea.l yamaha_thread_stack_top, a0
-	clr.w -(a0)
-	move.l #YamahaThread, -(a0)
-	move #$2300, -(a0)
-	lea.l -64(a0), a0
-	move.l a0, yamaha_thread_stack
-
 	lea.l pcm_thread_stack_top, a0
 	clr.w -(a0)
 	move.l #PcmThread, -(a0)
@@ -369,11 +362,6 @@ _Interrupt_300Hz:
 	.endr
 	eori.w #DEBUG_COLOR_SHOW_TIMER_C, GFX_COLOR_0.w
 .endif
-	subq.b #1, _interrupt_timer_c_divide_6.l
-	bpl.s .Not50Hz
-	move.b #5, _interrupt_timer_c_divide_6.l
-	move.b #1, yamaha_thread_ready.l			; every 6 ticks, schedule the PSG thread (50Hz)
-.Not50Hz:
 	bra.w SwitchFromInt.l
 
 ; ############################################
@@ -590,12 +578,6 @@ DoSwitch:			; TODO: rename, make private, re-oder code to make local
 	tst.b thread_exit_all.l
 	bne.s .idle_to_exit.l
 
-	tst.b yamaha_thread_ready
-	beq.s .not_yamaha
-	lea.l yamaha_thread_stack, a0
-	bra.s .thread_selected
-.not_yamaha:
-
 	tst.b mouse_thread_ready
 	beq.s .not_mouse
 	lea.l mouse_thread_stack, a0
@@ -783,16 +765,6 @@ MouseThread:
 	bsr.w SwitchThreads.l
 	bra.w MouseThread.l
 
-YamahaThread:
-.if ^^defined DEBUG_COLOR_SHOW_PSG
-	.rept 64
-	eor.w #DEBUG_COLOR_SHOW_PSG, GFX_COLOR_0.w
-	.endr
-.endif
-	clr.b yamaha_thread_ready.l
-	bsr.w SwitchThreads.l
-	bra.w YamahaThread.l
-
 PcmThread:
 	lea.l StartSound.l, a0
 	move.w #209, d0
@@ -882,10 +854,6 @@ mouse_thread_stack:
 	.ds.l 251
 mouse_thread_stack_top:
 
-yamaha_thread_stack:
-	.ds.l 251
-yamaha_thread_stack_top:
-
 pcm_thread_stack:
 	.ds.l 251
 pcm_thread_stack_top:
@@ -923,8 +891,6 @@ mouse_y:
 	.ds.w 1
 
 mouse_thread_ready:
-	.ds.b 1
-yamaha_thread_ready:
 	.ds.b 1
 pcm_thread_ready:
 	.ds.b 1
