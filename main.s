@@ -384,7 +384,7 @@ _Interrupt_Vertical_Blank:
 	move.l #_Interrupt_End_Line_92, VECTOR_MFP_TIMER_B.w		; handler for the first line interrupt that'll fire
 	move.b #$00, MFP_TBCR.w						; turn timer off
 	move.b #92, MFP_TBDR.w						; count 92 ticks. written both to data and main register, since timer is off
-	move.b #$08, MFP_TBCR.w						; turn timer on, even counting mode
+	move.b #$08, MFP_TBCR.w						; turn timer on, event counting mode
 	move.b #8, MFP_TBDR.w						; write to data register. written only to data register, since timer is on
 
 	move.w #$102, GFX_COLOR_0.w
