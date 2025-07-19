@@ -802,7 +802,7 @@ Reset:
 	.data
 	.even
 StartSound:
-	.dcb.b 210, 0
+	.dcb.b 250, 0
 EndSound:
 
 mouse_mask:
