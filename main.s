@@ -252,13 +252,6 @@ _MainSuper:
 	lea.l -64(a0), a0
 	move.l a0, pcm_thread_stack
 
-	lea.l core_thread_stack_top, a0
-	clr.w -(a0)
-	move.l #_ThreadStartCore, -(a0)
-	move #$2300, -(a0)
-	lea.l -64(a0), a0
-	move.l a0, core_thread_stack
-
 	lea.l draw_thread_stack_top, a0
 	clr.w -(a0)
 	move.l #_ThreadStartDraw, -(a0)
@@ -376,11 +369,6 @@ _Interrupt_300Hz:
 	.endr
 	eori.w #DEBUG_COLOR_SHOW_TIMER_C, GFX_COLOR_0.w
 .endif
-	subq.b #1, _interrupt_timer_c_divide_5.l
-	bpl.s .Not60Hz
-	move.b #4, _interrupt_timer_c_divide_5.l
-	move.b #1, core_thread_ready.l				; every 5 ticks, schedule the core thread (60Hz)
-.Not60Hz:
 	subq.b #1, _interrupt_timer_c_divide_6.l
 	bpl.s .Not50Hz
 	move.b #5, _interrupt_timer_c_divide_6.l
@@ -614,12 +602,6 @@ DoSwitch:			; TODO: rename, make private, re-oder code to make local
 	bra.s .thread_selected
 .not_mouse:
 
-	tst.b core_thread_ready
-	beq.s .not_core
-	lea.l core_thread_stack, a0
-	bra.s .thread_selected
-.not_core:
-
 	tst.b pcm_thread_ready
 	beq.s .not_pcm
 	lea.l pcm_thread_stack, a0
@@ -824,9 +806,6 @@ PcmThread:
 	bsr.w SwitchThreads.l
 	bra.s PcmThread.l
 
-_ThreadStartCore:
-	bra.w CoreStart.l
-
 _ThreadStartDraw:
 	bra.w DrawStart.l
 
@@ -911,10 +890,6 @@ pcm_thread_stack:
 	.ds.l 251
 pcm_thread_stack_top:
 
-core_thread_stack:
-	.ds.l 251
-core_thread_stack_top:
-
 draw_thread_stack:
 	.ds.l 251
 draw_thread_stack_top:
@@ -952,8 +927,6 @@ mouse_thread_ready:
 yamaha_thread_ready:
 	.ds.b 1
 pcm_thread_ready:
-	.ds.b 1
-core_thread_ready:
 	.ds.b 1
 draw_thread_ready:
 	.ds.b 1
