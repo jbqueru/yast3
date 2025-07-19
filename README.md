@@ -727,6 +727,136 @@ Those two approaches can be combined, with items at the top of
 the frame rendered first, so that those at the bottom of the frame
 can take more inputs into account.
 
+## Jul 19 2025
+
+### Async tasks
+
+There continue to be about the same list of things that potentially
+happen asynchronously from one another:
+
+#### Sound
+
+-YM sound, traditionally programmed 50 times per second, therefore
+running from a timer.
+
+-streamed PCM sound, which runs on an interrupt when its buffer is
+empty (unlike one-shot sounds). Choosing a buffer that's very small
+causes frequent interrupts, too small and there's a risk of buffer
+underflow. At the same time, a large buffer causes latency, too large
+causes an uneven availability of CPU for graphics rendering.
+
+-combining sound interrupts: if the PCM sound is always on and uses
+buffers of about 1/50s, it can also be used as the time base for
+YM sound, which allows the two to run in better sync. In a perfect
+world, it would run ever-so-slightly slower than the display, so that
+there never are two of its interrupts per frame.
+
+-when running from the same interrupt, the two sound chips work
+in lockstep, with the understanding that there's a one-buffer
+latency in the system, which is easy to work around. The drawback
+is that the true beat isn't exactly 50 Hz. Keeping the two chips
+in sync while achieving exactly 50 Hz can be done in one of two
+ways: read the frame address counter on the beat to predict when
+the next beat occurs in the PCM playack, and process accordingly,
+or vary the PCM buffer size so that it tracks the YM playback.
+Such measures might only be necessary for applications that require
+both an exact beat and exact PCM playback.
+
+#### Inputs
+
+-Those are coming from a serial line coming from an external clock.
+Nominally, 781.25 bytes/sec (100000/128).
+
+#### Display
+
+-Page flips need to be programmed before the end of the previous frame,
+typically on a timer B on the last visible line (at which point it's safe
+to start drawing onto the buffer that was just displayer).
+
+-The mouse cursor, in order to look smooth, also needs to be displayed
+for each frame, and the best time to display that is also on that same
+timer B on the last visible line.
+
+-Finally, bugs could cause timer B to drift. Defensive programming uses
+the VBL interrupt to re-align it, Defensing programming for the defensive
+programming would make the system work even if the VBL interrupt
+gets skipped.
+
+#### Timer
+
+-A timer running at a constant rate allows to keep a steady timebase,
+whereas other sources might be less convenient for that purpose (PCM
+sound doesn't exist on all hardware, input is a variable rate, display
+varies between machines, between monitors, and even between settings).
+The traditional Atari ST timer is 200 Hz. However, 300 Hz is also possible,
+and approximately matches the timer on the Amstrad CPC.
+
+#### Game rendering
+
+-This part is expected to take a variable time, and to take longer
+than the screen refresh rate. It's likely to run in a continuous
+loop.
+
+### Sound vs video frequencies.
+
+STe sound: 315000000/88/227*2032/640 = 50.066 kHz
+
+NTSC STe, 50Hz display: 315000000/88*9/2048/313 = 50.257 Hz
+
+PAL STf/STe, 50Hz display: (15625*283.75+25)/283/313 = 50.053 Hz
+
+* In 50 kHz stereo, 2002 bytes per buffer.
+* In 50 kHz mono and 25 kHz stereo, 1002 bytes per buffer.
+* In 25 kHz mono and 12 kHz stereo, 502 bytes per buffer.
+* In 12 kHz mono, 252 bytes per buffer.
+
+TT sound: 315000000/88*9/640 = 50.337 kHz
+
+TT video: 315000000/88*9/1024/525 = 59.925 Hz
+
+1006 samples for approximately 50 Hz
+
+840 samples to match display.
+
+### Tasks in threads vs interrupts
+
+-YM sound occurs immediately, such that its timing must be as
+predictable as possible. Additionally, because programming YM
+sound isn't atomic, it should be interrupted as little as possible.
+It's a strong candidate to run from within an interrupt handler.
+If there's no PCM sound, timer A can be programmed as a regular
+timer.
+
+-PCM sound renders to a buffer, such that its latency requirements
+match the length of the buffer. It takes too long to run in an
+interrupt handler and needs to be delegated to a thread. We're likely
+to run it with a buffer length of about 20ms.
+
+-The mouse needs to be rendered on screen during the bottom/top
+borders. The border is approximately 7.2ms on a 50Hz display,
+2.8ms on a monochrome display, 1.4ms on a VGA display. Rendering
+it takes too much time to run from an interrupt handler. It needs
+to be delegated to a thread, and that thread must run at a higher
+priority than the sound player.
+
+#### Timer
+
+-No task needs to fire immediately from the timer, the timer only
+needs to increment a time counter, which should be done directly
+from the interrupt handler.
+
+#### Inputs
+
+-Input bytes need to be buffered until they're processed. Timer
+information needs to be stored in that buffer as well. Timer
+can be stored as an attribute for each input byte, or as a
+pseudo-command in the input stream.
+
+#### Mouse
+
+-Mouse needs to skim through the input queue and determine its
+xy coordinates.
+
 # What's in the package
 
 The distribution package contains this `README.md` file, the main
