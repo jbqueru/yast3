@@ -42,6 +42,27 @@ CoreStart:
 	dbra.w d0, .Core.l
 .endif
 
+	btst.b #1, keyboard_state + 7.l
+	sne.b d0
+	or.b d0, thread_exit_all.l
+	clr.b core_thread_ready.l
+	bsr.w SwitchThreads.l
+	bra.w CoreStart.l
+
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                     Main rendering entry point                      ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
+DrawStart:
+	move.l fb_render.l, _draw_base.l
+DrawLoop:
+
 ; Check if the mouse is in one of the active zones
 	lea.l mouse_zones.l, a0
 	lea.l mouse_zones_end.l, a1
@@ -83,26 +104,7 @@ CoreStart:
 	move.b #2, (a0, d3.w)
 .Zone0:
 
-	btst.b #1, keyboard_state + 7.l
-	sne.b d0
-	or.b d0, thread_exit_all.l
-	clr.b core_thread_ready.l
-	bsr.w SwitchThreads.l
-	bra.w CoreStart.l
 
-; #############################################################################
-; #############################################################################
-; ####                                                                     ####
-; ####                                                                     ####
-; ####                     Main rendering entry point                      ####
-; ####                                                                     ####
-; ####                                                                     ####
-; #############################################################################
-; #############################################################################
-
-DrawStart:
-	move.l fb_render.l, _draw_base.l
-DrawLoop:
 ; Remember when we started to render this frame, so that we can throttle
 ; ourselves in case we render faster than the screen refresh.
 	move.l frame_count.l, render_start.l
