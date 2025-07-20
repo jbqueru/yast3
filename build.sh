@@ -37,7 +37,12 @@ mkdir -p out/tos/AUTO || exit $?
 #out/bin/generate_3d || exit $?
 
 echo '(*) assemble code'
-rmac -v -s -p -4 main.s -o out/tos/YAST3.PRG || exit $?
+rmac -s -p -4 main.s -o out/tos/YAST3.PRG || exit $?
+
+if [ "$1" = "--quick" ]; then
+  echo '(*) QUICK BUILD SUCCESSFUL'
+  exit 0;
+fi
 
 echo '(*) compress code'
 upx -9 -q out/tos/YAST3.PRG
