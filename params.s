@@ -27,6 +27,10 @@
 ; #############################################################################
 ; #############################################################################
 
+STACK_SIZE_MOUSE .equ 256 		; long words, with 18 used for thread-switching
+STACK_SIZE_SOUND .equ 256
+STACK_SIZE_CORE .equ 256
+
 DEBUG .equ 0
 
 .if DEBUG

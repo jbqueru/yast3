@@ -231,28 +231,28 @@ _MainSuper:
 ; * Set up thread system *
 ; ************************
 
-	lea.l mouse_thread_stack_top, a0
-	clr.w -(a0)
-	move.l #MouseThread, -(a0)
-	move #$2300, -(a0)
-	lea.l -64(a0), a0
-	move.l a0, mouse_thread_stack
+	lea.l _stack_mouse_top.l, a0
+	clr.w -(a0)							; 68020-style frame. TODO: make conditional
+	move.l #_ThreadEntryMouse, -(a0)	; return address = thread start
+	move.w #$2300, -(a0)				; SR
+	lea.l -64(a0), a0					; D0-A6/USP
+	move.l a0, _thread_stack_mouse.l
 
-	lea.l pcm_thread_stack_top, a0
+	lea.l _stack_sound_top.l, a0
 	clr.w -(a0)
-	move.l #PcmThread, -(a0)
-	move #$2300, -(a0)
+	move.l #_ThreadEntrySound, -(a0)
+	move.w #$2300, -(a0)
 	lea.l -64(a0), a0
-	move.l a0, pcm_thread_stack
+	move.l a0, _thread_stack_sound.l
 
-	lea.l draw_thread_stack_top, a0
+	lea.l _stack_core_top.l, a0
 	clr.w -(a0)
-	move.l #_ThreadStartDraw, -(a0)
-	move #$2300, -(a0)
+	move.l #_ThreadEntryCore, -(a0)
+	move.w #$2300, -(a0)
 	lea.l -64(a0), a0
-	move.l a0, draw_thread_stack
+	move.l a0, _thread_stack_core.l
 
-	move.l #idle_stack, current_thread
+	move.l #idle_stack, _thread_current
 
 ; #####################################
 ; ##                                 ##
@@ -572,7 +572,7 @@ DoSwitch:			; TODO: rename, make private, re-oder code to make local
 	movem.l d0-a6, -(sp)		; TODO: don't save on yield
 	move.l usp, a0
 	move.l a0, -(sp)
-	move.l current_thread, a0
+	move.l _thread_current.l, a0
 	move.l sp, (a0)
 
 	tst.b thread_exit_all.l
@@ -580,19 +580,19 @@ DoSwitch:			; TODO: rename, make private, re-oder code to make local
 
 	tst.b mouse_thread_ready
 	beq.s .not_mouse
-	lea.l mouse_thread_stack, a0
+	lea.l _thread_stack_mouse, a0
 	bra.s .thread_selected
 .not_mouse:
 
 	tst.b pcm_thread_ready
 	beq.s .not_pcm
-	lea.l pcm_thread_stack, a0
+	lea.l _thread_stack_sound, a0
 	bra.s .thread_selected
 .not_pcm:
 
 	tst.b draw_thread_ready
 	beq.s .not_draw
-	lea.l draw_thread_stack, a0
+	lea.l _thread_stack_core, a0
 	bra.s .thread_selected
 .not_draw:
 
@@ -601,7 +601,7 @@ DoSwitch:			; TODO: rename, make private, re-oder code to make local
 
 .thread_selected:
 	move.l (a0),sp
-	move.l a0,current_thread
+	move.l a0,_thread_current
 	move.l (sp)+,a0
 	move.l a0,usp
 	movem.l (sp)+,d0-a6
@@ -623,7 +623,7 @@ NoSwitch:
 
 	.text
 
-MouseThread:
+_ThreadEntryMouse:
 	movea.l acia_rx_read.l, a0
 	movea.l acia_rx_write.l, a2
 .NextPacket:
@@ -763,9 +763,9 @@ MouseThread:
 
 	clr.b mouse_thread_ready.l
 	bsr.w SwitchThreads.l
-	bra.w MouseThread.l
+	bra.w _ThreadEntryMouse.l
 
-PcmThread:
+_ThreadEntrySound:
 	lea.l StartSound.l, a0
 	move.w #209, d0
 .FillAudioBuffer:
@@ -776,9 +776,9 @@ PcmThread:
 	dbra.w d0, .FillAudioBuffer.l
 	clr.b pcm_thread_ready.l
 	bsr.w SwitchThreads.l
-	bra.s PcmThread.l
+	bra.s _ThreadEntrySound.l
 
-_ThreadStartDraw:
+_ThreadEntryCore:
 	bra.w DrawStart.l
 
 ; #############################################################################
@@ -847,20 +847,27 @@ mouse_pattern:
 
 	.even
 
-current_thread:
+_thread_current:
 	ds.l 1
 
-mouse_thread_stack:
-	.ds.l 251
-mouse_thread_stack_top:
+_thread_stack_mouse:
+	ds.l 1
+_thread_stack_sound:
+	ds.l 1
+_thread_stack_core:
+	ds.l 1
 
-pcm_thread_stack:
-	.ds.l 251
-pcm_thread_stack_top:
+_stack_mouse:
+	.ds.l STACK_SIZE_MOUSE
+_stack_mouse_top:
 
-draw_thread_stack:
-	.ds.l 251
-draw_thread_stack_top:
+_stack_sound:
+	.ds.l STACK_SIZE_SOUND
+_stack_sound_top:
+
+_stack_core:
+	.ds.l STACK_SIZE_CORE
+_stack_core_top:
 
 idle_stack:
 	ds.l 1
