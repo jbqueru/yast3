@@ -132,7 +132,6 @@ DrawLoop:
 ; We're faster than the screen refresh, throttle ourselves by blocking.
 ; (In a world where the drawing thread is alone at the lowest non-idle
 ; priority, we could busy-wait, but that's not future-proof).
-	clr.b draw_thread_ready.l
 	bsr.w SwitchThreads.l
 	bra.w DrawLoop.l
 

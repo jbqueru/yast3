@@ -473,8 +473,7 @@ _Interrupt_End_Line_200:
 	clr.b fb_next_ready.l							; be ready for next frame to be rendered
 	move.l (sp)+, d0
 .DoneFbSwap:
-	move.b #1, mouse_thread_ready.l					; unblock mouse thread, to update mouse cursor
-	move.b #1, draw_thread_ready.l					; unblobk rendering thread... which might not be blocked
+	move.b #1, _thread_ready_mouse.l					; unblock mouse thread, to update mouse cursor
 	bra.s SwitchFromInt.l								; switch threads
 
 ; #####################################################################
@@ -491,7 +490,7 @@ TimerA:
 	.endr
 	eori.w #DEBUG_COLOR_SHOW_TIMER_A, GFX_COLOR_0.w
 .endif
-	move.b #1, pcm_thread_ready.l
+	move.b #1, _thread_ready_sound.l
 	bra.s SwitchFromInt.l
 
 ; ###############################################
@@ -578,23 +577,20 @@ DoSwitch:			; TODO: rename, make private, re-oder code to make local
 	tst.b thread_exit_all.l
 	bne.s .idle_to_exit.l
 
-	tst.b mouse_thread_ready
+	tst.b _thread_ready_mouse
 	beq.s .not_mouse
 	lea.l _thread_stack_mouse, a0
 	bra.s .thread_selected
 .not_mouse:
 
-	tst.b pcm_thread_ready
+	tst.b _thread_ready_sound
 	beq.s .not_pcm
 	lea.l _thread_stack_sound, a0
 	bra.s .thread_selected
 .not_pcm:
 
-	tst.b draw_thread_ready
-	beq.s .not_draw
 	lea.l _thread_stack_core, a0
 	bra.s .thread_selected
-.not_draw:
 
 .idle_to_exit:
 	lea.l idle_stack, a0
@@ -761,7 +757,7 @@ _ThreadEntryMouse:
 	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
 .endif
 
-	clr.b mouse_thread_ready.l
+	clr.b _thread_ready_mouse.l
 	bsr.w SwitchThreads.l
 	bra.w _ThreadEntryMouse.l
 
@@ -774,7 +770,7 @@ _ThreadEntrySound:
 	eori.w #$004, GFX_COLOR_0.w
 .endif
 	dbra.w d0, .FillAudioBuffer.l
-	clr.b pcm_thread_ready.l
+	clr.b _thread_ready_sound.l
 	bsr.w SwitchThreads.l
 	bra.s _ThreadEntrySound.l
 
@@ -897,11 +893,9 @@ mouse_x:
 mouse_y:
 	.ds.w 1
 
-mouse_thread_ready:
+_thread_ready_mouse:
 	.ds.b 1
-pcm_thread_ready:
-	.ds.b 1
-draw_thread_ready:
+_thread_ready_sound:
 	.ds.b 1
 
 delay_thread_switch:
