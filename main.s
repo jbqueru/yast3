@@ -122,7 +122,7 @@ _Main:
 .ClearBssLoop:
 	clr.b (a0)+
 	cmpa.l #_main_bss_end, a0
-	bne.s .ClearBssLoop
+	bne.s .ClearBssLoop.l
 
 ; #################################
 ; ##                             ##
@@ -179,7 +179,7 @@ _MainSuper:
 	moveq.l #15, d7
 .ClearPalette:
 	move.w d0, (a0)+
-	dbra.w d7, .ClearPalette
+	dbra.w d7, .ClearPalette.l
 
 ; ************
 ; * Stop PSG *
@@ -200,14 +200,14 @@ _MainSuper:
 	lsl.l #8, d0
 	move.b $ffff8203.w, d0
 	lsl.l #8, d0
-	move.l d0, fb_live
+	move.l d0, fb_live.l
 	move.l #framebuffers + 255, d0
 	clr.b d0
-	move.l d0, fb_next
+	move.l d0, fb_next.l
 	add.l #32000, d0
-	move.l d0, fb_render
+	move.l d0, fb_render.l
 
-	movea.l fb_live, a0
+	movea.l fb_live.l, a0
 	move.w #7999, d7
 	moveq.l #0, d0
 .ClearFB:
@@ -252,7 +252,7 @@ _MainSuper:
 	lea.l -64(a0), a0
 	move.l a0, _thread_stack_core.l
 
-	move.l #idle_stack, _thread_current
+	move.l #idle_stack, _thread_current.l
 
 ; #####################################
 ; ##                                 ##
