@@ -840,3 +840,40 @@ pseudo-command in the input stream.
 
 -Mouse needs to skim through the input queue and determine its
 xy coordinates.
+
+## Screen management with unthrottled rendering
+
+There are 3 framebuffers. One of those is live on the display.
+
+From the other two, there are two potential states:
+* In one state, none of the framebuffers is ready to be displayed.
+* In the other state, one of the framebuffers is ready.
+
+In both of those states, there's always at least one framebuffer
+available for rendering, such that the rendered never needs actually
+to stop.
+
+-The framebuffer being displayed must be known, to render the mouse
+into it, and to recycle it once it's been used.
+
+-The framebuffer being rendered into must be known, for obvious
+reasons.
+
+-That leaves one more framebuffer, which, depending on situations,
+is either ready to display or is dirty. There could either exist 2
+variables, mutually exclusive, or one variable plus a status bit.
+Either way, it takes 4 variables, and only one variable needs
+to be tested to know whether there's a rendered frame available.
+The difference boils down to whether that variable is 16-bit or
+32-bit.
+
+-With mutually exclusive variables:
+* display interrupt: if fb has been rendered, moves display to dirty,
+rendered to display, clear rendered.
+* rendered, if none rendered yet: move dirty to rendering, rendering
+to rendered.
+* renderer, if already a rendered: swap rendering and rendered.
+
+MUST DISABLE INTERRUPTS WHILE THE THREAD DOES THE SWAPPING
+
+The code is probably more readable with 4 pointers
