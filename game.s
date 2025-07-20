@@ -108,7 +108,7 @@ DrawLoop:
 	moveq.l #0, d3
 	move.b (a2)+, d3
 	move.b (a4, d3.w), d3
-	bsr.w _DrawChar
+	bsr.s _DrawChar
 	cmpa.l a3, a2
 	bne.s .loop_chars
 

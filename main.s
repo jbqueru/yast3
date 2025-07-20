@@ -475,7 +475,7 @@ _Interrupt_End_Line_200:
 .DoneFbSwap:
 	move.b #1, mouse_thread_ready.l					; unblock mouse thread, to update mouse cursor
 	move.b #1, draw_thread_ready.l					; unblobk rendering thread... which might not be blocked
-	bra SwitchFromInt.l								; switch threads
+	bra.s SwitchFromInt.l								; switch threads
 
 ; #####################################################################
 ; ##                                                                 ##
@@ -492,7 +492,7 @@ TimerA:
 	eori.w #DEBUG_COLOR_SHOW_TIMER_A, GFX_COLOR_0.w
 .endif
 	move.b #1, pcm_thread_ready.l
-	bra.w SwitchFromInt.l
+	bra.s SwitchFromInt.l
 
 ; ###############################################
 ; ##                                           ##
