@@ -116,6 +116,9 @@ DrawLoop:
 	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
 .endif
 
+	tst.b keyboard_state+7.l
+	bne.s .bye.l
+
 	move.l fb_render.l, _draw_base.l
 
 ; Signal to the GPU-handling code that we have a new frame ready
@@ -134,6 +137,10 @@ DrawLoop:
 ; priority, we could busy-wait, but that's not future-proof).
 	bsr.w SwitchThreads.l
 	bra.w DrawLoop.l
+
+.bye:
+	move.w #$2700, sr
+	rts
 
 _DrawChar:
 	movea.l _draw_base, a1
