@@ -332,7 +332,6 @@ _MainSuper:
 
 .MainIdleLoop:
 	stop #$2300
-	tst.b thread_exit_all.l
 	beq.s .MainIdleLoop
 	jsr MachineStateRestore.l
 	rts
@@ -550,7 +549,7 @@ SwitchFromInt:			; TODO: rename, make private
 	move.w 2(sp), d0
 	andi.w #$0700, d0
 	cmpi.w #$0400, d0
-	beq.w NoSwitch
+	beq.s NoSwitch
 	move.w (sp)+, d0
 	bra.s DoSwitch
 
@@ -574,9 +573,6 @@ DoSwitch:			; TODO: rename, make private, re-oder code to make local
 	move.l _thread_current.l, a0
 	move.l sp, (a0)
 
-	tst.b thread_exit_all.l
-	bne.s .idle_to_exit.l
-
 	tst.b _thread_ready_mouse
 	beq.s .not_mouse
 	lea.l _thread_stack_mouse, a0
@@ -590,10 +586,6 @@ DoSwitch:			; TODO: rename, make private, re-oder code to make local
 .not_pcm:
 
 	lea.l _thread_stack_core, a0
-	bra.s .thread_selected
-
-.idle_to_exit:
-	lea.l idle_stack, a0
 
 .thread_selected:
 	move.l (a0),sp
@@ -902,9 +894,6 @@ delay_thread_switch:
 	.ds.b 1
 
 fb_next_ready:
-	.ds.b 1
-
-thread_exit_all:
 	.ds.b 1
 
 acia_rx_buffer:
