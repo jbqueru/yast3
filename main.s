@@ -245,13 +245,6 @@ _MainSuper:
 	lea.l -64(a0), a0
 	move.l a0, _thread_stack_sound.l
 
-;	lea.l _stack_core_top.l, a0
-;	clr.w -(a0)
-;	move.l #_ThreadEntryCore, -(a0)
-;	move.w #$2300, -(a0)
-;	lea.l -64(a0), a0
-;	move.l a0, _thread_stack_core.l
-
 	move.l #_thread_stack_core, _thread_current.l
 
 ; #####################################
@@ -330,9 +323,13 @@ _MainSuper:
 ; ##                             ##
 ; #################################
 
+	move.l sp, a0
+	move.l #_stack_core_top, sp
+	move.l a0, -(sp)
 	move.w #$2300, sr
 	bsr.w _ThreadEntryCore.l
-	jsr MachineStateRestore.l
+	move.l (sp)+, sp
+	bsr.w MachineStateRestore.l
 	rts
 
 ; #############################################################################
@@ -847,9 +844,9 @@ _stack_sound:
 	.ds.l STACK_SIZE_SOUND
 _stack_sound_top:
 
-;_stack_core:
-;	.ds.l STACK_SIZE_CORE
-;_stack_core_top:
+_stack_core:
+	.ds.l STACK_SIZE_CORE
+_stack_core_top:
 
 acia_rx_write:
 	.ds.l 1
