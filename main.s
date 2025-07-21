@@ -200,12 +200,13 @@ _MainSuper:
 	lsl.l #8, d0
 	move.b $ffff8203.w, d0
 	lsl.l #8, d0
-	move.l d0, fb_display.l
+	move.l d0, fb_display.l					; the address of the OS framebuffer
+
 	move.l #framebuffers + 255, d0
 	clr.b d0
-	move.l d0, fb_rendering.l
+	move.l d0, fb_rendering.l				; the first of our framebuffers
 	add.l #32000, d0
-	move.l d0, fb_dirty.l
+	move.l d0, fb_dirty.l					; the second of our framebuffers
 
 	movea.l fb_display.l, a0
 	move.w #7999, d7
