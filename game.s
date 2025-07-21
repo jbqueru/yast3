@@ -113,7 +113,7 @@ DrawLoop:
 	tst.b keyboard_state+7.l
 	bne.s .bye.l
 
-; TODO: mask interrupts
+	move.b #$fe, MFP_IMRA.w							; mask away timer B
 	move.l fb_ready.l, d0
 	move.l fb_rendering.l, fb_ready.l
 	move.l fb_dirty.l, d1
@@ -123,6 +123,7 @@ DrawLoop:
 	move.l d1, fb_rendering.l
 	moveq.l #0, d0
 	move.l d0, fb_dirty.l
+	move.b #$ff, MFP_IMRA.w							; unmask timer B
 
 
 	bra.w DrawLoop.l
