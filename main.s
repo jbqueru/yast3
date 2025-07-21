@@ -245,6 +245,8 @@ _MainSuper:
 	lea.l -64(a0), a0
 	move.l a0, _thread_stack_sound.l
 
+; TODO: Add a background thread
+
 	move.l #_thread_stack_core, _thread_current.l
 
 ; #####################################

@@ -908,3 +908,18 @@ The IKBD rate amounts to less than 800 bytes per second.
 Using 11 bits for the coordinates and 10 bits for the queue
 allows to cover all the likely resolutions and rendering rates
 as low as 1 fps.
+
+### Threads redux
+
+The system can be reduces to fewer threads than originally planned.
+1. Music thread, handling both PCM and PSG sound, triggered by timer A
+(either tied to PCM sound or running as a true timer).
+2. Mouse thread, displaying the mouse cursor at the screen's refresh
+rate, triggered by timer B tied to display lines.
+3. Core thread, running unthrottled.
+
+That arrangement doesn't leave any room for a background thread, which
+could be tasked e.g. with decompressing data as a lookahead. An easy
+approach would be to make the core thread block on a display interrupt,
+and possibly throttle itself down to make sure that it leaves enough
+time for the background thread.
