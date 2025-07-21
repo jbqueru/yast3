@@ -79,11 +79,6 @@ DrawLoop:
 	move.b #2, (a0, d3.w)
 .Zone0:
 
-
-; Remember when we started to render this frame, so that we can throttle
-; ourselves in case we render faster than the screen refresh.
-	move.l frame_count.l, render_start.l
-
 ; Do the actual drawing
 	movea.l _draw_base.l, a0
 	moveq.l #0, d0
@@ -124,18 +119,6 @@ DrawLoop:
 ; Signal to the GPU-handling code that we have a new frame ready
 	move.b #1, fb_next_ready.l
 
-; Check whether we've completed the render faster than the screen refresh.
-; If we're already in a different frame, no need to throttle ourselves, the
-; rendering can start immmediately, we are guaranteed to have a buffer
-; available.
-	move.l render_start.l, d0
-	cmp.l frame_count.l, d0
-	bne.w DrawLoop.l
-
-; We're faster than the screen refresh, throttle ourselves by blocking.
-; (In a world where the drawing thread is alone at the lowest non-idle
-; priority, we could busy-wait, but that's not future-proof).
-	bsr.w SwitchThreads.l
 	bra.w DrawLoop.l
 
 .bye:

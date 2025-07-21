@@ -868,9 +868,6 @@ fb_next:
 fb_render:
 	.ds.l 1
 
-render_start:
-	.ds.l 1
-
 mouse_buttons:
 	.ds.w 1
 mouse_x:
