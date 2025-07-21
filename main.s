@@ -359,7 +359,7 @@ _MainSuper:
 ; ####################################################################
 
 _Interrupt_300Hz:
-	addq.l #1, interrupt_ticks_300hz			; increment count of 300Hz time base
+	addq.l #1, time_300hz			; increment count of 300Hz time base
 .if ^^defined DEBUG_COLOR_SHOW_TIMER_C
 	eori.w #DEBUG_COLOR_SHOW_TIMER_C, GFX_COLOR_0.w
 	.rept 122
@@ -460,7 +460,7 @@ _Interrupt_End_Line_200:
 	eori.w #DEBUG_COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
 .endif
 
-	addq.l #1, frame_count							; increment frame counter
+	addq.l #1, time_vbl								; increment frame counter
 
 	move.l d0, -(sp)
 
@@ -858,9 +858,11 @@ acia_rx_read:
 	.ds.l 1
 
 ;TODO: rename for consistency
-frame_count:
+time_300hz:
 	.ds.l 1
-interrupt_ticks_300hz:
+time_vbl:
+	.ds.l 1
+time_render:
 	.ds.l 1
 
 fb_display:

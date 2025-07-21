@@ -36,6 +36,7 @@
 
 DrawStart:
 DrawLoop:
+	addq.l #1, time_render.l
 
 ; Check if the mouse is in one of the active zones
 	lea.l mouse_zones.l, a0
