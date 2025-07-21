@@ -325,13 +325,20 @@ _MainSuper:
 ; ##                             ##
 ; #################################
 
-	move.l sp, a0
-	move.l #_stack_core_top, sp
-	move.l a0, -(sp)
-	move.w #$2300, sr
-	bsr.w _ThreadEntryCore.l
-	move.l (sp)+, sp
-	bsr.w MachineStateRestore.l
+	move.l sp, a0					; remember old stack
+	move.l #_stack_core_top, sp		; set stack to reserved area
+	move.l a0, -(sp)				; store old stack value
+	move.w #$2300, sr				; start interrupts, off we go!!!
+	bsr.w _ThreadEntryCore.l		; run the core loop
+
+; ######################
+; ##                  ##
+; ##  Restore system  ##
+; ##                  ##
+; ######################
+
+	move.l (sp)+, sp				; restore the old stack
+	bsr.w MachineStateRestore.l		;
 	rts
 
 ; #############################################################################
@@ -417,7 +424,7 @@ _Interrupt_End_Line_92:
 	move.l #_Interrupt_End_Line_100, VECTOR_MFP_TIMER_B.w	; handler for next interrupt
 	move.b #$01, MFP_IMRA.w							; mask away all interrupts except timer B, so that the next
 	move.b #$00, MFP_IMRB.w							; 			interrupt has a precise timing
-	move.b #1, delay_thread_switch.l				; tell the schedule not to reschedule yet
+	move.b #1, delay_thread_switch.l				; tell the scheduler not to reschedule yet
 	rte
 
 ; ************
@@ -520,11 +527,6 @@ ACIA:
 .endif
 	rte
 
-	.bss
-	.even
-interrupt_ticks_300hz:
-	.ds.l 1
-
 ; #############################################################################
 ; #############################################################################
 ; ####                                                                     ####
@@ -534,8 +536,6 @@ interrupt_ticks_300hz:
 ; ####                                                                     ####
 ; #############################################################################
 ; #############################################################################
-
-	.text
 
 SwitchFromInt:			; TODO: rename, make private
 	move.w d0, -(sp)
@@ -855,7 +855,10 @@ acia_rx_write:
 acia_rx_read:
 	.ds.l 1
 
+;TODO: rename for consistency
 frame_count:
+	.ds.l 1
+interrupt_ticks_300hz:
 	.ds.l 1
 
 fb_live:
