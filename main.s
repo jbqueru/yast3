@@ -461,22 +461,25 @@ _Interrupt_End_Line_200:
 
 	addq.l #1, frame_count							; increment frame counter
 
-	tst.l fb_ready.l								; check if framebuffers ready to swap
-	beq.s .DoneFbSwap
 	move.l d0, -(sp)
-	move.l fb_display.l, fb_dirty.l
-	move.l fb_ready.l, d0							; rotate the 3 framebuffer addresses
-	move.l d0, fb_display.l
+
+	move.l fb_ready.l, d0							; check if framebuffers ready to swap
+	beq.s .DoneFbSwap
+	move.l fb_display.l, fb_dirty.l					; the framebuffer that was displayed is now dirty
+	move.l d0, fb_display.l							; the framebuffer that was ready is now the one getting displayed
 
 	lsr.w #8, d0									; set the live framebuffer address into the GPU
 	move.b d0, $ffff8203.w
 	swap.w d0
 	move.b d0, $ffff8201.w
 
+	moveq.l #0, d0
+	move.l d0, fb_ready.l							; there's no framebuffer ready
+
+	.DoneFbSwap:
 	move.l (sp)+, d0
-.DoneFbSwap:
-	move.b #1, _thread_ready_mouse.l					; unblock mouse thread, to update mouse cursor
-	bra.s SwitchFromInt.l								; switch threads
+	move.b #1, _thread_ready_mouse.l				; unblock mouse thread, to update mouse cursor
+	bra.s SwitchFromInt.l							; switch threads
 
 ; #####################################################################
 ; ##                                                                 ##
