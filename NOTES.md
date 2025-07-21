@@ -841,7 +841,7 @@ pseudo-command in the input stream.
 -Mouse needs to skim through the input queue and determine its
 xy coordinates.
 
-## Screen management with unthrottled rendering
+### Screen management with unthrottled rendering
 
 There are 3 framebuffers. One of those is live on the display.
 
@@ -876,4 +876,35 @@ to rendered.
 
 MUST DISABLE INTERRUPTS WHILE THE THREAD DOES THE SWAPPING
 
-The code is probably more readable with 4 pointers
+The code is probably more readable with 4 pointers.
+
+## Jul 21 2025
+
+### Input queue management across threads
+
+Three entities handle the input queue:
+1. The ACIA/IKBD interrupt writes to it, and therefore only
+touches the write pointer.
+2. The mouse thread reads from it, but does not modify it.
+3. The core thread reads from it and updates the read pointer.
+
+The mouse thread runs at a higher priority than the core thread,
+and therefore doesn't need to worry about being interrupted by
+the core thread. However, the mouse thread does interrupt the
+core thread, such that, as seen from the mouse thread, the data
+modified by the core thread must always be in a consistent
+state.
+
+The mouse thread reads the position in the queue and the x/y
+mouse coordinates. Those can fit together in a 32-bit value,
+which can then be written atomically by the core thread and
+read atomically by the mouse thread.
+
+The largest "proper" resolution on actual hardware is the
+TT's 1280 x 960. The Falcon can be pushed to about 1600 wide
+(32 MHz pixels on 15kHz lines) or 960 tall (interlace on VGA
+monitor). Hatari's recommended resolutions go up to 2048 x 1152.
+The IKBD rate amounts to less than 800 bytes per second.
+Using 11 bits for the coordinates and 10 bits for the queue
+allows to cover all the likely resolutions and rendering rates
+as low as 1 fps.
