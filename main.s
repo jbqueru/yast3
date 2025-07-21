@@ -200,14 +200,14 @@ _MainSuper:
 	lsl.l #8, d0
 	move.b $ffff8203.w, d0
 	lsl.l #8, d0
-	move.l d0, fb_live.l
+	move.l d0, fb_display.l
 	move.l #framebuffers + 255, d0
 	clr.b d0
-	move.l d0, fb_next.l
+	move.l d0, fb_rendering.l
 	add.l #32000, d0
-	move.l d0, fb_render.l
+	move.l d0, fb_dirty.l
 
-	movea.l fb_live.l, a0
+	movea.l fb_display.l, a0
 	move.w #7999, d7
 	moveq.l #0, d0
 .ClearFB:
@@ -461,20 +461,18 @@ _Interrupt_End_Line_200:
 
 	addq.l #1, frame_count							; increment frame counter
 
-	tst.b fb_next_ready.l							; check if framebuffers ready to swap
+	tst.l fb_ready.l								; check if framebuffers ready to swap
 	beq.s .DoneFbSwap
 	move.l d0, -(sp)
-	move.l fb_next.l, d0							; rotate the 3 framebuffer addresses
-	move.l fb_render.l, fb_next.l
-	move.l fb_live.l, fb_render.l
-	move.l d0, fb_live.l
+	move.l fb_display.l, fb_dirty.l
+	move.l fb_ready.l, d0							; rotate the 3 framebuffer addresses
+	move.l d0, fb_display.l
 
 	lsr.w #8, d0									; set the live framebuffer address into the GPU
 	move.b d0, $ffff8203.w
 	swap.w d0
 	move.b d0, $ffff8201.w
 
-	clr.b fb_next_ready.l							; be ready for next frame to be rendered
 	move.l (sp)+, d0
 .DoneFbSwap:
 	move.b #1, _thread_ready_mouse.l					; unblock mouse thread, to update mouse cursor
@@ -702,7 +700,7 @@ _ThreadEntryMouse:
 	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
 .endif
 
-	movea.l fb_live, a0
+	movea.l fb_display.l, a0
 	move.w mouse_y, d0
 	cmpi.w #183, d0
 	blt.s .InSY
@@ -861,11 +859,13 @@ frame_count:
 interrupt_ticks_300hz:
 	.ds.l 1
 
-fb_live:
+fb_display:
 	.ds.l 1
-fb_next:
+fb_ready:
 	.ds.l 1
-fb_render:
+fb_rendering:
+	.ds.l 1
+fb_dirty:
 	.ds.l 1
 
 mouse_buttons:
@@ -881,9 +881,6 @@ _thread_ready_sound:
 	.ds.b 1
 
 delay_thread_switch:
-	.ds.b 1
-
-fb_next_ready:
 	.ds.b 1
 
 acia_rx_buffer:

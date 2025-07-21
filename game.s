@@ -35,7 +35,6 @@
 ; #############################################################################
 
 DrawStart:
-	move.l fb_render.l, _draw_base.l
 DrawLoop:
 
 ; Check if the mouse is in one of the active zones
@@ -80,7 +79,7 @@ DrawLoop:
 .Zone0:
 
 ; Do the actual drawing
-	movea.l _draw_base.l, a0
+	movea.l fb_rendering.l, a0
 	moveq.l #0, d0
 	move.w #7999, d7
 .ClearScreen:
@@ -114,10 +113,17 @@ DrawLoop:
 	tst.b keyboard_state+7.l
 	bne.s .bye.l
 
-	move.l fb_render.l, _draw_base.l
+; TODO: mask interrupts
+	move.l fb_ready.l, d0
+	move.l fb_rendering.l, fb_ready.l
+	move.l fb_dirty.l, d1
+	bne.s .d1_is_next_fb
+	move.l d0, d1
+.d1_is_next_fb:
+	move.l d1, fb_rendering.l
+	moveq.l #0, d0
+	move.l d0, fb_dirty.l
 
-; Signal to the GPU-handling code that we have a new frame ready
-	move.b #1, fb_next_ready.l
 
 	bra.w DrawLoop.l
 
@@ -126,7 +132,7 @@ DrawLoop:
 	rts
 
 _DrawChar:
-	movea.l _draw_base, a1
+	movea.l fb_rendering.l, a1
 	mulu.w #1280, d1
 	adda.w d1, a1
 	move.w d0, d1
@@ -341,9 +347,6 @@ font:
 
 	.bss
 	.even
-_draw_base:
-	.ds.l 1
-
 _draw_colors:
 	.ds.b 26
 
