@@ -315,10 +315,8 @@ _MainSuper:
 	move.b #$81, $ffff8921.w	; mono ($80), 12517 kHz ($01)
 	move.b #$03, $ffff8901.w	; loop ($02), enable ($01)
 
-	clr.w $ffff8240.w
-	move.w #$777, $ffff8242.w
-
-	tst.b $fffffc02.w
+	; TODO: what if we're in the middle of a mouse packet?
+	tst.b $fffffc02.w			; clear pending interrupt for keyboard
 
 ; #################################
 ; ##                             ##
