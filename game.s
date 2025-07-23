@@ -48,7 +48,7 @@ DrawLoop:
 	move.b (a1)+, d0
 	cmpa.l #acia_rx_buffer + 2048, a1
 	bne.s .NB1.l
-	lea.l -48(a1), a1
+	lea.l -2048(a1), a1
 .NB1:
 
 	cmpi.b #$fe, d0
@@ -67,7 +67,7 @@ DrawLoop:
 	move.b (a1)+, d1
 	cmpa.l #acia_rx_buffer + 2048, a1
 	bne.s .NB2.l
-	lea.l -48(a1), a1
+	lea.l -2048(a1), a1
 .NB2:
 
 	cmpa.l a1, a2
@@ -127,7 +127,7 @@ DrawLoop:
 	movea.l a1, a0
 	cmpa.l #acia_rx_buffer + 2048, a0
 	bne.w .NextPacket
-	lea.l -48(a0), a0
+	lea.l -2048(a0), a0
 	bra.w .NextPacket
 .all_read:
 	move.l a0, acia_rx_read.l
