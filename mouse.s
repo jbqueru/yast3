@@ -1,0 +1,119 @@
+; Copyright 2025 Jean-Baptiste M. "JBQ" "Djaybee" Queru
+;
+; This program is free software: you can redistribute it and/or modify
+; it under the terms of the GNU Affero General Public License as
+; published by the Free Software Foundation, either version 3 of the
+; License, or (at your option) any later version.
+;
+; As an added restriction, if you make the program available for
+; third parties to use on hardware you own (or co-own, lease, rent,
+; or otherwise control,) such as public gaming cabinets (whether or
+; not in a gaming arcade, whether or not coin-operated or otherwise
+; for a fee,) the conditions of section 13 will apply even if no
+; network is involved.
+;
+; This program is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+; GNU Affero General Public License for more details.
+;
+; You should have received a copy of the GNU Affero General Public License
+; along with this program. If not, see <https://www.gnu.org/licenses/>.
+;
+; SPDX-License-Identifier: AGPL-3.0-or-later
+
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                            Mouse thread                             ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
+	.text
+
+MouseDisplay:
+	movea.l fb_display.l, a0
+	move.w mouse_y, d0
+	cmpi.w #183, d0
+	blt.s .InSY
+	move.w #183, d0
+.InSY:
+	mulu.w #160, d0
+	adda.w d0, a0
+	move.w mouse_x, d0
+	cmpi.w #623, d0
+	blt.s .InSX
+	move.w #623, d0
+.InSX:
+	move.w d0, d1
+	andi.w #$fff0, d0
+	lsr.w #2, d0
+	adda.w d0, a0
+	andi.w #$f, d1
+	lea.l mouse_mask.l, a1
+	lea.l mouse_pattern.l, a2
+	moveq.l #16, d7
+.DrawMouse:
+	move.l (a1)+, d0
+	ror.l d1, d0
+	and.w d0, 4(a0)
+	and.w d0, 6(a0)
+	swap.w d0
+	and.w d0, (a0)
+	and.w d0, 2(a0)
+	move.l (a2)+, d0
+	ror.l d1, d0
+	or.w d0, 4(a0)
+	swap.w d0
+	or.w d0, (a0)
+	lea 160(a0), a0
+	dbra.w d7, .DrawMouse.l
+.if ^^defined DEBUG_COLOR_SHOW_MOUSE
+	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
+.endif
+
+	rts
+
+	.data
+	.even
+
+mouse_mask:
+	.dc.l %00000001111111111111111111111111
+	.dc.l %00000001111111111111111111111111
+	.dc.l %00000001111111111111111111111111
+	.dc.l %00000111111111111111111111111111
+	.dc.l %00000011111111111111111111111111
+	.dc.l %00010001111111111111111111111111
+	.dc.l %00011000111111111111111111111111
+	.dc.l %11111100011111111111111111111111
+	.dc.l %11111110001111111111111111111111
+	.dc.l %11111111000111111111111111111111
+	.dc.l %11111111100011111111111111111111
+	.dc.l %11111111110001111111111111111111
+	.dc.l %11111111111000111111111111111111
+	.dc.l %11111111111100011111111111111111
+	.dc.l %11111111111110001111111111111111
+	.dc.l %11111111111111000111111111111111
+	.dc.l %11111111111111100111111111111111
+
+mouse_pattern:
+	.dc.l %00000000000000000000000000000000
+	.dc.l %01111100000000000000000000000000
+	.dc.l %01100000000000000000000000000000
+	.dc.l %01010000000000000000000000000000
+	.dc.l %01001000000000000000000000000000
+	.dc.l %01000100000000000000000000000000
+	.dc.l %00000010000000000000000000000000
+	.dc.l %00000001000000000000000000000000
+	.dc.l %00000000100000000000000000000000
+	.dc.l %00000000010000000000000000000000
+	.dc.l %00000000001000000000000000000000
+	.dc.l %00000000000100000000000000000000
+	.dc.l %00000000000010000000000000000000
+	.dc.l %00000000000001000000000000000000
+	.dc.l %00000000000000100000000000000000
+	.dc.l %00000000000000010000000000000000
+	.dc.l %00000000000000000000000000000000
