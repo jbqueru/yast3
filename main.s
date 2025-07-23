@@ -654,9 +654,21 @@ EndSound:
 
 	.even
 
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                      Thread-related variables                       ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
+; Pointer to the storage location of the current thread's stack
 _thread_current:
 	ds.l 1
 
+; Storage for stack pointers of the various threads
 _thread_stack_mouse:
 	ds.l 1
 _thread_stack_sound:
@@ -664,6 +676,7 @@ _thread_stack_sound:
 _thread_stack_core:
 	ds.l 1
 
+; Stacks for the various threads
 _stack_mouse:
 	.ds.l STACK_SIZE_MOUSE
 _stack_mouse_top:
@@ -676,12 +689,18 @@ _stack_core:
 	.ds.l STACK_SIZE_CORE
 _stack_core_top:
 
+; Whether the real-time threads are ready to run
+_thread_ready_mouse:
+	.ds.b 1
+_thread_ready_sound:
+	.ds.b 1
+
+	.even
 acia_rx_write:
 	.ds.l 1
 acia_rx_read:
 	.ds.l 1
 
-;TODO: rename for consistency
 time_300hz:
 	.ds.l 1
 time_vbl:
@@ -704,11 +723,6 @@ mouse_x:
 	.ds.w 1
 mouse_y:
 	.ds.w 1
-
-_thread_ready_mouse:
-	.ds.b 1
-_thread_ready_sound:
-	.ds.b 1
 
 delay_thread_switch:
 	.ds.b 1
