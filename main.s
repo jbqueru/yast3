@@ -423,7 +423,7 @@ _Interrupt_End_Line_92:
 	move.l #_Interrupt_End_Line_100, VECTOR_MFP_TIMER_B.w	; handler for next interrupt
 	move.b #$01, MFP_IMRA.w							; mask away all interrupts except timer B, so that the next
 	move.b #$00, MFP_IMRB.w							; 			interrupt has a precise timing
-	move.b #1, delay_thread_switch.l				; tell the scheduler not to reschedule yet
+	move.b #1, interrupt_critical_timing.l			; tell others not to delay interrupts
 	rte
 
 ; ************
@@ -442,7 +442,7 @@ _Interrupt_End_Line_100:
 	move.l #_Interrupt_End_Line_200, VECTOR_MFP_TIMER_B.w
 	move.b #$ff, MFP_IMRA.w							; unmask all interrupts back in
 	move.b #$ff, MFP_IMRB.w
-	clr.b delay_thread_switch.l						; tell the scheduler to so its things again
+	clr.b interrupt_critical_timing.l				; tell others they can delay interrupts
 	rte
 
 ; ************
@@ -547,7 +547,7 @@ SwitchFromInt:			; TODO: rename, make private
 	bra.s DoSwitch
 
 SwitchThreads:			; TODO: rename
-	tst.b delay_thread_switch.l
+	tst.b interrupt_critical_timing.l
 	bne.s SwitchThreads.l
 	move.w sr, -(sp)
 	tst.w $59e.w
@@ -652,7 +652,23 @@ EndSound:
 
 	.bss
 
-	.even
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                     Interrupt-related variables                     ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
+
+; Whether we're currently in a section where interrupt timing is critical.
+; Things shouldn't be done that would delay interrupts, e.g. disabling
+; or masking interrupts, running the blitter, or even executing long operations
+; (MOVEM, MULU/MULS, DIVU/DIVS).
+
+interrupt_critical_timing:
+	.ds.b 1
 
 ; #############################################################################
 ; #############################################################################
@@ -663,6 +679,8 @@ EndSound:
 ; ####                                                                     ####
 ; #############################################################################
 ; #############################################################################
+
+	.even
 
 ; Pointer to the storage location of the current thread's stack
 _thread_current:
@@ -723,9 +741,6 @@ mouse_x:
 	.ds.w 1
 mouse_y:
 	.ds.w 1
-
-delay_thread_switch:
-	.ds.b 1
 
 acia_rx_buffer:
 	.ds.b 2048
