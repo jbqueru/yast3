@@ -38,6 +38,103 @@ DrawStart:
 DrawLoop:
 	addq.l #1, time_render.l
 
+	movea.l acia_rx_read.l, a0
+	movea.l acia_rx_write.l, a2
+.NextPacket:
+	cmpa.l a0, a2
+	beq.w .all_read.l
+	movea.l a0, a1
+
+	move.b (a1)+, d0
+	cmpa.l #acia_rx_buffer + 2048, a1
+	bne.s .NB1.l
+	lea.l -48(a1), a1
+.NB1:
+
+	cmpi.b #$fe, d0
+	blo.s .NotJoy.l
+	cmpa.l a1, a2
+	beq.w .all_read.l
+	move.b (a1)+, d1
+	bra.w .PacketDone
+
+.NotJoy:
+	cmpi.b #$f8, d0
+	blo.s .NotMouse.l
+
+	cmpa.l a1, a2
+	beq.w .all_read.l
+	move.b (a1)+, d1
+	cmpa.l #acia_rx_buffer + 2048, a1
+	bne.s .NB2.l
+	lea.l -48(a1), a1
+.NB2:
+
+	cmpa.l a1, a2
+	beq.w .all_read.l
+	move.b (a1)+, d2
+
+	andi.w #$3, d0
+	move.w d0, mouse_buttons
+
+	ext.w d1
+	add.w mouse_x, d1
+	bpl.s .OkX1
+	moveq.l #0, d1
+	bra.s .OkX2
+.OkX1:
+	cmpi.w #640, d1
+	blt.s .OkX2
+	move.w #639, d1
+.OkX2:
+	move.w d1, mouse_x
+
+	ext.w d2
+	add.w mouse_y, d2
+	bpl.s .OkY1
+	moveq.l #0, d2
+	bra.s .OkY2
+.OkY1:
+	cmpi.w #200, d2
+	blt.s .OkY2
+	move.w #199, d2
+.OkY2:
+	move.w d2, mouse_y
+
+	bra.s .PacketDone.l
+
+.NotMouse:
+	moveq.l #0, d1
+	move.b d0, d1
+	andi.b #$7f, d1
+	move.l d1, d2
+	andi.w #7, d1
+	lsr.w #3, d2
+	lea.l keyboard_state.l, a3
+	adda.w d2, a3
+	moveq.l #0, d2
+	bset.l d1, d2
+	btst.l #7, d0
+	bne.s .KeyRelease
+	or.b d2, (a3)
+	bra.s .KeyDone
+.KeyRelease:
+	not.b d2
+	and.b d2, (a3)
+.KeyDone:
+
+.PacketDone:
+	movea.l a1, a0
+	cmpa.l #acia_rx_buffer + 2048, a0
+	bne.w .NextPacket
+	lea.l -48(a0), a0
+	bra.w .NextPacket
+.all_read:
+	move.l a0, acia_rx_read.l
+.if ^^defined DEBUG_COLOR_SHOW_MOUSE
+	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
+.endif
+
 ; Check if the mouse is in one of the active zones
 	lea.l mouse_zones.l, a0
 	lea.l mouse_zones_end.l, a1
