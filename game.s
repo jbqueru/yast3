@@ -185,6 +185,8 @@ DrawLoop:
 	moveq.l #0, d0
 	move.w #7999, d7
 .ClearScreen:
+	divu.w #$5555, d1
+	divu.w #$5555, d1
 	move.l d0, (a0)+
 	dbra.w d7, .ClearScreen.l
 
