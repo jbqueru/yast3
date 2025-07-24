@@ -512,6 +512,7 @@ ACIA:
 	move.l a0, -(sp)
 	move.l acia_rx_write.l, a0
 	move.b $fffffc02.w, (a0)+
+	move.b time_300hz + 3.l, (a0)+
 	cmpa.l #acia_rx_buffer + 2048, a0
 	bne.s .InBuffer
 	lea.l acia_rx_buffer, a0

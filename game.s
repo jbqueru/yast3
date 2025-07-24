@@ -46,6 +46,7 @@ DrawLoop:
 	movea.l a0, a1
 
 	move.b (a1)+, d0
+	addq.l #1, a1
 	cmpa.l #acia_rx_buffer + 2048, a1
 	bne.s .NB1.l
 	lea.l -2048(a1), a1
@@ -56,6 +57,7 @@ DrawLoop:
 	cmpa.l a1, a2
 	beq.w .all_read.l
 	move.b (a1)+, d1
+	addq.l #1, a1
 	bra.w .PacketDone
 
 .NotJoy:
@@ -65,6 +67,7 @@ DrawLoop:
 	cmpa.l a1, a2
 	beq.w .all_read.l
 	move.b (a1)+, d1
+	addq.l #1, a1
 	cmpa.l #acia_rx_buffer + 2048, a1
 	bne.s .NB2.l
 	lea.l -2048(a1), a1
@@ -73,6 +76,7 @@ DrawLoop:
 	cmpa.l a1, a2
 	beq.w .all_read.l
 	move.b (a1)+, d2
+	addq.l #1, a1
 
 	andi.w #$3, d0
 	move.w d0, mouse_buttons
