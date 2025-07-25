@@ -35,6 +35,9 @@
 	.text
 
 MouseDisplay:
+.if ^^defined DEBUG_COLOR_SHOW_MOUSE
+	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
+.endif
 	movea.l fb_display.l, a0
 	move.w mouse_y, d0
 	cmpi.w #183, d0
