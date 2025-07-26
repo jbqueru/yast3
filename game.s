@@ -285,6 +285,7 @@ _DrawNum:
 .InRange:
 	divu.w #10000, d7
 	move.l d7, d6
+	clr.w d6
 	swap.w d6
 
 	divu.w #10, d6
@@ -303,7 +304,7 @@ _DrawNum:
 	move.l d4, d1
 	move.w d6, d2
 	moveq.l #1, d3
-	bsr.s _DrawChar.l
+	bsr.w _DrawChar.l
 
 	clr.w d6
 	swap.w d6
