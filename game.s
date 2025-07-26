@@ -38,45 +38,46 @@ DrawStart:
 DrawLoop:
 	addq.l #1, time_render.l
 
-	movea.l acia_rx_read.l, a0
-	movea.l acia_rx_write.l, a2
+	lea.l acia_rx_buffer.l, a0
+	move.l acia_rx_roffset.l, d6
+	move.l acia_rx_woffset.l, d7
 .NextPacket:
-	cmpa.l a0, a2
+	cmp.l d6, d7
 	beq.w .all_read.l
-	movea.l a0, a1
+	move.l d6, d5
 
-	move.b (a1)+, d0
-	addq.l #1, a1
-	cmpa.l #acia_rx_buffer + 2048, a1
+	move.b 0(a0, d5.l), d0
+	addq.l #2, d5
+	cmpi.l #2048, d5
 	bne.s .NB1.l
-	lea.l -2048(a1), a1
+	subi.l #2048, d5
 .NB1:
 
 	cmpi.b #$fe, d0
 	blo.s .NotJoy.l
-	cmpa.l a1, a2
+	cmp.l d5, d7
 	beq.w .all_read.l
-	move.b (a1)+, d1
-	addq.l #1, a1
+	move.b 0(a0, d5.l), d1
+	addq.l #2, d5
 	bra.w .PacketDone
 
 .NotJoy:
 	cmpi.b #$f8, d0
 	blo.s .NotMouse.l
 
-	cmpa.l a1, a2
+	cmp.l d5, d7
 	beq.w .all_read.l
-	move.b (a1)+, d1
-	addq.l #1, a1
-	cmpa.l #acia_rx_buffer + 2048, a1
+	move.b 0(a0, d5.l), d1
+	addq.l #2, d5
+	cmpi.l #2048, d5
 	bne.s .NB2.l
-	lea.l -2048(a1), a1
+	subi.l #2048, d5
 .NB2:
 
-	cmpa.l a1, a2
+	cmp.l d5, d7
 	beq.w .all_read.l
-	move.b (a1)+, d2
-	addq.l #1, a1
+	move.b 0(a0, d5.l), d2
+	addq.l #2, d5
 
 	andi.w #$3, d0
 	move.w d0, mouse_buttons
@@ -128,13 +129,13 @@ DrawLoop:
 .KeyDone:
 
 .PacketDone:
-	movea.l a1, a0
-	cmpa.l #acia_rx_buffer + 2048, a0
+	move.l d5, d6
+	cmpi.l #2048, d6
 	bne.w .NextPacket
-	lea.l -2048(a0), a0
+	subi.l #2048, d6
 	bra.w .NextPacket
 .all_read:
-	move.l a0, acia_rx_read.l
+	move.l d6, acia_rx_roffset.l
 .if ^^defined DEBUG_COLOR_SHOW_MOUSE
 	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
 .endif

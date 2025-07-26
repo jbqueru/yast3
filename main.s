@@ -225,8 +225,8 @@ _MainSuper:
 ; * Buffer addresses for IKBD data *
 ; **********************************
 
-	move.l #acia_rx_buffer, acia_rx_write.l
-	move.l #acia_rx_buffer, acia_rx_read.l
+	move.l #0, acia_rx_woffset.l
+	move.l #0, acia_rx_roffset.l
 
 ; ************************
 ; * Set up thread system *
@@ -509,16 +509,20 @@ ACIA:
 .endif
 	btst.b #0, $fffffc00.w
 	beq.s .NotRx.l
+	move.l d0, -(sp)
 	move.l a0, -(sp)
-	move.l acia_rx_write.l, a0
-	move.b $fffffc02.w, (a0)+
-	move.b time_300hz + 3.l, (a0)+
-	cmpa.l #acia_rx_buffer + 2048, a0
+	move.l acia_rx_woffset.l, d0
+	lea.l acia_rx_buffer.l, a0
+	move.b $fffffc02.w, 0(a0, d0.l)
+	move.b time_300hz + 3.l, 1(a0, d0.l)
+	addq.l #2, d0
+	cmpi.l #2048, d0
 	bne.s .InBuffer
-	lea.l acia_rx_buffer, a0
+	moveq.l #0, d0
 .InBuffer:
-	move.l a0, acia_rx_write.l
+	move.l d0, acia_rx_woffset.l
 	move.l (sp)+, a0
+	move.l (sp)+, d0
 .NotRx:
 .if ^^defined DEBUG_COLOR_SHOW_ACIA
 	.rept 512
@@ -745,10 +749,11 @@ time_render:
 
 	.even
 
-acia_rx_write:
+acia_rx_woffset:
 	.ds.l 1
-acia_rx_read:
+acia_rx_roffset:
 	.ds.l 1
+
 acia_rx_buffer:
 	.ds.b 2048
 
