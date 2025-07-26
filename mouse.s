@@ -38,15 +38,96 @@ MouseDisplay:
 .if ^^defined DEBUG_COLOR_SHOW_MOUSE
 	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
 .endif
+
+	lea.l acia_rx_buffer.l, a0
+	move.l acia_rx_roffset.l, d6
+	move.l acia_rx_woffset.l, d7
+
+	move.w mouse_x.l, d3
+	move.w mouse_y.l, d4
+
+.NextPacket:
+	cmp.l d6, d7
+	beq.w .all_read.l
+	move.l d6, d5
+
+	move.b 0(a0, d5.l), d0
+	addq.l #2, d5
+	cmpi.l #2048, d5
+	bne.s .NB1.l
+	subi.l #2048, d5
+.NB1:
+
+	cmpi.b #$fe, d0
+	blo.s .NotJoy.l
+	cmp.l d5, d7
+	beq.w .all_read.l
+	move.b 0(a0, d5.l), d1
+	addq.l #2, d5
+	bra.w .PacketDone
+
+.NotJoy:
+	cmpi.b #$f8, d0
+	blo.s .PacketDone.l
+
+	cmp.l d5, d7
+	beq.w .all_read.l
+	move.b 0(a0, d5.l), d1
+	addq.l #2, d5
+	cmpi.l #2048, d5
+	bne.s .NB2.l
+	subi.l #2048, d5
+.NB2:
+
+	cmp.l d5, d7
+	beq.w .all_read.l
+	move.b 0(a0, d5.l), d2
+	addq.l #2, d5
+
+	ext.w d1
+	add.w d3, d1
+	bpl.s .OkX1
+	moveq.l #0, d1
+	bra.s .OkX2
+.OkX1:
+	cmpi.w #640, d1
+	blt.s .OkX2
+	move.w #639, d1
+.OkX2:
+	move.w d1, d3
+
+	ext.w d2
+	add.w d4, d2
+	bpl.s .OkY1
+	moveq.l #0, d2
+	bra.s .OkY2
+.OkY1:
+	cmpi.w #200, d2
+	blt.s .OkY2
+	move.w #199, d2
+.OkY2:
+	move.w d2, d4
+
+.PacketDone:
+	move.l d5, d6
+	cmpi.l #2048, d6
+	bne.w .NextPacket
+	subi.l #2048, d6
+	bra.w .NextPacket
+.all_read:
+
+
+
+
 	movea.l fb_display.l, a0
-	move.w mouse_y, d0
+	move.w d4, d0
 	cmpi.w #183, d0
 	blt.s .InSY
 	move.w #183, d0
 .InSY:
 	mulu.w #160, d0
 	adda.w d0, a0
-	move.w mouse_x, d0
+	move.w d3, d0
 	cmpi.w #623, d0
 	blt.s .InSX
 	move.w #623, d0
