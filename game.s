@@ -206,9 +206,19 @@ DrawLoop:
 	moveq.l #0, d3
 	move.b (a2)+, d3
 	move.b (a4, d3.w), d3
-	bsr.s _DrawChar
+	bsr.w _DrawChar
 	cmpa.l a3, a2
 	bne.s .loop_chars
+
+	move.l time_render.l, d7
+	moveq.l #22, d4
+	bsr.w _DrawNum.l
+	move.l time_vbl.l, d7
+	moveq.l #23, d4
+	bsr.w _DrawNum.l
+	move.l time_300hz.l, d7
+	moveq.l #24, d4
+	bsr.w _DrawNum.l
 
 .if ^^defined DEBUG_COLOR_SHOW_RENDER
 	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
@@ -236,6 +246,10 @@ DrawLoop:
 	move.w #$2700, sr
 	rts
 
+; d0 = x in characters
+; d1 = y in characters
+; d2 = character to display
+; d3 = color (0-3)
 _DrawChar:
 	movea.l fb_rendering.l, a1
 	mulu.w #1280, d1
@@ -262,6 +276,95 @@ _DrawChar:
 .bit1done:
 	lea.l 160(a1), a1
 	dbra.w d0, .DrawCharLine
+	rts
+
+_DrawNum:
+	cmpi.l #10000 * 10000 - 1, d7
+	bls.s .InRange
+	move.l #10000 * 10000 - 1, d7
+.InRange:
+	divu.w #10000, d7
+	move.l d7, d6
+	swap.w d6
+
+	divu.w #10, d6
+	swap.w d6
+	moveq.l #7, d0
+	move.l d4, d1
+	move.w d6, d2
+	moveq.l #1, d3
+	bsr.s _DrawChar.l
+
+	clr.w d6
+	swap.w d6
+	divu.w #10, d6
+	swap.w d6
+	moveq.l #6, d0
+	move.l d4, d1
+	move.w d6, d2
+	moveq.l #1, d3
+	bsr.s _DrawChar.l
+
+	clr.w d6
+	swap.w d6
+	divu.w #10, d6
+	swap.w d6
+	moveq.l #5, d0
+	move.l d4, d1
+	move.w d6, d2
+	moveq.l #1, d3
+	bsr.w _DrawChar.l
+
+	clr.w d6
+	swap.w d6
+	divu.w #10, d6
+	swap.w d6
+	moveq.l #4, d0
+	move.l d4, d1
+	move.w d6, d2
+	moveq.l #1, d3
+	bsr.w _DrawChar.l
+
+	moveq.l #0, d6
+	move.w d7, d6
+	divu.w #10, d6
+	swap.w d6
+	moveq.l #3, d0
+	move.l d4, d1
+	move.w d6, d2
+	moveq.l #1, d3
+	bsr.w _DrawChar.l
+
+	clr.w d6
+	swap.w d6
+	divu.w #10, d6
+	swap.w d6
+	moveq.l #2, d0
+	move.l d4, d1
+	move.w d6, d2
+	moveq.l #1, d3
+	bsr.w _DrawChar.l
+
+	clr.w d6
+	swap.w d6
+	divu.w #10, d6
+	swap.w d6
+	moveq.l #1, d0
+	move.l d4, d1
+	move.w d6, d2
+	moveq.l #1, d3
+	bsr.w _DrawChar.l
+
+	clr.w d6
+	swap.w d6
+	divu.w #10, d6
+	swap.w d6
+	moveq.l #0, d0
+	move.l d4, d1
+	move.w d6, d2
+	moveq.l #1, d3
+	bsr.w _DrawChar.l
+
 	rts
 
 	.data
