@@ -39,6 +39,18 @@ MouseDisplay:
 	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
 .endif
 
+	movea.l mouse_save_address.l, a1
+	cmpa.w #0, a1
+	beq.s .no_mouse_backup.l
+	lea.l mouse_save.l, a0
+	moveq.l #16, d7
+.restore_loop:
+	move.l (a0)+, (a1)+
+	move.l (a0)+, (a1)+
+	lea.l 152(a1), a1
+	dbra.w d7, .restore_loop.l
+.no_mouse_backup:
+
 	lea.l acia_rx_buffer.l, a0
 	move.l acia_rx_roffset.l, d6
 	move.l acia_rx_woffset.l, d7
@@ -139,8 +151,13 @@ MouseDisplay:
 	andi.w #$f, d1
 	lea.l mouse_mask.l, a1
 	lea.l mouse_pattern.l, a2
+	lea.l mouse_save.l, a3
+	move.l a0, mouse_save_address.l
 	moveq.l #16, d7
 .DrawMouse:
+	move.l (a0), (a3)+
+	move.l 4(a0), (a3)+
+
 	move.l (a1)+, d0
 	ror.l d1, d0
 	and.w d0, 4(a0)
@@ -201,3 +218,11 @@ mouse_pattern:
 	.dc.l %00000000000000100000000000000000
 	.dc.l %00000000000000010000000000000000
 	.dc.l %00000000000000000000000000000000
+
+	.bss
+	.even
+
+mouse_save_address:
+	.ds.l 1
+mouse_save:
+	.ds.w 4 * 17
