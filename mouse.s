@@ -65,49 +65,49 @@ MouseRestore:
 ; #################################
 
 	lea.l acia_rx_buffer.l, a0				; base address for the buffer
-	move.l acia_rx_roffset.l, d6			; offset from which to read
-	move.l acia_rx_woffset.l, d7			; offset until which to read
+	move.w acia_rx_roffset.l, d6			; offset from which to read
+	move.w acia_rx_woffset.l, d7			; offset until which to read
 
 	move.w mouse_x.l, d3					; mouse position at beginning of lookahead
 	move.w mouse_y.l, d4					; mouse position at beginning of lookahead
 
 .NextPacket:
-	cmp.l d6, d7
+	cmp.w d6, d7
 	beq.w .all_read.l
-	move.l d6, d5
+	move.w d6, d5
 
-	move.b 0(a0, d5.l), d0
-	addq.l #2, d5
-	cmpi.l #2048, d5
+	move.b 0(a0, d5.w), d0
+	addq.w #2, d5
+	cmpi.w #2048, d5
 	bne.s .NB1.l
-	subi.l #2048, d5
+	subi.w #2048, d5
 .NB1:
 
 	cmpi.b #$fe, d0
 	blo.s .NotJoy.l
-	cmp.l d5, d7
+	cmp.w d5, d7
 	beq.w .all_read.l
-	move.b 0(a0, d5.l), d1
-	addq.l #2, d5
+	move.b 0(a0, d5.w), d1
+	addq.w #2, d5
 	bra.w .PacketDone
 
 .NotJoy:
 	cmpi.b #$f8, d0
 	blo.s .PacketDone.l
 
-	cmp.l d5, d7
+	cmp.w d5, d7
 	beq.w .all_read.l
-	move.b 0(a0, d5.l), d1
-	addq.l #2, d5
-	cmpi.l #2048, d5
+	move.b 0(a0, d5.w), d1
+	addq.w #2, d5
+	cmpi.w #2048, d5
 	bne.s .NB2.l
-	subi.l #2048, d5
+	subi.w #2048, d5
 .NB2:
 
-	cmp.l d5, d7
+	cmp.w d5, d7
 	beq.w .all_read.l
-	move.b 0(a0, d5.l), d2
-	addq.l #2, d5
+	move.b 0(a0, d5.w), d2
+	addq.w #2, d5
 
 	ext.w d1
 	add.w d3, d1
@@ -134,10 +134,10 @@ MouseRestore:
 	move.w d2, d4
 
 .PacketDone:
-	move.l d5, d6
-	cmpi.l #2048, d6
+	move.w d5, d6
+	cmpi.w #2048, d6
 	bne.w .NextPacket
-	subi.l #2048, d6
+	subi.w #2048, d6
 	bra.w .NextPacket
 .all_read:
 
