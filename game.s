@@ -39,11 +39,22 @@ DrawLoop:
 	addq.l #1, time_render.l
 
 	lea.l acia_rx_buffer.l, a0
-	move.w acia_rx_roffset.l, d6
 	move.w acia_rx_woffset.l, d7
 
-	move.w mouse_x.l, d3
-	move.w mouse_y.l, d4
+	move.l acia_mouse_r_xy.l, d0
+	move.l d0, d6
+	swap.w d6
+	lsr.w #5, d6
+	andi.w #$3ff << 1, d6					; offset from which to read
+
+	move.l d0, d3
+	andi.w #$7ff, d3						; mouse x position at beginning of lookahead
+
+	move.l d0, d4
+	lsl.l #5, d4
+	swap.w d4
+	andi.w #$7ff, d4						; mouse y position at beginning of lookahead
+
 .NextPacket:
 	cmp.w d6, d7
 	beq.w .all_read.l
@@ -138,16 +149,31 @@ DrawLoop:
 	subi.w #2048, d6
 	bra.w .NextPacket
 .all_read:
-	move.w d6, acia_rx_roffset.l
-	move.w d3, mouse_x.l
-	move.w d4, mouse_y.l
+
+	lsl.w #5, d6
+	move.w d6, d0
+	swap.w d0
+
+	move.w d3, d0
+
+	swap.w d4
+	clr.w d4
+	lsr.l #5, d4
+	or.l d4, d0
+
+	move.l d0, acia_mouse_r_xy.l
 
 ; Check if the mouse is in one of the active zones
 	lea.l mouse_zones.l, a0
 	lea.l mouse_zones_end.l, a1
 	moveq.l #1, d0
-	move.w mouse_x.l, d1
-	move.w mouse_y.l, d2
+
+	move.l acia_mouse_r_xy.l, d1
+	move.l d1, d2
+	andi.w #$7ff, d1
+	lsl.l #5, d2
+	swap.w d2
+	andi.w #$7ff, d2
 
 .zone_loop:
 	cmp.w (a0), d1

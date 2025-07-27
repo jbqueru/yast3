@@ -228,7 +228,7 @@ _MainSuper:
 ; **********************************
 
 	move.w #0, acia_rx_woffset.l
-	move.w #0, acia_rx_roffset.l
+	move.l #0, acia_mouse_r_xy.l
 
 ; ************************
 ; * Set up thread system *
@@ -751,19 +751,16 @@ time_render:
 
 	.even
 
+acia_mouse_r_xy:
+	.ds.l 1
+
 acia_rx_woffset:
-	.ds.w 1
-acia_rx_roffset:
 	.ds.w 1
 
 acia_rx_buffer:
 	.ds.b 2048
 
 mouse_buttons:
-	.ds.w 1
-mouse_x:
-	.ds.w 1
-mouse_y:
 	.ds.w 1
 
 keyboard_state:

@@ -65,11 +65,22 @@ MouseRestore:
 ; #################################
 
 	lea.l acia_rx_buffer.l, a0				; base address for the buffer
-	move.w acia_rx_roffset.l, d6			; offset from which to read
 	move.w acia_rx_woffset.l, d7			; offset until which to read
 
-	move.w mouse_x.l, d3					; mouse position at beginning of lookahead
-	move.w mouse_y.l, d4					; mouse position at beginning of lookahead
+	move.l acia_mouse_r_xy.l, d0
+
+	move.l d0, d6
+	swap.w d6
+	lsr.w #5, d6
+	andi.w #$3ff << 1, d6					; offset from which to read
+
+	move.l d0, d3
+	andi.w #$7ff, d3						; mouse x position at beginning of lookahead
+
+	move.l d0, d4
+	lsl.l #5, d4
+	swap.w d4
+	andi.w #$7ff, d4						; mouse y position at beginning of lookahead
 
 .NextPacket:
 	cmp.w d6, d7
