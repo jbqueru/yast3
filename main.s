@@ -227,8 +227,8 @@ _MainSuper:
 ; * Buffer addresses for IKBD data *
 ; **********************************
 
-	move.l #0, acia_rx_woffset.l
-	move.l #0, acia_rx_roffset.l
+	move.w #0, acia_rx_woffset.l
+	move.w #0, acia_rx_roffset.l
 
 ; ************************
 ; * Set up thread system *
