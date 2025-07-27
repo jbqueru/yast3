@@ -41,6 +41,9 @@ DrawLoop:
 	lea.l acia_rx_buffer.l, a0
 	move.w acia_rx_roffset.l, d6
 	move.w acia_rx_woffset.l, d7
+
+	move.w mouse_x.l, d3
+	move.w mouse_y.l, d4
 .NextPacket:
 	cmp.w d6, d7
 	beq.w .all_read.l
@@ -83,7 +86,7 @@ DrawLoop:
 	move.w d0, mouse_buttons
 
 	ext.w d1
-	add.w mouse_x, d1
+	add.w d3, d1
 	bpl.s .OkX1
 	moveq.l #0, d1
 	bra.s .OkX2
@@ -92,10 +95,10 @@ DrawLoop:
 	blt.s .OkX2
 	move.w #639, d1
 .OkX2:
-	move.w d1, mouse_x
+	move.w d1, d3
 
 	ext.w d2
-	add.w mouse_y, d2
+	add.w d4, d2
 	bpl.s .OkY1
 	moveq.l #0, d2
 	bra.s .OkY2
@@ -104,7 +107,7 @@ DrawLoop:
 	blt.s .OkY2
 	move.w #199, d2
 .OkY2:
-	move.w d2, mouse_y
+	move.w d2, d4
 
 	bra.s .PacketDone.l
 
@@ -136,6 +139,8 @@ DrawLoop:
 	bra.w .NextPacket
 .all_read:
 	move.w d6, acia_rx_roffset.l
+	move.w d3, mouse_x.l
+	move.w d4, mouse_y.l
 
 ; Check if the mouse is in one of the active zones
 	lea.l mouse_zones.l, a0
