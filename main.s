@@ -215,6 +215,8 @@ _MainSuper:
 	move.l d0, (a0)+
 	dbra.w d7, .ClearFB.l
 
+	move.b #2, $ffff820a.w
+
 ; ###############################################
 ; ##                                           ##
 ; ##  Prepare variables to support interrupts  ##
