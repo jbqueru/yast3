@@ -621,7 +621,7 @@ _ThreadEntrySound:
 .FillAudioBuffer:
 	clr.b (a0)+
 .if ^^defined DEBUG_COLOR_SHOW_PCM
-	eori.w #$004, GFX_COLOR_0.w
+	eori.w #DEBUG_COLOR_SHOW_PCM, GFX_COLOR_0.w
 .endif
 	dbra.w d0, .FillAudioBuffer.l
 	clr.b _thread_ready_sound.l
