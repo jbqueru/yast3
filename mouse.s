@@ -39,24 +39,37 @@ MouseDisplay:
 	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
 .endif
 
+; ######################################
+; ##                                  ##
+; ##  Restore background under mouse  ##
+; ##                                  ##
+; ######################################
+
+MouseRestore:
 	movea.l mouse_save_address.l, a1
-	cmpa.w #0, a1
-	beq.s .no_mouse_backup.l
+	cmpa.w #0, a1							; cmpa sign-extends 16-bit arguments
+	beq.s .RestoreDone.l
 	lea.l mouse_save.l, a0
-	moveq.l #16, d7
-.restore_loop:
-	move.l (a0)+, (a1)+
-	move.l (a0)+, (a1)+
-	lea.l 152(a1), a1
-	dbra.w d7, .restore_loop.l
-.no_mouse_backup:
+	moveq.l #16, d7							; 17 lines (!)
+.RestoreLoop:
+	move.l (a0)+, (a1)+						; 16 pixels, 2 bitplanes
+	move.l (a0)+, (a1)+						; 16 pixels, 2 bitplanes
+	lea.l 152(a1), a1						; next framebuffer line
+	dbra.w d7, .RestoreLoop.l
+.RestoreDone:
 
-	lea.l acia_rx_buffer.l, a0
-	move.l acia_rx_roffset.l, d6
-	move.l acia_rx_woffset.l, d7
+; #################################
+; ##                             ##
+; ##  Look ahead in ACIA buffer  ##
+; ##                             ##
+; #################################
 
-	move.w mouse_x.l, d3
-	move.w mouse_y.l, d4
+	lea.l acia_rx_buffer.l, a0				; base address for the buffer
+	move.l acia_rx_roffset.l, d6			; offset from which to read
+	move.l acia_rx_woffset.l, d7			; offset until which to read
+
+	move.w mouse_x.l, d3					; mouse position at beginning of lookahead
+	move.w mouse_y.l, d4					; mouse position at beginning of lookahead
 
 .NextPacket:
 	cmp.l d6, d7
