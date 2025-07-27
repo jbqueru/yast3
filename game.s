@@ -186,9 +186,6 @@ DrawLoop:
 	move.l d0, (a0)+
 	dbra.w d7, .ClearScreen.l
 
-.if ^^defined DEBUG_COLOR_SHOW_RENDER
-	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
-.endif
 	lea.l chars_list.l, a2
 	lea.l chars_list_end.l, a3
 	lea.l _draw_colors, a4
@@ -215,10 +212,6 @@ DrawLoop:
 	move.l time_300hz.l, d7
 	moveq.l #24, d4
 	bsr.w _DrawNum.l
-
-.if ^^defined DEBUG_COLOR_SHOW_RENDER
-	eori.w #DEBUG_COLOR_SHOW_RENDER, GFX_COLOR_0.w
-.endif
 
 	tst.b keyboard_state+7.l
 	bne.s .bye.l
