@@ -450,7 +450,7 @@ _Interrupt_End_Line_100:
 ; ************
 
 _Interrupt_End_Line_200:
-.if ^^defined COLOR_SHOW_TIMER_B
+.if ^^defined DEBUG_COLOR_SHOW_TIMER_B
 	eori.w #DEBUG_COLOR_SHOW_TIMER_B, GFX_COLOR_0.w
 	.rept 122
 	nop
@@ -525,7 +525,7 @@ ACIA:
 	move.l (sp)+, d0
 .NotRx:
 .if ^^defined DEBUG_COLOR_SHOW_ACIA
-	.rept 512
+	.rept 128
 	nop
 	.endr
 	eori.w #DEBUG_COLOR_SHOW_ACIA, GFX_COLOR_0.w
