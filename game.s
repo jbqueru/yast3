@@ -136,9 +136,6 @@ DrawLoop:
 	bra.w .NextPacket
 .all_read:
 	move.l d6, acia_rx_roffset.l
-.if ^^defined DEBUG_COLOR_SHOW_MOUSE
-	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
-.endif
 
 ; Check if the mouse is in one of the active zones
 	lea.l mouse_zones.l, a0
