@@ -37,7 +37,7 @@ mkdir -p out/tos/AUTO || exit $?
 #out/bin/generate_3d || exit $?
 
 echo '(*) assemble code'
-rmac -s -p -4 main.s -o out/tos/YAST3.PRG || exit $?
+rmac -p -4 main.s -o out/tos/YAST3.PRG || exit $?
 
 if [ "$1" = "--quick" ]; then
   echo '(*) QUICK BUILD SUCCESSFUL'
