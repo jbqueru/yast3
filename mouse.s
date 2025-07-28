@@ -102,14 +102,14 @@ MouseRestore:
 
 	move.b 0(a0, d6.w), d0		; Read first ACIA byte of IKBD packet
 
-	addq.w #2, d6				; Move to next ACIA byte
-	cmpi.w #2048, d6
-	bne.s .NB1.l
-	subi.w #2048, d6
-.NB1:
-
 	cmpi.b #$fe, d0				; Check if joystick (fe-ff)
 	blo.s .NotJoy.l				; Not joystick
+
+	addq.w #2, d6				; Move to next ACIA byte
+	cmpi.w #2048, d6
+	bne.s .NB0.l
+	subi.w #2048, d6
+.NB0:
 
 	cmp.w d6, d7				; End of ACIA buffer?
 	beq.s .AllRead.l			; Stop ACIA processing
@@ -120,6 +120,12 @@ MouseRestore:
 
 	cmpi.b #$f8, d0				; Check if mouse (f8-fb)
 	blo.s .PacketDone.l			; Not mouse
+
+	addq.w #2, d6				; Move to next ACIA byte
+	cmpi.w #2048, d6
+	bne.s .NB1.l
+	subi.w #2048, d6
+.NB1:
 
 	cmp.w d6, d7				; End of ACIA buffer?
 	beq.s .AllRead.l			; Stop ACIA processing
