@@ -79,8 +79,8 @@ MouseRestore:
 	andi.w #$3ff << 1, d6		; offset from which to read
 
 ; bottom 11 bits: x coordinate
-	move.l d0, d3
-	andi.w #$7ff, d3			; mouse x position at beginning of lookahead
+	move.l d0, d4
+	andi.w #$7ff, d4			; mouse x position at beginning of lookahead
 
 ; middle 11 bits: y coordinate
 	move.l d0, d5
@@ -92,7 +92,7 @@ MouseRestore:
 ; * process packets *
 ; *******************
 
-; d3.w: mouse x
+; d4.w: mouse x
 ; d5.w: mouse y
 ; d6.w: read position
 ; d7.w: max read position (next write position)
@@ -137,7 +137,7 @@ MouseRestore:
 
 ; Constrain X coordinate 0-639
 	ext.w d1
-	add.w d3, d1
+	add.w d4, d1
 	bpl.s .OkX1.l
 	moveq.l #0, d1
 	bra.s .OkX2.l
@@ -146,7 +146,7 @@ MouseRestore:
 	blt.s .OkX2.l
 	move.w #639, d1
 .OkX2:
-	move.w d1, d3
+	move.w d1, d4
 
 ; Constrain Y coordinate 0-199
 	ext.w d2
@@ -178,15 +178,14 @@ MouseRestore:
 .InSY:
 	mulu.w #160, d5
 	adda.w d5, a0
-	move.w d3, d0
-	cmpi.w #623, d0
+	cmpi.w #623, d4
 	blt.s .InSX
-	move.w #623, d0
+	move.w #623, d4
 .InSX:
-	move.w d0, d1
-	andi.w #$fff0, d0
-	lsr.w #2, d0
-	adda.w d0, a0
+	move.w d4, d1
+	andi.w #$fff0, d4
+	lsr.w #2, d4
+	adda.w d4, a0
 	andi.w #$f, d1
 	lea.l mouse_mask.l, a1
 	lea.l mouse_pattern.l, a2
