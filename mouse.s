@@ -94,28 +94,26 @@ MouseRestore:
 
 ; d3.w: mouse x
 ; d4.w: mouse y
-; d5.w: uncommitted read position
 ; d6.w: read position
 ; d7.w: max read position (next write position)
 .StartPacket:
 	cmp.w d6, d7				; end of available data?
 	beq.w .AllRead.l			; yes: all done
-	move.w d6, d5
 
-	move.b 0(a0, d5.w), d0		; Read first ACIA byte of IKBD packet
+	move.b 0(a0, d6.w), d0		; Read first ACIA byte of IKBD packet
 
-	addq.w #2, d5				; Move to next ACIA byte
-	cmpi.w #2048, d5
+	addq.w #2, d6				; Move to next ACIA byte
+	cmpi.w #2048, d6
 	bne.s .NB1.l
-	subi.w #2048, d5
+	subi.w #2048, d6
 .NB1:
 
 	cmpi.b #$fe, d0				; Check if joystick (fe-ff)
 	blo.s .NotJoy.l				; Not joystick
 
-	cmp.w d5, d7				; End of ACIA buffer?
+	cmp.w d6, d7				; End of ACIA buffer?
 	beq.s .AllRead.l			; Stop ACIA processing
-	addq.w #2, d5				; Skip joystick data byte
+	addq.w #2, d6				; Skip joystick data byte
 	bra.s .PacketDone.l
 .NotJoy:
 
@@ -123,19 +121,19 @@ MouseRestore:
 	cmpi.b #$f8, d0				; Check if mouse (f8-fb)
 	blo.s .PacketDone.l			; Not mouse
 
-	cmp.w d5, d7				; End of ACIA buffer?
+	cmp.w d6, d7				; End of ACIA buffer?
 	beq.s .AllRead.l			; Stop ACIA processing
-	move.b 0(a0, d5.w), d1		; Read mouse x data byte
-	addq.w #2, d5				; Move to next ACIA byte
-	cmpi.w #2048, d5
+	move.b 0(a0, d6.w), d1		; Read mouse x data byte
+	addq.w #2, d6				; Move to next ACIA byte
+	cmpi.w #2048, d6
 	bne.s .NB2.l
-	subi.w #2048, d5
+	subi.w #2048, d6
 .NB2:
 
-	cmp.w d5, d7				; End of ACIA buffer?
+	cmp.w d6, d7				; End of ACIA buffer?
 	beq.s .AllRead.l			; Stop ACIA processing
-	move.b 0(a0, d5.w), d2		; Read mouse y data byte
-	addq.w #2, d5				; Move to next ACIA byte
+	move.b 0(a0, d6.w), d2		; Read mouse y data byte
+	addq.w #2, d6				; Move to next ACIA byte
 
 ; Constrain X coordinate 0-639
 	ext.w d1
@@ -164,7 +162,6 @@ MouseRestore:
 	move.w d2, d4
 
 .PacketDone:
-	move.w d5, d6
 	cmpi.w #2048, d6
 	bne.w .StartPacket.l
 	subi.w #2048, d6
