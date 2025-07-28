@@ -83,17 +83,17 @@ MouseRestore:
 	andi.w #$7ff, d3			; mouse x position at beginning of lookahead
 
 ; middle 11 bits: y coordinate
-	move.l d0, d4
-	lsl.l #5, d4
-	swap.w d4
-	andi.w #$7ff, d4			; mouse y position at beginning of lookahead
+	move.l d0, d5
+	lsl.l #5, d5
+	swap.w d5
+	andi.w #$7ff, d5			; mouse y position at beginning of lookahead
 
 ; *******************
 ; * process packets *
 ; *******************
 
 ; d3.w: mouse x
-; d4.w: mouse y
+; d5.w: mouse y
 ; d6.w: read position
 ; d7.w: max read position (next write position)
 .StartPacket:
@@ -150,7 +150,7 @@ MouseRestore:
 
 ; Constrain Y coordinate 0-199
 	ext.w d2
-	add.w d4, d2
+	add.w d5, d2
 	bpl.s .OkY1.l
 	moveq.l #0, d2
 	bra.s .OkY2.l
@@ -159,7 +159,7 @@ MouseRestore:
 	blt.s .OkY2.l
 	move.w #199, d2
 .OkY2:
-	move.w d2, d4
+	move.w d2, d5
 
 .PacketDone:
 	cmpi.w #2048, d6
@@ -172,13 +172,12 @@ MouseRestore:
 
 
 	movea.l fb_display.l, a0
-	move.w d4, d0
-	cmpi.w #183, d0
+	cmpi.w #183, d5
 	blt.s .InSY
-	move.w #183, d0
+	move.w #183, d5
 .InSY:
-	mulu.w #160, d0
-	adda.w d0, a0
+	mulu.w #160, d5
+	adda.w d5, a0
 	move.w d3, d0
 	cmpi.w #623, d0
 	blt.s .InSX
