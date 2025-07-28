@@ -137,29 +137,27 @@ MouseRestore:
 
 ; Constrain X coordinate 0-639
 	ext.w d1
-	add.w d4, d1
+	add.w d1, d4
 	bpl.s .OkX1.l
-	moveq.l #0, d1
+	moveq.l #0, d4
 	bra.s .OkX2.l
 .OkX1:
-	cmpi.w #640, d1
+	cmpi.w #640, d4
 	blt.s .OkX2.l
-	move.w #639, d1
+	move.w #639, d4
 .OkX2:
-	move.w d1, d4
 
 ; Constrain Y coordinate 0-199
 	ext.w d2
-	add.w d5, d2
+	add.w d2, d5
 	bpl.s .OkY1.l
-	moveq.l #0, d2
+	moveq.l #0, d5
 	bra.s .OkY2.l
 .OkY1:
-	cmpi.w #200, d2
+	cmpi.w #200, d5
 	blt.s .OkY2.l
-	move.w #199, d2
+	move.w #199, d5
 .OkY2:
-	move.w d2, d5
 
 .PacketDone:
 	cmpi.w #2048, d6
