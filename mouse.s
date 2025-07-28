@@ -97,83 +97,103 @@ MouseRestore:
 ; d6.w: read position
 ; d7.w: max read position (next write position)
 .StartPacket:
+; Stop if we've processed all the data
 	cmp.w d6, d7				; end of available data?
 	beq.w .AllRead.l			; yes: all done
 
+; Read first byte from packet
 	move.b 0(a0, d6.w), d0		; Read first ACIA byte of IKBD packet
 
-	cmpi.b #$fe, d0				; Check if joystick (fe-ff)
-	blo.s .NotJoy.l				; Not joystick
-
+; Advance to next byte
 	addq.w #2, d6				; Move to next ACIA byte
-	cmpi.w #2048, d6
+	cmpi.w #2048, d6			; Wrap within buffer
 	bne.s .NB0.l
 	subi.w #2048, d6
 .NB0:
 
+; Check if joystick packet
+	cmpi.b #$fe, d0				; joystick is fe-ff
+	blo.s .NotJoy.l				; Not joystick
+
+; Process joystick
 	cmp.w d6, d7				; End of ACIA buffer?
 	beq.s .AllRead.l			; Stop ACIA processing
-	addq.w #2, d6				; Skip joystick data byte
-	bra.s .PacketDone.l
-.NotJoy:
 
+; Don't do anything with the data
 
-	cmpi.b #$f8, d0				; Check if mouse (f8-fb)
-	blo.s .PacketDone.l			; Not mouse
-
+; Advance to next byte
 	addq.w #2, d6				; Move to next ACIA byte
-	cmpi.w #2048, d6
+	cmpi.w #2048, d6			; Wrap within buffer
 	bne.s .NB1.l
 	subi.w #2048, d6
 .NB1:
+	bra.s .StartPacket.l
 
+.NotJoy:
+
+; Check if mouse packet
+	cmpi.b #$f8, d0				; mouse is f8-fb
+	blo.s .StartPacket.l		; Not mouse
+
+; Process mouse part 1
 	cmp.w d6, d7				; End of ACIA buffer?
 	beq.s .AllRead.l			; Stop ACIA processing
+
+; Read delta x
 	move.b 0(a0, d6.w), d0		; Read mouse x data byte
+
+; Advance to next byte
 	addq.w #2, d6				; Move to next ACIA byte
 	cmpi.w #2048, d6
 	bne.s .NB2.l
 	subi.w #2048, d6
 .NB2:
 
+; Process mouse part 2
 	cmp.w d6, d7				; End of ACIA buffer?
 	beq.s .AllRead.l			; Stop ACIA processing
+
+; Read delta y
 	move.b 0(a0, d6.w), d1		; Read mouse y data byte
+
+; Advance to next byte
 	addq.w #2, d6				; Move to next ACIA byte
+	cmpi.w #2048, d6
+	bne.s .NB3.l
+	subi.w #2048, d6
+.NB3:
+
+; Apply mouse motion
 
 ; Constrain X coordinate 0-639
-	ext.w d0
-	add.w d0, d4
-	bpl.s .OkX1.l
-	moveq.l #0, d4
-	bra.s .OkX2.l
+	ext.w d0					; Received delta x as 1 signed byte from IKBD
+	add.w d0, d4				; Add to running count
+	bpl.s .OkX1.l				; Positive, no need to handle the negative case
+	moveq.l #0, d4				; If negative, clamp to 0
+	bra.s .OkX2.l				; In that case, we're done
 .OkX1:
-	cmpi.w #640, d4
-	blt.s .OkX2.l
-	move.w #639, d4
+	cmpi.w #640, d4				; Check if already within screen
+	blt.s .OkX2.l				; We are within screen, no need to clamp
+	move.w #639, d4				; Clamp to rightmost pixel
 .OkX2:
 
 ; Constrain Y coordinate 0-199
-	ext.w d1
-	add.w d1, d5
-	bpl.s .OkY1.l
-	moveq.l #0, d5
-	bra.s .OkY2.l
+	ext.w d1					; Received delta y as 1 signed byte from IKBD
+	add.w d1, d5				; Add to running count
+	bpl.s .OkY1.l				; Positive, no need to handle the negative case
+	moveq.l #0, d5				; If negative, clamp to 0
+	bra.s .OkY2.l				; In that case, we're done
 .OkY1:
-	cmpi.w #200, d5
-	blt.s .OkY2.l
-	move.w #199, d5
+	cmpi.w #200, d5				; Check if already within screen
+	blt.s .OkY2.l				; We are within screen, no need to clamp
+	move.w #199, d5				; Clamp to bottommost pixel
 .OkY2:
 
-.PacketDone:
-	cmpi.w #2048, d6
-	bne.w .StartPacket.l
-	subi.w #2048, d6
 	bra.w .StartPacket.l
+
+
+
 .AllRead:
-
-
-
 
 	movea.l fb_display.l, a0
 	cmpi.w #183, d5
