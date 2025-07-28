@@ -67,59 +67,77 @@ MouseRestore:
 	lea.l acia_rx_buffer.l, a0				; base address for the buffer
 	move.w acia_rx_woffset.l, d7			; offset until which to read
 
+; **********************************
+; * separate combined read / x / y *
+; **********************************
 	move.l acia_mouse_r_xy.l, d0
 
+; top 10 bits: read offset in words (byte pairs)
 	move.l d0, d6
 	swap.w d6
 	lsr.w #5, d6
-	andi.w #$3ff << 1, d6					; offset from which to read
+	andi.w #$3ff << 1, d6		; offset from which to read
 
+; bottom 11 bits: x coordinate
 	move.l d0, d3
-	andi.w #$7ff, d3						; mouse x position at beginning of lookahead
+	andi.w #$7ff, d3			; mouse x position at beginning of lookahead
 
+; middle 11 bits: y coordinate
 	move.l d0, d4
 	lsl.l #5, d4
 	swap.w d4
-	andi.w #$7ff, d4						; mouse y position at beginning of lookahead
+	andi.w #$7ff, d4			; mouse y position at beginning of lookahead
 
-.NextPacket:
-	cmp.w d6, d7
-	beq.w .all_read.l
+; *******************
+; * process packets *
+; *******************
+
+; d3.w: mouse x
+; d4.w: mouse y
+; d5.w: uncommitted read position
+; d6.w: read position
+; d7.w: max read position (next write position)
+.StartPacket:
+	cmp.w d6, d7				; end of available data?
+	beq.w .all_read.l			; yes: all done
 	move.w d6, d5
 
-	move.b 0(a0, d5.w), d0
-	addq.w #2, d5
+	move.b 0(a0, d5.w), d0		; Read first ACIA byte of IKBD packet
+
+	addq.w #2, d5				; Move to next ACIA byte
 	cmpi.w #2048, d5
 	bne.s .NB1.l
 	subi.w #2048, d5
 .NB1:
 
-	cmpi.b #$fe, d0
-	blo.s .NotJoy.l
-	cmp.w d5, d7
-	beq.w .all_read.l
-	move.b 0(a0, d5.w), d1
-	addq.w #2, d5
+	cmpi.b #$fe, d0				; Check if joystick (fe-ff)
+	blo.s .NotJoy.l				; Not joystick
+
+	cmp.w d5, d7				; End of ACIA buffer?
+	beq.w .all_read.l			; Stop ACIA processing
+	addq.w #2, d5				; Skip joystick data byte
 	bra.w .PacketDone
-
 .NotJoy:
-	cmpi.b #$f8, d0
-	blo.s .PacketDone.l
 
-	cmp.w d5, d7
-	beq.w .all_read.l
-	move.b 0(a0, d5.w), d1
-	addq.w #2, d5
+
+	cmpi.b #$f8, d0				; Check if mouse (f8-fb)
+	blo.s .PacketDone.l			; Not mouse
+
+	cmp.w d5, d7				; End of ACIA buffer?
+	beq.w .all_read.l			; Stop ACIA processing
+	move.b 0(a0, d5.w), d1		; Read mouse x data byte
+	addq.w #2, d5				; Move to next ACIA byte
 	cmpi.w #2048, d5
 	bne.s .NB2.l
 	subi.w #2048, d5
 .NB2:
 
-	cmp.w d5, d7
-	beq.w .all_read.l
-	move.b 0(a0, d5.w), d2
-	addq.w #2, d5
+	cmp.w d5, d7				; End of ACIA buffer?
+	beq.w .all_read.l			; Stop ACIA processing
+	move.b 0(a0, d5.w), d2		; Read mouse y data byte
+	addq.w #2, d5				; Move to next ACIA byte
 
+; Constrain X coordinate 0-639
 	ext.w d1
 	add.w d3, d1
 	bpl.s .OkX1
@@ -132,6 +150,7 @@ MouseRestore:
 .OkX2:
 	move.w d1, d3
 
+; Constrain Y coordinate 0-199
 	ext.w d2
 	add.w d4, d2
 	bpl.s .OkY1
@@ -147,9 +166,9 @@ MouseRestore:
 .PacketDone:
 	move.w d5, d6
 	cmpi.w #2048, d6
-	bne.w .NextPacket
+	bne.w .StartPacket
 	subi.w #2048, d6
-	bra.w .NextPacket
+	bra.w .StartPacket
 .all_read:
 
 
