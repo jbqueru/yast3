@@ -123,7 +123,7 @@ MouseRestore:
 
 	cmp.w d6, d7				; End of ACIA buffer?
 	beq.s .AllRead.l			; Stop ACIA processing
-	move.b 0(a0, d6.w), d1		; Read mouse x data byte
+	move.b 0(a0, d6.w), d0		; Read mouse x data byte
 	addq.w #2, d6				; Move to next ACIA byte
 	cmpi.w #2048, d6
 	bne.s .NB2.l
@@ -132,12 +132,12 @@ MouseRestore:
 
 	cmp.w d6, d7				; End of ACIA buffer?
 	beq.s .AllRead.l			; Stop ACIA processing
-	move.b 0(a0, d6.w), d2		; Read mouse y data byte
+	move.b 0(a0, d6.w), d1		; Read mouse y data byte
 	addq.w #2, d6				; Move to next ACIA byte
 
 ; Constrain X coordinate 0-639
-	ext.w d1
-	add.w d1, d4
+	ext.w d0
+	add.w d0, d4
 	bpl.s .OkX1.l
 	moveq.l #0, d4
 	bra.s .OkX2.l
@@ -148,8 +148,8 @@ MouseRestore:
 .OkX2:
 
 ; Constrain Y coordinate 0-199
-	ext.w d2
-	add.w d2, d5
+	ext.w d1
+	add.w d1, d5
 	bpl.s .OkY1.l
 	moveq.l #0, d5
 	bra.s .OkY2.l
