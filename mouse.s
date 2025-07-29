@@ -38,11 +38,11 @@ MouseCore:
 ; ##                                  ##
 ; ######################################
 
-MouseRestore:
-	movea.l mouse_save_address.l, a1
+_MouseRestore:
+	movea.l _mouse_save_address.l, a1
 	cmpa.w #0, a1							; cmpa sign-extends 16-bit arguments
 	beq.s .RestoreDone.l
-	lea.l mouse_save.l, a0
+	lea.l _mouse_save.l, a0
 	moveq.l #16, d7							; 17 lines (!)
 .RestoreLoop:
 	move.l (a0)+, (a1)+						; 16 pixels, 2 bitplanes
@@ -57,7 +57,7 @@ MouseRestore:
 ; ##                             ##
 ; #################################
 
-MouseLookAhead:
+_MouseLookAhead:
 	lea.l acia_rx_buffer.l, a0				; base address for the buffer
 	move.w acia_rx_woffset.l, d7			; offset until which to read
 
@@ -195,7 +195,7 @@ MouseLookAhead:
 
 ; TODO: skip display if mouse hasn't moved.
 
-MouseDisplay:
+_MouseDisplay:
 	movea.l fb_display.l, a0		; framebuffer base address
 
 ; *************************************
@@ -219,10 +219,10 @@ MouseDisplay:
 	lsr.w #2, d4
 	adda.w d4, a0
 	andi.w #$f, d1
-	lea.l mouse_mask.l, a1
-	lea.l mouse_pattern.l, a2
-	lea.l mouse_save.l, a3
-	move.l a0, mouse_save_address.l
+	lea.l _mouse_mask.l, a1
+	lea.l _mouse_pattern.l, a2
+	lea.l _mouse_save.l, a3
+	move.l a0, _mouse_save_address.l
 	moveq.l #16, d7
 .DrawMouse:
 	move.l (a0), (a3)+
@@ -251,7 +251,7 @@ MouseDisplay:
 	.data
 	.even
 
-mouse_mask:
+_mouse_mask:
 	.dc.l %00000001111111111111111111111111
 	.dc.l %00000001111111111111111111111111
 	.dc.l %00000001111111111111111111111111
@@ -270,7 +270,7 @@ mouse_mask:
 	.dc.l %11111111111111000111111111111111
 	.dc.l %11111111111111100111111111111111
 
-mouse_pattern:
+_mouse_pattern:
 	.dc.l %00000000000000000000000000000000
 	.dc.l %01111100000000000000000000000000
 	.dc.l %01100000000000000000000000000000
@@ -292,7 +292,7 @@ mouse_pattern:
 	.bss
 	.even
 
-mouse_save_address:
+_mouse_save_address:
 	.ds.l 1
-mouse_save:
+_mouse_save:
 	.ds.w 4 * 17
