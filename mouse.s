@@ -15,6 +15,8 @@
 ;
 ; SPDX-License-Identifier: AGPL-3.0-or-later
 
+; See main.s for more information
+
 ; #############################################################################
 ; #############################################################################
 ; ####                                                                     ####
@@ -62,7 +64,7 @@ _MouseLookAhead:
 	move.w acia_rx_woffset.l, d7			; offset until which to read
 
 ; **********************************
-; * separate combined read / x / y *
+; * Separate combined read / x / y *
 ; **********************************
 	move.l acia_mouse_r_xy.l, d0
 
@@ -83,7 +85,7 @@ _MouseLookAhead:
 	andi.w #$7ff, d5			; mouse y position at beginning of lookahead
 
 ; *******************
-; * process packets *
+; * Process packets *
 ; *******************
 
 ; d4.w: mouse x
@@ -157,7 +159,9 @@ _MouseLookAhead:
 	subi.w #2048, d6
 .NB3:
 
-; Apply mouse motion
+; **********************
+; * Apply mouse motion *
+; **********************
 
 ; Constrain X coordinate 0-639
 	ext.w d0					; Received delta x as 1 signed byte from IKBD
@@ -199,7 +203,7 @@ _MouseDisplay:
 	movea.l fb_display.l, a0		; framebuffer base address
 
 ; *************************************
-; * clamp so entire cursor is visible *
+; * Clamp so entire cursor is visible *
 ; *************************************
 	cmpi.w #623, d4
 	blt.s .InSX
@@ -214,6 +218,9 @@ _MouseDisplay:
 	mulu.w #160, d5
 	adda.w d5, a0
 
+; ******************************
+; * Compute display parameters *
+; ******************************
 	move.w d4, d1
 	andi.w #$fff0, d4
 	lsr.w #2, d4
@@ -223,6 +230,10 @@ _MouseDisplay:
 	lea.l _mouse_pattern.l, a2
 	lea.l _mouse_save.l, a3
 	move.l a0, _mouse_save_address.l
+
+; **************************
+; * Display mouse onscreen *
+; **************************
 	moveq.l #16, d7
 .DrawMouse:
 	move.l (a0), (a3)+
