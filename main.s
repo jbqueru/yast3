@@ -605,7 +605,7 @@ NoSwitch:
 	.text
 
 _ThreadEntryMouse:
-	bsr.w MouseDisplay.l
+	bsr.w MouseCore.l
 	clr.b _thread_ready_mouse.l
 	bsr.w SwitchThreads.l
 	bra.w _ThreadEntryMouse.l

@@ -27,7 +27,7 @@
 
 	.text
 
-MouseDisplay:
+MouseCore:
 .if ^^defined DEBUG_COLOR_SHOW_MOUSE
 	eori.w #DEBUG_COLOR_SHOW_MOUSE, GFX_COLOR_0.w
 .endif
@@ -57,6 +57,7 @@ MouseRestore:
 ; ##                             ##
 ; #################################
 
+MouseLookAhead:
 	lea.l acia_rx_buffer.l, a0				; base address for the buffer
 	move.w acia_rx_woffset.l, d7			; offset until which to read
 
@@ -184,21 +185,35 @@ MouseRestore:
 
 	bra.w .StartPacket.l
 
-
-
 .AllRead:
 
-	movea.l fb_display.l, a0
-	cmpi.w #183, d5
-	blt.s .InSY
-	move.w #183, d5
-.InSY:
-	mulu.w #160, d5
-	adda.w d5, a0
+; ######################
+; ##                  ##
+; ##  Display cursor  ##
+; ##                  ##
+; ######################
+
+; TODO: skip display if mouse hasn't moved.
+
+MouseDisplay:
+	movea.l fb_display.l, a0		; framebuffer base address
+
+; *************************************
+; * clamp so entire cursor is visible *
+; *************************************
 	cmpi.w #623, d4
 	blt.s .InSX
 	move.w #623, d4
 .InSX:
+
+	cmpi.w #183, d5
+	blt.s .InSY
+	move.w #183, d5
+.InSY:
+
+	mulu.w #160, d5
+	adda.w d5, a0
+
 	move.w d4, d1
 	andi.w #$fff0, d4
 	lsr.w #2, d4
