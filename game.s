@@ -248,13 +248,11 @@ DrawProcessInput:
 	move.b #2, (a0, d3.w)
 .Zone0:
 
-; Do the actual drawing
-	movea.l fb_rendering.l, a0
-	moveq.l #0, d0
-	move.w #7999, d7
-.ClearScreen:
-	move.l d0, (a0)+
-	dbra.w d7, .ClearScreen.l
+; #################
+; ##             ##
+; ##  Rendering  ##
+; ##             ##
+; #################
 
 	lea.l chars_list.l, a2
 	lea.l chars_list_end.l, a3
@@ -326,12 +324,18 @@ _DrawChar:
 .DrawCharLine:
 	move.b (a0)+, d1
 	btst.l #0, d3
-	beq.s .bit0done
+	beq.s .bit0clear.l
 	move.b d1, (a1)
+	bra.s .bit0done.l
+.bit0clear:
+	clr.b (a1)
 .bit0done:
 	btst.l #1, d3
-	beq.s .bit1done
+	beq.s .bit1clear.l
 	move.b d1, 2(a1)
+	bra.s .bit1done.l
+.bit1clear:
+	clr.b 2(a1)
 .bit1done:
 	lea.l 160(a1), a1
 	dbra.w d0, .DrawCharLine
