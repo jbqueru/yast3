@@ -130,24 +130,24 @@ DrawProcessInput:
 	add.w d1, d3						; Update x accordingly
 	bpl.s .X_GE_0.l						; Constrain to x >= 0
 	moveq.l #0, d3
-	bra.s .X_LT_640.l
+	bra.s .X_GE_0_LT_640.l
 .X_GE_0:
 	cmpi.w #640, d3
-	blt.s .X_LT_640.l					; Constrain to x <= 639
+	blt.s .X_GE_0_LT_640.l				; Constrain to x <= 639
 	move.w #639, d3
-.X_LT_640:
+.X_GE_0_LT_640:
 
 ; Handle mouse y
 	ext.w d2							; Sign-extend delta-y to word
 	add.w d2, d4						; Update y accordingly
 	bpl.s .Y_GE_0.l						; Constrain to y >= 0
 	moveq.l #0, d4
-	bra.s .Y_LT_200.l
+	bra.s .Y_GE_0_LT_200.l
 .Y_GE_0:
 	cmpi.w #200, d4
-	blt.s .Y_LT_200.l					; Constrain to y <= 199
+	blt.s .Y_GE_0_LT_200.l				; Constrain to y <= 199
 	move.w #199, d4
-.Y_LT_200:
+.Y_GE_0_LT_200:
 
 	bra.w .StartEvent.l					; This event is done, wrap up and keep processing
 
