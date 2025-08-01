@@ -15,6 +15,8 @@
 ;
 ; SPDX-License-Identifier: AGPL-3.0-or-later
 
+; See main.s for more information
+
 	.text
 
 ; #############################################################################
@@ -29,24 +31,39 @@
 
 DrawStart:
 DrawLoop:
-	addq.l #1, time_render.l
+	addq.l #1, time_render.l				; Count number of rendered frames
+
+; ###########################
+; ##                       ##
+; ##  Process ACIA buffer  ##
+; ##                       ##
+; ###########################
+
 
 	lea.l acia_rx_buffer.l, a0
+
 	move.w acia_rx_woffset.l, d7
 
+; **********************************
+; * Separate combined read / x / y *
+; **********************************
 	move.l acia_mouse_r_xy.l, d0
+
+; top 10 bits: read offset in words (byte pairs)
 	move.l d0, d6
 	swap.w d6
 	lsr.w #5, d6
 	andi.w #$3ff << 1, d6					; offset from which to read
 
+; bottom 11 bits: x coordinate
 	move.l d0, d3
-	andi.w #$7ff, d3						; mouse x position at beginning of lookahead
+	andi.w #$7ff, d3						; mouse x position at beginning of processing
 
+; middle 11 bits: y coordinate
 	move.l d0, d4
 	lsl.l #5, d4
 	swap.w d4
-	andi.w #$7ff, d4						; mouse y position at beginning of lookahead
+	andi.w #$7ff, d4						; mouse y position at beginning of processing
 
 .NextPacket:
 	cmp.w d6, d7
