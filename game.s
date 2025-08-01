@@ -145,16 +145,13 @@ DrawProcessInput:
 	andi.w #7, d1						; Key number modulo 8
 	lsr.w #3, d2						; Key number / 8
 	lea.l keyboard_state.l, a3
-	adda.w d2, a3
-	moveq.l #0, d2
-	bset.l d1, d2
-	btst.l #7, d0
+
+	btst.l #7, d0						; Top bit of keyboard event: key release
 	bne.s .KeyRelease
-	or.b d2, (a3)
+	bset.b d1, 0(a3, d2.w)				; Set bit that matches pressed key
 	bra.s .KeyDone
 .KeyRelease:
-	not.b d2
-	and.b d2, (a3)
+	bclr.b d1, 0(a3, d2.w)				; Clear bit that matches pressed key
 .KeyDone:
 
 .EventDone:
