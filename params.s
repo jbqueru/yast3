@@ -31,6 +31,8 @@ STACK_SIZE_MOUSE .equ 256 		; long words, with 18 used for thread-switching
 STACK_SIZE_SOUND .equ 256
 STACK_SIZE_CORE .equ 256
 
+IKBD_QUEUE_SIZE .equ 2048		; bytes, 2 bytes per IKBD/ACIA interrupt
+								; must be power of two, 2048 or less.
 DEBUG .equ 0
 
 .if DEBUG

@@ -102,10 +102,7 @@ _MouseLookAhead:
 
 ; Advance to next byte
 	addq.w #2, d6				; Move to next ACIA byte
-	cmpi.w #2048, d6			; Wrap within buffer
-	bne.s .NB0.l
-	subi.w #2048, d6
-.NB0:
+	andi.w #IKBD_QUEUE_SIZE - 2, d6			; Wrap within buffer
 
 ; Check if joystick packet
 	cmpi.b #$fe, d0				; joystick is fe-ff
@@ -119,10 +116,8 @@ _MouseLookAhead:
 
 ; Advance to next byte
 	addq.w #2, d6				; Move to next ACIA byte
-	cmpi.w #2048, d6			; Wrap within buffer
-	bne.s .NB1.l
-	subi.w #2048, d6
-.NB1:
+	andi.w #IKBD_QUEUE_SIZE - 2, d6			; Wrap within buffer
+
 	bra.s .StartPacket.l
 
 .NotJoy:
@@ -140,10 +135,7 @@ _MouseLookAhead:
 
 ; Advance to next byte
 	addq.w #2, d6				; Move to next ACIA byte
-	cmpi.w #2048, d6
-	bne.s .NB2.l
-	subi.w #2048, d6
-.NB2:
+	andi.w #IKBD_QUEUE_SIZE - 2, d6			; Wrap within buffer
 
 ; Process mouse part 2
 	cmp.w d6, d7				; End of ACIA buffer?
@@ -154,10 +146,7 @@ _MouseLookAhead:
 
 ; Advance to next byte
 	addq.w #2, d6				; Move to next ACIA byte
-	cmpi.w #2048, d6
-	bne.s .NB3.l
-	subi.w #2048, d6
-.NB3:
+	andi.w #IKBD_QUEUE_SIZE - 2, d6			; Wrap within buffer
 
 ; **********************
 ; * Apply mouse motion *
