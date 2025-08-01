@@ -32,7 +32,7 @@ mkdir -p out/tos/AUTO || exit $?
 echo '(*) assemble code'
 rmac -p -4 main.s -o out/tos/YAST3.PRG || exit $?
 
-if [ "$1" = "--quick" ]; then
+if [ "$1" = "--quick" -o "$1" = "-q" ]; then
   echo '(*) QUICK BUILD SUCCESSFUL'
   exit 0;
 fi
