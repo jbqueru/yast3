@@ -71,11 +71,9 @@ DrawLoop:
 	move.w d6, d5
 
 	move.b 0(a0, d5.w), d0
+
 	addq.w #2, d5
-	cmpi.w #2048, d5
-	bne.s .NB1.l
-	subi.w #2048, d5
-.NB1:
+	andi.w #IKBD_QUEUE_SIZE - 2, d5			; Wrap within buffer
 
 	cmpi.b #$fe, d0
 	blo.s .NotJoy.l
@@ -93,10 +91,7 @@ DrawLoop:
 	beq.w .all_read.l
 	move.b 0(a0, d5.w), d1
 	addq.w #2, d5
-	cmpi.w #2048, d5
-	bne.s .NB2.l
-	subi.w #2048, d5
-.NB2:
+	andi.w #IKBD_QUEUE_SIZE - 2, d5			; Wrap within buffer
 
 	cmp.w d5, d7
 	beq.w .all_read.l
@@ -154,9 +149,7 @@ DrawLoop:
 
 .PacketDone:
 	move.w d5, d6
-	cmpi.w #2048, d6
-	bne.w .NextPacket
-	subi.w #2048, d6
+	andi.w #IKBD_QUEUE_SIZE - 2, d6			; Wrap within buffer
 	bra.w .NextPacket
 .all_read:
 

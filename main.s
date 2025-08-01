@@ -511,10 +511,7 @@ ACIA:
 	move.b $fffffc02.w, 0(a0, d0.w)
 	move.b time_300hz + 3.l, 1(a0, d0.w)
 	addq.w #2, d0
-	cmpi.w #2048, d0
-	bne.s .InBuffer
-	clr.w d0
-.InBuffer:
+	andi.w #IKBD_QUEUE_SIZE - 2, d0			; Wrap within buffer
 	move.w d0, acia_rx_woffset.l
 	move.l (sp)+, a0
 	move.w (sp)+, d0
@@ -751,7 +748,7 @@ acia_rx_woffset:
 	.ds.w 1
 
 acia_rx_buffer:
-	.ds.b 2048
+	.ds.b IKBD_QUEUE_SIZE
 
 mouse_buttons:
 	.ds.w 1
