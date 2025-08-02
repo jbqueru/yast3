@@ -104,7 +104,7 @@ _CoreProcessInput:
 
 ; Read first extra byte of mouse event
 	cmp.w d5, d7						; End of available data?
-	beq.w .AllEventsRead.l				; Yes: all done
+	beq.s .AllEventsRead.l				; Yes: all done
 
 	move.b 0(a0, d5.w), d1				; d1: first mouse extra byte (delta x)
 
@@ -113,7 +113,7 @@ _CoreProcessInput:
 
 ; Read second extra byte of mouse event
 	cmp.w d5, d7						; End of available data?
-	beq.w .AllEventsRead.l				; Yes: all done
+	beq.s .AllEventsRead.l				; Yes: all done
 
 	move.b 0(a0, d5.w), d2				; d2: second mouse extra byte (delta y)
 
@@ -269,7 +269,7 @@ _CoreRender:
 	moveq.l #0, d3
 	move.b (a2)+, d3
 	move.b (a4, d3.w), d3
-	bsr.w _DrawChar
+	bsr.s _DrawChar.l
 	cmpa.l a3, a2
 	bne.s .loop_chars
 
