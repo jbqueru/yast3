@@ -49,7 +49,8 @@ _MouseRestore:
 .RestoreLoop:
 	move.l (a0)+, (a1)+						; 16 pixels, 2 bitplanes
 	move.l (a0)+, (a1)+						; 16 pixels, 2 bitplanes
-	lea.l 152(a1), a1						; next framebuffer line
+	move.l (a0)+, (a1)+						; 16 pixels, 2 bitplanes
+	lea.l 148(a1), a1						; next framebuffer line
 	dbra.w d7, .RestoreLoop.l
 .RestoreDone:
 
@@ -229,6 +230,7 @@ _MouseDisplay:
 ; Save mouse data
 	move.l (a0), (a3)+
 	move.l 4(a0), (a3)+
+	move.l 8(a0), (a3)+
 
 ; Mask, first 16 pixels
 	move.l (a1), d0
@@ -323,4 +325,4 @@ _mouse_pattern:
 _mouse_save_address:
 	.ds.l 1
 _mouse_save:
-	.ds.w 4 * 17
+	.ds.w 6 * 17
