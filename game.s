@@ -29,8 +29,8 @@
 ; #############################################################################
 ; #############################################################################
 
-DrawStart:
-DrawLoop:
+CoreStart:
+_DrawLoop:
 	addq.l #1, time_render.l			; Count number of rendered frames
 
 ; ###########################
@@ -39,7 +39,7 @@ DrawLoop:
 ; ##                       ##
 ; ###########################
 
-DrawProcessInput:
+_DrawProcessInput:
 	lea.l acia_rx_buffer.l, a0			; a0: base address for the buffer
 	move.w acia_rx_woffset.l, d7		; d7: offset until which to read
 
@@ -297,7 +297,7 @@ DrawProcessInput:
 	move.b #$ff, MFP_IMRA.w							; unmask timer B
 
 
-	bra.w DrawLoop.l
+	bra.w _DrawLoop.l
 
 .bye:
 	move.w #$2700, sr

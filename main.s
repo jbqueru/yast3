@@ -621,7 +621,7 @@ _ThreadEntrySound:
 	bra.s _ThreadEntrySound.l
 
 _ThreadEntryCore:
-	bra.w DrawStart.l
+	bra.w CoreStart.l
 
 ; #############################################################################
 ; #############################################################################
