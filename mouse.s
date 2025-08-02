@@ -96,7 +96,7 @@ _MouseLookAhead:
 .StartPacket:
 ; Stop if we've processed all the data
 	cmp.w d6, d7				; end of available data?
-	beq.w .AllRead.l			; yes: all done
+	beq.s .AllRead.l			; yes: all done
 
 ; Read first byte from packet
 	move.b 0(a0, d6.w), d0		; Read first ACIA byte of IKBD packet
