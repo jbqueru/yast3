@@ -204,8 +204,8 @@ _CoreProcessInput:
 
 _CoreLogic:
 ; Check if the mouse is in one of the active zones
-	lea.l mouse_zones.l, a0
-	lea.l mouse_zones_end.l, a1
+	lea.l _mouse_zones.l, a0
+	lea.l _mouse_zones_end.l, a1
 	moveq.l #1, d0
 
 	move.l acia_mouse_r_xy.l, d1
@@ -256,8 +256,8 @@ _CoreLogic:
 ; #################
 
 _CoreRender:
-	lea.l chars_list.l, a2
-	lea.l chars_list_end.l, a3
+	lea.l _chars_list.l, a2
+	lea.l _chars_list_end.l, a3
 	lea.l _draw_colors, a4
 .loop_chars:
 	moveq.l #0, d0
@@ -319,7 +319,7 @@ _DrawChar:
 	adda.w d0, a1
 	andi.w #$0001, d1
 	adda.w d1, a1
-	lea.l font, a0
+	lea.l _font, a0
 	lsl.w #3, d2
 	adda.w d2, a0
 	moveq.l #7, d0
@@ -435,7 +435,7 @@ _DrawNum:
 
 	.data
 	.even
-mouse_zones:
+_mouse_zones:
 	.dc.w 88, 111, 16, 23
 	.dc.w 96, 103, 32, 39
 	.dc.w 64, 71, 48, 63
@@ -456,9 +456,9 @@ mouse_zones:
 	.dc.w 448, 487, 104, 111
 	.dc.w 448, 487, 112, 119
 	.dc.w 448, 487, 120, 127
-mouse_zones_end:
+_mouse_zones_end:
 
-chars_list:
+_chars_list:
 	.dc.b 11, 2, 0, 1
 	.dc.b 12, 2, 0, 1
 	.dc.b 13, 2, 0, 1
@@ -525,9 +525,9 @@ chars_list:
 	.dc.b 59, 15, 1, 20
 	.dc.b 60, 15, 5, 20
 
-chars_list_end:
+_chars_list_end:
 
-font:
+_font:
 
 	dc.b %00111100
 	dc.b %01100110
