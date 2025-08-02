@@ -30,7 +30,7 @@
 ; #############################################################################
 
 CoreStart:
-_DrawLoop:
+_CoreLoop:
 	addq.l #1, time_render.l			; Count number of rendered frames
 
 ; ###########################
@@ -39,7 +39,7 @@ _DrawLoop:
 ; ##                       ##
 ; ###########################
 
-_DrawProcessInput:
+_CoreProcessInput:
 	lea.l acia_rx_buffer.l, a0			; a0: base address for the buffer
 	move.w acia_rx_woffset.l, d7		; d7: offset until which to read
 
@@ -202,6 +202,7 @@ _DrawProcessInput:
 ; ##              ##
 ; ##################
 
+_CoreLogic:
 ; Check if the mouse is in one of the active zones
 	lea.l mouse_zones.l, a0
 	lea.l mouse_zones_end.l, a1
@@ -254,6 +255,7 @@ _DrawProcessInput:
 ; ##             ##
 ; #################
 
+_CoreRender:
 	lea.l chars_list.l, a2
 	lea.l chars_list_end.l, a3
 	lea.l _draw_colors, a4
@@ -282,13 +284,13 @@ _DrawProcessInput:
 	bsr.w _DrawNum.l
 
 	tst.b keyboard_state+7.l
-	bne.s .bye.l
+	bne.s _CoreExit.l
 
 	move.b #$fe, MFP_IMRA.w							; mask away timer B
 	move.l fb_ready.l, d0
 	move.l fb_rendering.l, fb_ready.l
 	move.l fb_dirty.l, d1
-	bne.s .d1_is_next_fb
+	bne.s .d1_is_next_fb.l
 	move.l d0, d1
 .d1_is_next_fb:
 	move.l d1, fb_rendering.l
@@ -297,9 +299,9 @@ _DrawProcessInput:
 	move.b #$ff, MFP_IMRA.w							; unmask timer B
 
 
-	bra.w _DrawLoop.l
+	bra.w _CoreLoop.l
 
-.bye:
+_CoreExit:
 	move.w #$2700, sr
 	rts
 
