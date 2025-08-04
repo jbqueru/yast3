@@ -923,3 +923,27 @@ could be tasked e.g. with decompressing data as a lookahead. An easy
 approach would be to make the core thread block on a display interrupt,
 and possibly throttle itself down to make sure that it leaves enough
 time for the background thread.
+
+## Aug 04 2025
+
+### Game logic in stages
+
+It's becoming quite clear that the game logic has several stages, which
+translate between different data structures.
+
+1. Upstream is the input queue.
+2. Then is the game state.
+3. Then is the display state for each framebuffer.
+4. And the actual framebuffers are at the very end.
+
+That creates 3 stages of processing:
+
+1. Process inputs to update the game state.
+2. Generate the display state from the game state.
+3. Render the framebuffer from the game state.
+
+Stage 3 is most likely the most expensive, and, in order to optimize it,
+it works incrementally from one frame to the next. In turn, that means that
+there need to be two display states for the framebuffer being rendered into
+(one original and our target, in order to do incremental comparisons), plus
+one display state for each of the other framebuffers.
