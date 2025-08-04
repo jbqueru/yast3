@@ -300,7 +300,7 @@ _CoreRender:
 ; ##                            ##
 ; ################################
 
-	tst.b keyboard_state+7.l
+	btst.b #1, keyboard_state + 7.l
 	bne.s _CoreExit.l
 
 ; #########################
