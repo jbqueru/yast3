@@ -196,6 +196,15 @@ _CoreProcessInput:
 
 	move.l d0, acia_mouse_r_xy.l
 
+; ################################
+; ##                            ##
+; ##  Exit when we're all done  ##
+; ##                            ##
+; ################################
+
+	btst.b #1, keyboard_state + 7.l
+	bne.w _CoreExit.l
+
 ; ##################
 ; ##              ##
 ; ##  Game logic  ##
@@ -293,15 +302,6 @@ _CoreRender:
 	movea.l 4(a4), a0
 	move.l colors_spare.l, 4(a4)
 	move.l a0, colors_spare.l
-
-; ################################
-; ##                            ##
-; ##  Exit when we're all done  ##
-; ##                            ##
-; ################################
-
-	btst.b #1, keyboard_state + 7.l
-	bne.s _CoreExit.l
 
 ; #########################
 ; ##                     ##
