@@ -194,15 +194,20 @@ _MainSuper:
 	move.b $ffff8203.w, d0
 	lsl.l #8, d0
 	move.l d0, _fb1.l						; the address of the OS framebuffer
+	move.l #colors1, _fb1 + 4.l
 	move.l #_fb1, screen_display.l
 
 	move.l #framebuffers + 255, d0
 	clr.b d0
 	move.l d0, _fb2.l						; the first of our framebuffers
+	move.l #colors2, _fb2 + 4.l
 	move.l #_fb2, screen_rendering.l
 	add.l #32000, d0
 	move.l d0, _fb3.l						; the second of our framebuffers
+	move.l #colors3, _fb3 + 4.l
 	move.l #_fb3, screen_dirty.l
+
+	move.l #colors4, colors_spare.l
 
 	movea.l screen_display.l, a0
 	movea.l (a0), a0

@@ -237,12 +237,14 @@ _CoreLogic:
 ; Build the colors list based on internal state and mouse position
 ; TODO: build one for each framebuffer to avoid race condition
 
-	lea.l _draw_colors, a0
+	movea.l screen_rendering.l, a0
+	movea.l 4(a0), a0
 	moveq.l #25, d0
 .ClearColors:
 	move.b #1, (a0)+
 	dbra.w d0, .ClearColors
-	lea.l _draw_colors, a0
+	movea.l screen_rendering.l, a0
+	movea.l 4(a0), a0
 	moveq.l #0, d3
 	move.b _core_mouse_over, d3
 	beq.s .Zone0
@@ -258,7 +260,8 @@ _CoreLogic:
 _CoreRender:
 	lea.l _chars_list.l, a2
 	lea.l _chars_list_end.l, a3
-	lea.l _draw_colors, a4
+	movea.l screen_rendering.l, a4
+	movea.l 4(a4), a4
 .loop_chars:
 	moveq.l #0, d0
 	move.b (a2)+, d0
@@ -644,8 +647,17 @@ _font:
 
 	.bss
 	.even
-_draw_colors:
+colors1:
 	.ds.b 26
+colors2:
+	.ds.b 26
+colors3:
+	.ds.b 26
+colors4:
+	.ds.b 26
+
+colors_spare:
+	.ds.l 1
 
 _core_mouse_over:
 	.ds.b 1
