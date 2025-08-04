@@ -181,20 +181,20 @@ _CoreProcessInput:
 ; ********************************************
 .AllEventsRead:
 ; Top 10 bits: read offset in words (byte pairs)
-	lsl.w #5, d6
-	move.w d6, d0
-	swap.w d0
+	lsl.w #5, d6				; Shift to top of word, bits 0-5 clear
+	swap.w d6					; Then to top of long, bits 16-21 clear
 
 ; Bottom 11 bits: x coordinate
-	move.w d3, d0
+	move.w d3, d6				; Straight copy, bits 11-15 + 16-21 clear
 
 ; Middle 11 bits: y coordinate
-	swap.w d4
-	clr.w d4
-	lsr.l #5, d4
-	or.l d4, d0
+	swap.w d4					; Move to bits 16-26, with bits 27-31 clear
+	clr.w d4					; Clear bits 0-15
+	lsr.l #5, d4				; Data in bits 11-21
+	or.l d4, d6					; Insert into free bits
 
-	move.l d0, acia_mouse_r_xy.l
+; Store final result
+	move.l d6, acia_mouse_r_xy.l
 
 ; ################################
 ; ##                            ##
