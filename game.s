@@ -309,15 +309,15 @@ _CoreSwapFB:
 ; Make the most recently rendered framebuffer ready
 ; The next framebuffer to render into is whichever
 ; of ready or dirty is available.
-	move.l fb_ready.l, d0
-	move.l fb_rendering.l, fb_ready.l
-	move.l fb_dirty.l, d1
+	move.l screen_ready.l, d0
+	move.l screen_rendering.l, screen_ready.l
+	move.l screen_dirty.l, d1
 	bne.s .DeterminedNextFb.l
 	move.l d0, d1
 .DeterminedNextFb:
-	move.l d1, fb_rendering.l
+	move.l d1, screen_rendering.l
 	moveq.l #0, d0
-	move.l d0, fb_dirty.l
+	move.l d0, screen_dirty.l
 
 	move.b #$ff, MFP_IMRA.w
 
@@ -332,7 +332,8 @@ _CoreExit:
 ; d2 = character to display
 ; d3 = color (0-3)
 _DrawChar:
-	movea.l fb_rendering.l, a1
+	movea.l screen_rendering.l, a1
+	movea.l (a1), a1
 	mulu.w #1280, d1
 	adda.w d1, a1
 	move.w d0, d1

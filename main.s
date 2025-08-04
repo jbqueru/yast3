@@ -193,15 +193,19 @@ _MainSuper:
 	lsl.l #8, d0
 	move.b $ffff8203.w, d0
 	lsl.l #8, d0
-	move.l d0, fb_display.l					; the address of the OS framebuffer
+	move.l d0, _fb1.l						; the address of the OS framebuffer
+	move.l #_fb1, screen_display.l
 
 	move.l #framebuffers + 255, d0
 	clr.b d0
-	move.l d0, fb_rendering.l				; the first of our framebuffers
+	move.l d0, _fb2.l						; the first of our framebuffers
+	move.l #_fb2, screen_rendering.l
 	add.l #32000, d0
-	move.l d0, fb_dirty.l					; the second of our framebuffers
+	move.l d0, _fb3.l						; the second of our framebuffers
+	move.l #_fb3, screen_dirty.l
 
-	movea.l fb_display.l, a0
+	movea.l screen_display.l, a0
+	movea.l (a0), a0
 	move.w #7999, d7
 	moveq.l #0, d0
 .ClearFB:
@@ -467,11 +471,15 @@ _Interrupt_End_Line_200:
 	addq.l #1, time_vbl								; increment frame counter
 
 	move.l d0, -(sp)
+	move.l a0, -(sp)
 
-	move.l fb_ready.l, d0							; check if framebuffers ready to swap
+	move.l screen_ready.l, d0						; check if framebuffers ready to swap
 	beq.s .DoneFbSwap
-	move.l fb_display.l, fb_dirty.l					; the framebuffer that was displayed is now dirty
-	move.l d0, fb_display.l							; the framebuffer that was ready is now the one getting displayed
+	move.l screen_display.l, screen_dirty.l			; the framebuffer that was displayed is now dirty
+	move.l d0, screen_display.l						; the framebuffer that was ready is now the one getting displayed
+
+	movea.l d0, a0
+	move.l (a0), d0
 
 	lsr.w #8, d0									; set the live framebuffer address into the GPU
 	move.b d0, $ffff8203.w
@@ -479,9 +487,10 @@ _Interrupt_End_Line_200:
 	move.b d0, $ffff8201.w
 
 	moveq.l #0, d0
-	move.l d0, fb_ready.l							; there's no framebuffer ready
+	move.l d0, screen_ready.l						; there's no framebuffer ready
 
 	.DoneFbSwap:
+	move.l (sp)+, a0
 	move.l (sp)+, d0
 	move.b #1, _thread_ready_mouse.l				; unblock mouse thread, to update mouse cursor
 	bra.w SwitchFromInt.l							; switch threads
@@ -779,14 +788,21 @@ keyboard_state:
 
 	.even
 
-fb_display:
+screen_display:
 	.ds.l 1
-fb_ready:
+screen_ready:
 	.ds.l 1
-fb_rendering:
+screen_rendering:
 	.ds.l 1
-fb_dirty:
+screen_dirty:
 	.ds.l 1
+
+_fb1:
+	.ds.l 2
+_fb2:
+	.ds.l 2
+_fb3:
+	.ds.l 2
 
 framebuffers:
 	.ds.b 64255

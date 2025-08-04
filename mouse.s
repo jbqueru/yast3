@@ -190,7 +190,8 @@ _MouseLookAhead:
 ; TODO: skip display if mouse hasn't moved.
 
 _MouseDisplay:
-	movea.l fb_display.l, a0		; framebuffer base address
+	movea.l screen_display.l, a0		; framebuffer base address
+	movea.l (a0), a0
 
 ; *************************************
 ; * Clamp so entire cursor is visible *
