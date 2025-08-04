@@ -270,8 +270,12 @@ _CoreRender:
 	move.b (a2)+, d2
 	moveq.l #0, d3
 	move.b (a2)+, d3
+	move.b (a4, d3.w), d4
 	move.b (a5, d3.w), d3
+	cmp.b d3, d4
+	beq.s .same_color.l
 	bsr.w _DrawChar.l
+.same_color:
 	cmpa.l a3, a2
 	bne.s .loop_chars
 
