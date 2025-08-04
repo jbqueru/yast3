@@ -295,9 +295,7 @@ _CoreRender:
 _CoreSwapFB:
 
 ; Wait until we're not in a critical timing section
-.WaitCritical:
-	tst.b interrupt_critical_timing.l
-	bne.s .WaitCritical.l
+	bsr.w InterruptWaitCritical.l
 
 ; Mask timer B interrupts, so that the interrupt that swaps physical
 ; framebuffers doesn't run while we're modifying these variables (which
