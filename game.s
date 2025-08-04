@@ -237,14 +237,12 @@ _CoreLogic:
 ; Build the colors list based on internal state and mouse position
 ; TODO: build one for each framebuffer to avoid race condition
 
-	movea.l screen_rendering.l, a0
-	movea.l 4(a0), a0
+	movea.l colors_spare.l, a0
 	moveq.l #25, d0
 .ClearColors:
 	move.b #1, (a0)+
 	dbra.w d0, .ClearColors
-	movea.l screen_rendering.l, a0
-	movea.l 4(a0), a0
+	movea.l colors_spare.l, a0
 	moveq.l #0, d3
 	move.b _core_mouse_over, d3
 	beq.s .Zone0
@@ -262,6 +260,7 @@ _CoreRender:
 	lea.l _chars_list_end.l, a3
 	movea.l screen_rendering.l, a4
 	movea.l 4(a4), a4
+	movea.l colors_spare.l, a5
 .loop_chars:
 	moveq.l #0, d0
 	move.b (a2)+, d0
@@ -271,8 +270,8 @@ _CoreRender:
 	move.b (a2)+, d2
 	moveq.l #0, d3
 	move.b (a2)+, d3
-	move.b (a4, d3.w), d3
-	bsr.s _DrawChar.l
+	move.b (a5, d3.w), d3
+	bsr.w _DrawChar.l
 	cmpa.l a3, a2
 	bne.s .loop_chars
 
@@ -285,6 +284,17 @@ _CoreRender:
 	move.l time_300hz.l, d7
 	moveq.l #24, d4
 	bsr.w _DrawNum.l
+
+	movea.l screen_rendering.l, a4
+	movea.l 4(a4), a0
+	move.l colors_spare.l, 4(a4)
+	move.l a0, colors_spare.l
+
+; ################################
+; ##                            ##
+; ##  Exit when we're all done  ##
+; ##                            ##
+; ################################
 
 	tst.b keyboard_state+7.l
 	bne.s _CoreExit.l
