@@ -286,18 +286,42 @@ _CoreRender:
 	tst.b keyboard_state+7.l
 	bne.s _CoreExit.l
 
-	move.b #$fe, MFP_IMRA.w							; mask away timer B
+; #########################
+; ##                     ##
+; ##  Swap framebuffers  ##
+; ##                     ##
+; #########################
+
+_CoreSwapFB:
+
+; Wait until we're not in a critical timing section
+.WaitCritical:
+	tst.b interrupt_critical_timing.l
+	bne.s .WaitCritical.l
+
+; Mask timer B interrupts, so that the interrupt that swaps physical
+; framebuffers doesn't run while we're modifying these variables (which
+; would otherwise run the risk of osing track of which framebuffer is
+; which since the operation here isn't atomic). This is why we need to
+; make sure that we're not in a critical timing section, because in such
+; sections the timer B interrupt must be able to fire with extremely
+; low latency.
+	move.b #$fe, MFP_IMRA.w
+
+; Make the most recently rendered framebuffer ready
+; The next framebuffer to render into is whichever
+; of ready or dirty is available.
 	move.l fb_ready.l, d0
 	move.l fb_rendering.l, fb_ready.l
 	move.l fb_dirty.l, d1
-	bne.s .d1_is_next_fb.l
+	bne.s .DeterminedNextFb.l
 	move.l d0, d1
-.d1_is_next_fb:
+.DeterminedNextFb:
 	move.l d1, fb_rendering.l
 	moveq.l #0, d0
 	move.l d0, fb_dirty.l
-	move.b #$ff, MFP_IMRA.w							; unmask timer B
 
+	move.b #$ff, MFP_IMRA.w
 
 	bra.w _CoreLoop.l
 
