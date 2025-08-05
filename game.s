@@ -30,9 +30,12 @@
 ; #############################################################################
 
 CoreStart:
-	move.l #colors1, _screen_1 + 4.l
-	move.l #colors2, _screen_2 + 4.l
-	move.l #colors3, _screen_3 + 4.l
+	movea.l screen_display.l, a0
+	move.l #colors1, 4(a0)
+	movea.l screen_rendering.l, a0
+	move.l #colors2, 4(a0)
+	movea.l screen_dirty.l, a0
+	move.l #colors3, 4(a0)
 	move.l #colors4, colors_spare.l
 
 _CoreLoop:
