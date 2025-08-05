@@ -957,18 +957,18 @@ There are subtleties in the different stages of processing, such that
 some of the high-level stages actually contain sub-stages.
 
 1. Process inputs.
-  - Turn raw input data into semantic input data (get mouse,
+    - Turn raw input data into semantic input data (get mouse,
 joystick, and keyboard packets from IKDB, as well as potentially
 joystick information from parallel port joysticks and STe extended
 joysticks). This includes detecting joystick transitions (they only
 return state), tracking mouse coordinates (it returns relative
 motion by default), tracking keyboard state (it only returns
 transitions) and applying the keymap.
-  - Turn semantic inputs into game events. E.g. turn mouse coordinates
+    - Turn semantic inputs into game events. E.g. turn mouse coordinates
 and clicks into game actions.
 2. Update the game state.
-  - Apply time and game events to update core game state.
-  - Apply time to update the animation state.
+    - Apply time and game events to update core game state.
+    - Apply time to update the animation state.
 3. Generate display list from game data and animation data.
 4. Render display list into framebuffer, potentially with
 optimizations to skip re-rendering what's already renadered.
