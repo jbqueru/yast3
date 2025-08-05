@@ -942,8 +942,9 @@ That creates 3 stages of processing:
 2. Generate the display state from the game state.
 3. Render the framebuffer from the game state.
 
-Stage 3 is most likely the most expensive, and, in order to optimize it,
-it works incrementally from one frame to the next. In turn, that means that
-there need to be two display states for the framebuffer being rendered into
-(one original and our target, in order to do incremental comparisons), plus
-one display state for each of the other framebuffers.
+Stage 3 is most likely the most expensive, and, in order to optimize
+it, it works incrementally from one frame to the next. In turn, that
+means that there need to be two display states for the framebuffer
+being rendered into (one original and our target, in order to do
+incremental comparisons), plus one display state for each of the
+other framebuffers.
