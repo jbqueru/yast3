@@ -492,8 +492,16 @@ _DrawNum:
 ; #############################################################################
 
 	.abs
+
+; the colors of the zones of fixed text
 _display_fixed_colors:
 	.ds.b 26
+_display_variable_values:
+; the values to be displayed
+	.ds.w 10
+_display_variable_colors:
+; the colors for the values to display
+	.ds.b 10
 _display_state_size:
 
 ; #############################################################################
