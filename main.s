@@ -658,9 +658,10 @@ _ThreadEntryCore:
 Reset:
 	jsr MachineStateRestoreReset.l
 
+.ResetLoop:
 	move.w d0, $ffff8240.w
 	addq.w	#1, d0
-	bra.s Reset
+	bra.s .ResetLoop.l
 
 	.data
 	.even
