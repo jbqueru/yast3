@@ -193,21 +193,17 @@ _MainSuper:
 	lsl.l #8, d0
 	move.b $ffff8203.w, d0
 	lsl.l #8, d0
-	move.l d0, _fb1.l						; the address of the OS framebuffer
-	move.l #colors1, _fb1 + 4.l
-	move.l #_fb1, screen_display.l
+	move.l d0, _screen_1.l					; the address of the OS framebuffer
+	move.l #_screen_1, screen_display.l
 
 	move.l #framebuffers + 255, d0
 	clr.b d0
-	move.l d0, _fb2.l						; the first of our framebuffers
-	move.l #colors2, _fb2 + 4.l
-	move.l #_fb2, screen_rendering.l
+	move.l d0, _screen_2.l					; the first of our framebuffers
+	move.l #_screen_2, screen_rendering.l
 	add.l #32000, d0
-	move.l d0, _fb3.l						; the second of our framebuffers
-	move.l #colors3, _fb3 + 4.l
-	move.l #_fb3, screen_dirty.l
+	move.l d0, _screen_3.l					; the second of our framebuffers
+	move.l #_screen_3, screen_dirty.l
 
-	move.l #colors4, colors_spare.l
 
 	movea.l screen_display.l, a0
 	movea.l (a0), a0
@@ -802,11 +798,11 @@ screen_rendering:
 screen_dirty:
 	.ds.l 1
 
-_fb1:
+_screen_1:
 	.ds.l 2
-_fb2:
+_screen_2:
 	.ds.l 2
-_fb3:
+_screen_3:
 	.ds.l 2
 
 framebuffers:

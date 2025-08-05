@@ -30,6 +30,11 @@
 ; #############################################################################
 
 CoreStart:
+	move.l #colors1, _screen_1 + 4.l
+	move.l #colors2, _screen_2 + 4.l
+	move.l #colors3, _screen_3 + 4.l
+	move.l #colors4, colors_spare.l
+
 _CoreLoop:
 	addq.l #1, time_render.l			; Count number of rendered frames
 
