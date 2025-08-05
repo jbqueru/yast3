@@ -31,12 +31,12 @@
 
 CoreStart:
 	movea.l screen_display.l, a0
-	move.l #colors1, 4(a0)
+	move.l #_display_state_1, 4(a0)
 	movea.l screen_rendering.l, a0
-	move.l #colors2, 4(a0)
+	move.l #_display_state_2, 4(a0)
 	movea.l screen_dirty.l, a0
-	move.l #colors3, 4(a0)
-	move.l #colors4, colors_spare.l
+	move.l #_display_state_3, 4(a0)
+	move.l #_display_state_4, colors_spare.l
 
 _CoreLoop:
 	addq.l #1, time_render.l			; Count number of rendered frames
@@ -669,13 +669,13 @@ _font:
 
 	.bss
 	.even
-colors1:
+_display_state_1:
 	.ds.b 26
-colors2:
+_display_state_2:
 	.ds.b 26
-colors3:
+_display_state_3:
 	.ds.b 26
-colors4:
+_display_state_4:
 	.ds.b 26
 
 colors_spare:
