@@ -17,6 +17,11 @@
 
 ; See main.s for more information
 
+	.abs
+_display_state_colors:
+	.ds.b 26
+_display_state_size:
+
 	.text
 
 ; #############################################################################
@@ -578,13 +583,13 @@ _chars_list_end:
 	.bss
 	.even
 _display_state_1:
-	.ds.b 26
+	.ds.b _display_state_size
 _display_state_2:
-	.ds.b 26
+	.ds.b _display_state_size
 _display_state_3:
-	.ds.b 26
+	.ds.b _display_state_size
 _display_state_4:
-	.ds.b 26
+	.ds.b _display_state_size
 
 colors_spare:
 	.ds.l 1
