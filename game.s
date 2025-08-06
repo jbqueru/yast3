@@ -296,6 +296,20 @@ _CoreRender:
 	cmpa.l a3, a2
 	bne.s .loop_chars
 
+	lea.l _variable_locations.l, a2
+	moveq.l #16, d4
+.display_score:
+	moveq.l #0, d0
+	move.b (a2)+, d0
+	moveq.l #0, d1
+	move.b (a2)+, d1
+	moveq.l #0, d2
+	moveq.l #3, d3
+	bsr.w _DrawChar.l
+	dbra.w d4, .display_score.l
+
+
+
 	move.l time_render.l, d7
 	moveq.l #22, d4
 	bsr.w _DrawNum.l
@@ -496,12 +510,14 @@ _DrawNum:
 ; the colors of the zones of fixed text
 _display_fixed_colors:
 	.ds.b 26
+
+; the values of variable text
 _display_variable_values:
-; the values to be displayed
-	.ds.w 10
-_display_variable_colors:
-; the colors for the values to display
-	.ds.b 10
+; word value, always displayed
+	.ds.w 1
+; byte values, optional
+	.ds.b 32
+
 _display_state_size:
 
 ; #############################################################################
@@ -619,6 +635,25 @@ _chars_list:
 	.dc.b 60, 15, 5, 20
 
 _chars_list_end:
+
+_variable_locations:
+	.dc.b 62, 16
+	.dc.b 62, 0
+	.dc.b 62, 1
+	.dc.b 62, 2
+	.dc.b 62, 3
+	.dc.b 62, 4
+	.dc.b 62, 5
+	.dc.b 62, 6
+	.dc.b 62, 7
+	.dc.b 62, 8
+	.dc.b 62, 9
+	.dc.b 62, 10
+	.dc.b 62, 11
+	.dc.b 62, 12
+	.dc.b 62, 13
+	.dc.b 62, 14
+	.dc.b 62, 15
 
 ; #############################################################################
 ; #############################################################################
