@@ -268,6 +268,7 @@ _CoreLogic:
 
 	movea.l colors_spare.l, a0
 	move.b #1, _display_variable_values + 2(a0)
+	move.b #2, _display_variable_values + 3(a0)
 
 ; #################
 ; ##             ##
@@ -303,30 +304,24 @@ _CoreRender:
 	movea.l screen_rendering.l, a4
 	movea.l 4(a4), a4
 	lea.l _display_variable_values(a4), a4
-	moveq.l #0, d4
-.display_score16:
+	moveq.l #16, d4
+.display_score:
 	moveq.l #0, d0
 	move.b (a2)+, d0
 	moveq.l #0, d1
 	move.b (a2)+, d1
 	moveq.l #0, d2
-	move.w (a4)+, d2
-	moveq.l #3, d3
-	bsr.w _DrawChar.l
-	dbra.w d4, .display_score16.l
-
-	moveq.l #15, d4
-.display_score8:
-	moveq.l #0, d0
-	move.b (a2)+, d0
-	moveq.l #0, d1
-	move.b (a2)+, d1
-	moveq.l #0, d2
+	moveq.l #1, d3
+	cmpi.w #16, d4
+	bge.s .read16.l
 	move.b (a4)+, d2
-	moveq.l #3, d3
-	or.b (a4)+, d3
+	move.b (a4)+, d3
+	bra.s .gotnc.l
+.read16:
+	move.w (a4)+, d2
+.gotnc:
 	bsr.w _DrawChar.l
-	dbra.w d4, .display_score8.l
+	dbra.w d4, .display_score.l
 
 
 	move.l time_render.l, d7
