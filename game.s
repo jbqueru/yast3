@@ -269,6 +269,10 @@ _CoreLogic:
 	movea.l colors_spare.l, a0
 	move.b #1, _display_variable_values + 2(a0)
 	move.b #2, _display_variable_values + 3(a0)
+	move.b #42, _display_variable_values + 4(a0)
+	move.b #2, _display_variable_values + 5(a0)
+	move.b #180, _display_variable_values + 6(a0)
+	move.b #1, _display_variable_values + 7(a0)
 
 ; #################
 ; ##             ##
@@ -306,21 +310,46 @@ _CoreRender:
 	lea.l _display_variable_values(a4), a4
 	moveq.l #16, d4
 .display_score:
-	moveq.l #0, d0
-	move.b (a2)+, d0
-	moveq.l #0, d1
-	move.b (a2)+, d1
-	moveq.l #0, d2
-	moveq.l #1, d3
+	moveq.l #0, d6
 	cmpi.w #16, d4
 	bge.s .read16.l
-	move.b (a4)+, d2
-	move.b (a4)+, d3
+	move.b (a4)+, d6
+	move.b (a4)+, d7
 	bra.s .gotnc.l
 .read16:
-	move.w (a4)+, d2
+	move.w (a4)+, d6
+	moveq.l #1, d7
 .gotnc:
+	moveq.l #0, d0
+	add.b (a2), d0
+	moveq.l #0, d1
+	move.b 1(a2), d1
+	divu.w #100, d6
+	move.w d6, d2
+	clr.w d6
+	swap.w d6
+	move.b d7, d3
 	bsr.w _DrawChar.l
+
+	moveq.l #1, d0
+	add.b (a2), d0
+	moveq.l #0, d1
+	move.b 1(a2), d1
+	divu.w #10, d6
+	move.w d6, d2
+	swap.w d6
+	move.b d7, d3
+	bsr.w _DrawChar.l
+
+	moveq.l #2, d0
+	add.b (a2), d0
+	moveq.l #0, d1
+	move.b 1(a2), d1
+	move.w d6, d2
+	move.b d7, d3
+	bsr.w _DrawChar.l
+
+	addq.l #2, a2
 	dbra.w d4, .display_score.l
 
 
