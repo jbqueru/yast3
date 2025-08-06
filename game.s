@@ -305,8 +305,7 @@ _CoreRender:
 	bne.s .loop_chars
 
 	lea.l _variable_locations.l, a2
-	movea.l screen_rendering.l, a4
-	movea.l 4(a4), a4
+	movea.l colors_spare.l, a4
 	lea.l _display_variable_values(a4), a4
 	moveq.l #16, d4
 .display_score:
