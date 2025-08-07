@@ -274,6 +274,10 @@ _CoreLogic:
 	move.b #2, _display_variable_values + 5(a0)
 	move.b #180, _display_variable_values + 6(a0)
 	move.b #1, _display_variable_values + 7(a0)
+	move.b #1, _display_variable_values + 34(a0)
+	move.b #1, _display_variable_values + 35(a0)
+	move.b #1, _display_variable_values + 36(a0)
+	move.b #1, _display_variable_values + 37(a0)
 
 ; #################
 ; ##             ##
@@ -311,13 +315,13 @@ _CoreRender:
 	lea.l _display_variable_values(a3), a3
 	movea.l colors_spare.l, a4
 	lea.l _display_variable_values(a4), a4
-	moveq.l #16, d4
+	moveq.l #21, d4
 .display_score:
 	move.w (a3)+, d0
 	cmp.w (a4), d0
 ;	beq.s .unchanged.l
 	moveq.l #0, d6
-	cmpi.w #16, d4
+	cmpi.w #21, d4
 	bge.s .read16.l
 	move.b (a4), d6
 	move.b 1(a4), d7
@@ -577,7 +581,7 @@ _display_variable_values:
 ; word value, always displayed
 	.ds.w 1
 ; byte values, optional
-	.ds.b 32
+	.ds.b 21 * 2
 
 _display_state_size:
 
@@ -640,12 +644,6 @@ _chars_list:
 	.dc.b 12, 6, 6, 5
 	.dc.b 14, 6, 6, 6
 	.dc.b 16, 6, 6, 7
-
-	.dc.b 8, 7, 6, 0
-	.dc.b 10, 7, 6, 0
-	.dc.b 12, 7, 6, 0
-	.dc.b 14, 7, 6, 0
-	.dc.b 16, 7, 6, 0
 
 	.dc.b 60, 0, 1, 8
 	.dc.b 60, 1, 2, 9
@@ -715,6 +713,12 @@ _variable_locations:
 	.dc.b 64, 13
 	.dc.b 64, 14
 	.dc.b 64, 15
+
+	.dc.b 8, 7
+	.dc.b 10, 7
+	.dc.b 12, 7
+	.dc.b 14, 7
+	.dc.b 16, 7
 
 ; #############################################################################
 ; #############################################################################
