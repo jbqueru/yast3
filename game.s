@@ -219,6 +219,14 @@ _CoreProcessInput:
 ; ##              ##
 ; ##################
 
+	move.b #1, _game_dice_values.l
+	move.b #3, _game_dice_values + 1.l
+	move.b #3, _game_dice_values + 2.l
+	move.b #4, _game_dice_values + 3.l
+	move.b #4, _game_dice_values + 4.l
+
+	move.b #1, _game_dice_locked + 3.l
+
 _CoreLogic:
 ; Check if the mouse is in one of the active zones
 	lea.l _mouse_zones.l, a0
@@ -267,17 +275,26 @@ _CoreLogic:
 .Zone0:
 
 	movea.l colors_spare.l, a0
-	move.w #789, _display_variable_values(a0)
-	move.b #1, _display_variable_values + 2(a0)
-	move.b #2, _display_variable_values + 3(a0)
-	move.b #42, _display_variable_values + 4(a0)
-	move.b #2, _display_variable_values + 5(a0)
-	move.b #180, _display_variable_values + 6(a0)
-	move.b #1, _display_variable_values + 7(a0)
-	move.b #1, _display_variable_values + 34(a0)
-	move.b #1, _display_variable_values + 35(a0)
-	move.b #1, _display_variable_values + 36(a0)
-	move.b #1, _display_variable_values + 37(a0)
+	lea.l _display_variable_values(a0), a0
+
+	move.w #0, (a0)+			; total
+
+	lea.l _game_dice_values.l, a1
+	lea.l _game_dice_locked.l, a2
+	moveq.l #4, d7
+.dieloop:
+	move.b (a2)+, d1
+	move.b (a1)+, d0
+	beq.s .nodie.l
+	addq.b #1, d1
+	move.b d0, (a0)+
+	move.b d1, (a0)+
+	bra.s .diedone.l
+.nodie:
+	move.b #0, (a0)+
+	move.b #0, (a0)+
+.diedone:
+	dbra.w d7, .dieloop.l
 
 ; #################
 ; ##             ##
@@ -697,6 +714,13 @@ _chars_list_end:
 
 _variable_locations:
 	.dc.b 64, 16
+
+	.dc.b 8, 7
+	.dc.b 10, 7
+	.dc.b 12, 7
+	.dc.b 14, 7
+	.dc.b 16, 7
+
 	.dc.b 64, 0
 	.dc.b 64, 1
 	.dc.b 64, 2
@@ -713,12 +737,6 @@ _variable_locations:
 	.dc.b 64, 13
 	.dc.b 64, 14
 	.dc.b 64, 15
-
-	.dc.b 8, 7
-	.dc.b 10, 7
-	.dc.b 12, 7
-	.dc.b 14, 7
-	.dc.b 16, 7
 
 ; #############################################################################
 ; #############################################################################
