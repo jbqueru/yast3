@@ -731,7 +731,38 @@ _variable_locations:
 ; #############################################################################
 
 	.bss
+
+; ##################
+; ##              ##
+; ##  Game state  ##
+; ##              ##
+; ##################
+
 	.even
+
+_game_dice_rolls:
+	.ds.b 1
+_game_dice_values:
+	.ds.b 5
+_game_dice_locked:
+	.ds.b 5
+
+_game_line_score:
+	.ds.b 13
+_game_line_locked:
+	.ds.b 13
+_game_yahtzee_bonuses:
+	.ds.b 1
+
+; #####################
+; ##                 ##
+; ##  Display state  ##
+; ##                 ##
+; #####################
+
+colors_spare:
+	.ds.l 1
+
 _display_state_1:
 	.ds.b _display_state_size
 _display_state_2:
@@ -741,12 +772,19 @@ _display_state_3:
 _display_state_4:
 	.ds.b _display_state_size
 
-colors_spare:
-	.ds.l 1
-
 _core_mouse_over:
 	.ds.b 1
 _core_mouse_click:
 	.ds.b 1
+
+; #############################################################################
+; #############################################################################
+; ####                                                                     ####
+; ####                                                                     ####
+; ####                            Dependencies                             ####
+; ####                                                                     ####
+; ####                                                                     ####
+; #############################################################################
+; #############################################################################
 
 	.include "font.s"
