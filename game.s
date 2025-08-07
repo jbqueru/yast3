@@ -327,27 +327,37 @@ _CoreRender:
 	moveq.l #1, d7
 .gotnc:
 	moveq.l #0, d0
-	add.b (a2), d0
+	move.b (a2), d0
 	moveq.l #0, d1
 	move.b 1(a2), d1
-	divu.w #100, d6
+	divu.w #10, d6
+	swap.w d6
 	move.w d6, d2
 	clr.w d6
 	swap.w d6
 	move.b d7, d3
 	bsr.w _DrawChar.l
 
-	moveq.l #1, d0
+	tst.w d6
+	beq.s .unchanged.l
+
+	moveq.l #0, d0
+	move.b #-1, d0
 	add.b (a2), d0
 	moveq.l #0, d1
 	move.b 1(a2), d1
 	divu.w #10, d6
+	swap.w d6
 	move.w d6, d2
 	swap.w d6
 	move.b d7, d3
 	bsr.w _DrawChar.l
 
-	moveq.l #2, d0
+	tst.w d6
+	beq.s .unchanged.l
+
+	moveq.l #0, d0
+	move.b #-2, d0
 	add.b (a2), d0
 	moveq.l #0, d1
 	move.b 1(a2), d1
@@ -688,23 +698,23 @@ _chars_list:
 _chars_list_end:
 
 _variable_locations:
-	.dc.b 62, 16
-	.dc.b 62, 0
-	.dc.b 62, 1
-	.dc.b 62, 2
-	.dc.b 62, 3
-	.dc.b 62, 4
-	.dc.b 62, 5
-	.dc.b 62, 6
-	.dc.b 62, 7
-	.dc.b 62, 8
-	.dc.b 62, 9
-	.dc.b 62, 10
-	.dc.b 62, 11
-	.dc.b 62, 12
-	.dc.b 62, 13
-	.dc.b 62, 14
-	.dc.b 62, 15
+	.dc.b 64, 16
+	.dc.b 64, 0
+	.dc.b 64, 1
+	.dc.b 64, 2
+	.dc.b 64, 3
+	.dc.b 64, 4
+	.dc.b 64, 5
+	.dc.b 64, 6
+	.dc.b 64, 7
+	.dc.b 64, 8
+	.dc.b 64, 9
+	.dc.b 64, 10
+	.dc.b 64, 11
+	.dc.b 64, 12
+	.dc.b 64, 13
+	.dc.b 64, 14
+	.dc.b 64, 15
 
 ; #############################################################################
 ; #############################################################################
