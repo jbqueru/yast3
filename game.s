@@ -267,6 +267,7 @@ _CoreLogic:
 .Zone0:
 
 	movea.l colors_spare.l, a0
+	move.w #789, _display_variable_values(a0)
 	move.b #1, _display_variable_values + 2(a0)
 	move.b #2, _display_variable_values + 3(a0)
 	move.b #42, _display_variable_values + 4(a0)
@@ -305,18 +306,24 @@ _CoreRender:
 	bne.s .loop_chars
 
 	lea.l _variable_locations.l, a2
+	movea.l screen_rendering.l, a3
+	movea.l 4(a3), a3
+	lea.l _display_variable_values(a3), a3
 	movea.l colors_spare.l, a4
 	lea.l _display_variable_values(a4), a4
 	moveq.l #16, d4
 .display_score:
+	move.w (a3)+, d0
+	cmp.w (a4), d0
+;	beq.s .unchanged.l
 	moveq.l #0, d6
 	cmpi.w #16, d4
 	bge.s .read16.l
-	move.b (a4)+, d6
-	move.b (a4)+, d7
+	move.b (a4), d6
+	move.b 1(a4), d7
 	bra.s .gotnc.l
 .read16:
-	move.w (a4)+, d6
+	move.w (a4), d6
 	moveq.l #1, d7
 .gotnc:
 	moveq.l #0, d0
@@ -348,6 +355,8 @@ _CoreRender:
 	move.b d7, d3
 	bsr.w _DrawChar.l
 
+.unchanged:
+	addq.l #2, a4
 	addq.l #2, a2
 	dbra.w d4, .display_score.l
 
