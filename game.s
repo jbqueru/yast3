@@ -229,6 +229,12 @@ _CoreProcessInput:
 
 	move.b #2, _game_line_score.l
 	move.b #1, _game_line_locked.l
+	move.b #20, _game_line_score + 3.l
+	move.b #1, _game_line_locked + 3.l
+	move.b #25, _game_line_score + 4.l
+	move.b #1, _game_line_locked + 4.l
+	move.b #30, _game_line_score + 5.l
+	move.b #1, _game_line_locked + 5.l
 
 	move.b #25, _game_line_score + 8.l
 	move.b #1, _game_line_locked+ 8.l
@@ -282,9 +288,7 @@ _CoreLogic:
 .Zone0:
 
 	movea.l colors_spare.l, a0
-	lea.l _display_variable_values(a0), a0
-
-	move.w #0, (a0)+			; total
+	lea.l _display_variable_values + 2(a0), a0
 
 	lea.l _game_dice_values.l, a1
 	lea.l _game_dice_locked.l, a2
@@ -306,6 +310,8 @@ _CoreLogic:
 	lea.l _game_line_score.l, a1
 	lea.l _game_line_locked.l, a2
 	moveq.l #5, d7
+	moveq.l #0, d0
+	moveq.l #0, d1
 	moveq.l #0, d2
 	moveq.l #0, d3
 .valuescore:
@@ -317,7 +323,29 @@ _CoreLogic:
 	move.b d1, (a0)+
 	dbra.w d7, .valuescore.l
 
-	addq.l #6, a0
+	move.b d2, (a0)+
+	move.b #1, (a0)+
+
+	cmpi.b #63, d2
+	bge.s .hasbonus.l
+	cmpi.b #6, d3
+	bne.s .incomplete.l
+	move.b #0, (a0)+
+	move.b #1, (a0)+
+	bra.s .bonusdone.l
+.hasbonus:
+	addi.b #35, d2
+	move.b #35, (a0)+
+	move.b #1, (a0)+
+	bra.s .bonusdone.l
+.incomplete:
+	move.b #0, (a0)+
+	move.b #3, (a0)+
+.bonusdone:
+
+	move.b d2, (a0)+
+	move.b #1, (a0)+
+
 	moveq.l #6, d7
 .comboscore:
 	move.b (a1)+, d0
