@@ -227,6 +227,13 @@ _CoreProcessInput:
 
 	move.b #1, _game_dice_locked + 3.l
 
+	move.b #2, _game_line_score.l
+	move.b #1, _game_line_locked.l
+
+	move.b #25, _game_line_score + 8.l
+	move.b #1, _game_line_locked+ 8.l
+	move.b #3, _game_line_locked+ 12.l
+
 _CoreLogic:
 ; Check if the mouse is in one of the active zones
 	lea.l _mouse_zones.l, a0
@@ -295,6 +302,29 @@ _CoreLogic:
 	move.b #0, (a0)+
 .diedone:
 	dbra.w d7, .dieloop.l
+
+	lea.l _game_line_score.l, a1
+	lea.l _game_line_locked.l, a2
+	moveq.l #5, d7
+	moveq.l #0, d2
+	moveq.l #0, d3
+.valuescore:
+	move.b (a1)+, d0
+	move.b (a2)+, d1
+	add.b d0, d2
+	add.b d1, d3
+	move.b d0, (a0)+
+	move.b d1, (a0)+
+	dbra.w d7, .valuescore.l
+
+	addq.l #6, a0
+	moveq.l #6, d7
+.comboscore:
+	move.b (a1)+, d0
+	move.b (a2)+, d1
+	move.b d0, (a0)+
+	move.b d1, (a0)+
+	dbra.w d7, .comboscore.l
 
 ; #################
 ; ##             ##
