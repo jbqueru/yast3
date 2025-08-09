@@ -377,6 +377,7 @@ InterruptWaitCritical:
 
 _Interrupt_300Hz:
 	addq.l #1, time_300hz			; increment count of 300Hz time base
+	bsr.w RandomAdvance.l			; advance pseudorandom number generator
 .if ^^defined DEBUG_COLOR_SHOW_TIMER_C
 	eori.w #DEBUG_COLOR_SHOW_TIMER_C, GFX_COLOR_0.w
 	.rept 122
@@ -478,6 +479,7 @@ _Interrupt_End_Line_200:
 .endif
 
 	addq.l #1, time_vbl								; increment frame counter
+	bsr.w RandomAdvance.l							; advance pseudorandom number generator
 
 	move.l d0, -(sp)
 	move.l a0, -(sp)
@@ -511,6 +513,7 @@ _Interrupt_End_Line_200:
 ; #####################################################################
 
 TimerA:
+	bsr.w RandomAdvance.l			; advance pseudorandom number generator
 .if ^^defined COLOR_SHOW_TIMER_A
 	eori.w #DEBUG_COLOR_SHOW_TIMER_A, GFX_COLOR_0.w
 	.rept 122
@@ -528,6 +531,7 @@ TimerA:
 ; ###############################################
 
 ACIA:
+	bsr.w RandomAdvance.l					; advance pseudorandom number generator
 .if ^^defined DEBUG_COLOR_SHOW_ACIA
 	eori.w #DEBUG_COLOR_SHOW_ACIA, GFX_COLOR_0.w
 .endif
