@@ -349,10 +349,15 @@ _CoreLogic:
 	moveq.l #6, d7
 .comboscore:
 	move.b (a1)+, d0
+	add.w d0, d2
 	move.b (a2)+, d1
 	move.b d0, (a0)+
 	move.b d1, (a0)+
 	dbra.w d7, .comboscore.l
+
+	movea.l colors_spare.l, a0
+	lea.l _display_variable_values(a0), a0
+	move.w d2, (a0)
 
 ; #################
 ; ##             ##
