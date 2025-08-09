@@ -38,6 +38,27 @@ CoreStart:
 	move.l #_display_state_3, 4(a0)
 	move.l #_display_state_4, colors_spare.l
 
+	move.b #1, _game_dice_values.l
+	move.b #3, _game_dice_values + 1.l
+	move.b #3, _game_dice_values + 2.l
+	move.b #4, _game_dice_values + 3.l
+	move.b #4, _game_dice_values + 4.l
+
+	move.b #1, _game_dice_locked + 3.l
+
+	move.b #2, _game_line_score.l
+	move.b #1, _game_line_locked.l
+	move.b #20, _game_line_score + 3.l
+	move.b #1, _game_line_locked + 3.l
+	move.b #25, _game_line_score + 4.l
+	move.b #1, _game_line_locked + 4.l
+	move.b #30, _game_line_score + 5.l
+	move.b #1, _game_line_locked + 5.l
+
+	move.b #25, _game_line_score + 8.l
+	move.b #1, _game_line_locked+ 8.l
+	move.b #3, _game_line_locked+ 12.l
+
 _CoreLoop:
 	addq.l #1, time_render.l			; Count number of rendered frames
 
@@ -218,27 +239,6 @@ _CoreProcessInput:
 ; ##  Game logic  ##
 ; ##              ##
 ; ##################
-
-	move.b #1, _game_dice_values.l
-	move.b #3, _game_dice_values + 1.l
-	move.b #3, _game_dice_values + 2.l
-	move.b #4, _game_dice_values + 3.l
-	move.b #4, _game_dice_values + 4.l
-
-	move.b #1, _game_dice_locked + 3.l
-
-	move.b #2, _game_line_score.l
-	move.b #1, _game_line_locked.l
-	move.b #20, _game_line_score + 3.l
-	move.b #1, _game_line_locked + 3.l
-	move.b #25, _game_line_score + 4.l
-	move.b #1, _game_line_locked + 4.l
-	move.b #30, _game_line_score + 5.l
-	move.b #1, _game_line_locked + 5.l
-
-	move.b #25, _game_line_score + 8.l
-	move.b #1, _game_line_locked+ 8.l
-	move.b #3, _game_line_locked+ 12.l
 
 	tst.w mouse_buttons.l
 	beq.s .clickdone.l
