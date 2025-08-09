@@ -240,6 +240,18 @@ _CoreProcessInput:
 	move.b #1, _game_line_locked+ 8.l
 	move.b #3, _game_line_locked+ 12.l
 
+	tst.w mouse_buttons.l
+	beq.s .clickdone.l
+.again:
+	moveq.l #7, d0
+	bsr.w Random.l
+	tst.b d0
+	beq.s .again.l
+	cmpi.b #7, d0
+	beq.s .again.l
+	move.b d0, _game_dice_values.l
+.clickdone:
+
 _CoreLogic:
 ; Check if the mouse is in one of the active zones
 	lea.l _mouse_zones.l, a0
