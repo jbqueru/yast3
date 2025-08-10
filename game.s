@@ -825,6 +825,19 @@ _variable_locations:
 
 	.bss
 
+; ###################
+; ##               ##
+; ##  Input state  ##
+; ##               ##
+; ###################
+
+	.even
+
+_core_mouse_over:
+	.ds.b 1
+;_core_mouse_click:
+	.ds.b 1
+
 ; ##################
 ; ##              ##
 ; ##  Game state  ##
@@ -853,6 +866,8 @@ _game_yahtzee_bonuses:
 ; ##                 ##
 ; #####################
 
+	.even
+
 colors_spare:
 	.ds.l 1
 
@@ -864,11 +879,6 @@ _display_state_3:
 	.ds.b _display_state_size
 _display_state_4:
 	.ds.b _display_state_size
-
-_core_mouse_over:
-	.ds.b 1
-_core_mouse_click:
-	.ds.b 1
 
 ; #############################################################################
 ; #############################################################################
