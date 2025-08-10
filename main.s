@@ -123,6 +123,9 @@ _Main:
 ; ##                             ##
 ; #################################
 
+	move.w #XBIOS_RANDOM, -(sp)
+	trap #TRAP_XBIOS
+	addq.l #2, sp
 	bsr.w RandomInit.l
 
 ; #################################
