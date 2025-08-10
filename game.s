@@ -285,7 +285,6 @@ _CoreLogic:
 	move.b d0, _core_mouse_over.l
 
 ; Build the colors list based on internal state and mouse position
-; TODO: build one for each framebuffer to avoid race condition
 
 	movea.l colors_spare.l, a0
 	moveq.l #25, d0
@@ -656,31 +655,6 @@ _DrawNum:
 ; #############################################################################
 ; ####                                                                     ####
 ; ####                                                                     ####
-; ####                       Display List Structure                        ####
-; ####                                                                     ####
-; ####                                                                     ####
-; #############################################################################
-; #############################################################################
-
-	.abs
-
-; the colors of the zones of fixed text
-_display_fixed_colors:
-	.ds.b 26
-
-; the values of variable text
-_display_variable_values:
-; word value, always displayed
-	.ds.w 1
-; byte values, optional
-	.ds.b 21 * 2
-
-_display_state_size:
-
-; #############################################################################
-; #############################################################################
-; ####                                                                     ####
-; ####                                                                     ####
 ; ####                         Data for Animation                          ####
 ; ####                                                                     ####
 ; ####                                                                     ####
@@ -866,19 +840,48 @@ _game_yahtzee_bonuses:
 ; ##                 ##
 ; #####################
 
+; **************************************
+; * Structure that holds display state *
+; **************************************
+	.abs
+
+; the colors of the zones of fixed text
+_display_fixed_colors:
+	.ds.b 26
+
+; the values of variable text
+_display_variable_values:
+; word value, always displayed
+	.ds.w 1
+; byte values, optional
+	.ds.b 21 * 2
+
+_display_state_size:
+
+	.bss
 	.even
 
-colors_spare:
-	.ds.l 1
-
+; ********************************
+; * Storage for 4 display states *
+; ********************************
+	.even
 _display_state_1:
 	.ds.b _display_state_size
+	.even
 _display_state_2:
 	.ds.b _display_state_size
+	.even
 _display_state_3:
 	.ds.b _display_state_size
+	.even
 _display_state_4:
 	.ds.b _display_state_size
+
+; *******************************************************************
+; * Address of the display state that doesn't match any framebuffer *
+; *******************************************************************
+colors_spare:
+	.ds.l 1
 
 ; #############################################################################
 ; #############################################################################
