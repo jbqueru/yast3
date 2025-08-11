@@ -88,9 +88,11 @@ RandomAdvance:
 ; Outputs: d0: pseudo-random number, between 0 and mask
 ; Modifies: d1-d3
 
-; Note: the global seed is read atomically and written atomically,
-; such that it is safe for this call to be interrupted or pre-empted,
-; where the risk is merely that some seed updates get ignored.
+; Note: the global seed is read in a single instruction and written
+; in a single instruction, such that it is safe for this call to be
+; interrupted or pre-empted, where the risk is merely that some seed
+; updates get ignored, i.e. that, possibly, two threads requesting
+; random data at the same time might get the same bits.
 
 Random:
 	move.l _random_seed.l, d1
