@@ -31,6 +31,14 @@
 ; shifting left, with taps at bits 2, 6, and 7. This is known to
 ; be a maximum-cycle Galois LFSR.
 
+; #################
+; ##             ##
+; ##  Constants  ##
+; ##             ##
+; #################
+
+_RANDOM_TAPS .equ %11000101
+
 	.text
 
 ; ######################
@@ -72,7 +80,7 @@ RandomAdvance:
 	lsl.w _random_seed + 2.l
 	roxl.w _random_seed.l
 	bcc.s .bits_done.l
-	eori.b #%11000101, _random_seed + 3.l
+	eori.b #_RANDOM_TAPS, _random_seed + 3.l
 .bits_done:
 	rts
 
@@ -96,7 +104,7 @@ RandomAdvance:
 
 Random:
 	move.l _random_seed.l, d1
-	moveq.l #%11000101, d2
+	moveq.l #_RANDOM_TAPS, d2
 	move.l d0, d3
 .gen_bit:
 	lsl.l d1
